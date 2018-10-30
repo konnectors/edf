@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.0.1",
   "name": "EDF",
   "type": "konnector",
   "language": "node",
@@ -9,7 +9,7 @@
   "editor": "Cozy",
   "vendor_link": "https://espace-client.edf.fr/connexion/mon-espace-client/?realm=/INTERNET#login",
   "categories": [
-    "other"
+    "energy"
   ],
   "fields": {
     "login": {
