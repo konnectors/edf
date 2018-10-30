@@ -9,7 +9,7 @@
   "editor": "Cozy",
   "vendor_link": "https://espace-client.edf.fr/connexion/mon-espace-client/?realm=/INTERNET#login",
   "categories": [
-    "other"
+    "energy"
   ],
   "fields": {
     "login": {
