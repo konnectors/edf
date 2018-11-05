@@ -1,0 +1,41 @@
+language: node_js
+node_js:
+- '8'
+env:
+  global:
+  - GH_USER_EMAIL="travis@example.org"
+  - GH_USER_NAME="cozy-bot"
+  - DEPLOY_REPOSITORY="git@github.com:konnectors/edf.git"
+  - secure: ozsZqL87BfzFWTT7AaGR+p+iHEnC/qthAohaHsiAD3SQqKZBs5LNAJlAimpaE0FjVmkzaNeDX21okttJGNGNQMqyWQ8GquUIQ3pzw24VvwZ7J7gW8sT9jXUKmDtWufrKHSSQ9QB8PoF1NthbgmVIp/NObUgtyX7X+b+dZuD3FpaRd5005Hh7N5YxDfJtPKH8UcNPPk9uXgyq+P5pdbzXYg2TnKVilCwpsawV2FzwRAiP87RrvynyldHDKnRRkXlQzC2/xgnRK/GORZYAbqXPWkhAW860xE4+sxn9CoKFv+9M6OKIubD6RPVThqAzjhnXEd8sj8GjEMl8ndhwHf7fMGRTMbStZn8T7mKyq4R8pjrR9serteZvQTc7hIZX0B16LK0doJtcRKLyx68aNXCeH9XKRQr2qtUyH9c2tkpYaU/CeESTNMvH/yka34sGRCGqqmE9X9VMrFcIZCdUywFSJb7J9lAPosMAA8nQfsKACTCPbu39yM6FB3BWovkkq9aMCXCN1ihasAQjzuY7eaKwqTsqGmMxQYKx5wEi0hXdvnlbsV9OOwby93ST4ZLMQ1b85PfYqUgI/IMK87Lkv1p0FhzR6UnLQrA+FaYzmNudwSMXHoufajjPdxfM8lvPKhjZzdNGQrRCFdaXLTrDpKrgUitK7qFVraQSd1F8HIcJmsM=
+cache:
+  yarn: true
+  directories:
+  - node_modules
+branches:
+  except:
+  - build
+  - build-debug
+script:
+- yarn lint
+- yarn build
+- yarn run check
+deploy:
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish
+  on:
+    branch: master
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish
+  on:
+    tags: true
+before_install:
+- openssl aes-256-cbc -K $encrypted_929a8116350b_key -iv $encrypted_929a8116350b_iv
+  -in github_deploy_key.enc -out /tmp/github_deploy_key -d
+- eval "$(ssh-agent -s)"
+- chmod 600 /tmp/github_deploy_key
+- ssh-add /tmp/github_deploy_key
+after_deploy:
+- rm /tmp/github_deploy_key
+- ssh-add -D
