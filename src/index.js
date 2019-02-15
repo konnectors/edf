@@ -1,129 +1,154 @@
-const {
-  BaseKonnector,
-  requestFactory,
-  signin,
-  scrape,
-  saveBills,
-  log,
-  utils
-} = require('cozy-konnector-libs')
-const request = requestFactory({
-  // the debug mode shows all the details about http request and responses. Very useful for
-  // debugging but very verbose. That is why it is commented out by default
-  // debug: true,
-  // activates [cheerio](https://cheerio.js.org/) parsing on each page
-  cheerio: true,
-  // If cheerio is activated do not forget to deactivate json parsing (which is activated by
-  // default in cozy-konnector-libs
-  json: false,
-  // this allows request-promise to keep cookies between requests
+const { CookieKonnector, log } = require('cozy-konnector-libs')
+const qs = require('querystring')
+
+// const VENDOR = 'EDF'
+const baseUrl =
+  'https://espace-client.edf.fr/connexion/mon-espace-client/?realm=/INTERNET#login/'
+
+class EdfConnector extends CookieKonnector {
+  async fetch() {
+    log('info', 'run')
+    await this.request(baseUrl)
+    const resp = await this.request(
+      'https://particulier.edf.fr/fr/accueil/espace-client/selecteur-contrat.html?goto=https%3A%2F%2Fparticulier.edf.fr%2fbin%2fedf_rc%2fservlets%2fsasServlet%3Fprocessus=TDB%26forceAuth=true',
+      { resolveWithFullResponse: true }
+    )
+
+    const authData = qs.parse(resp.request.uri.href)
+    const postUrl = unescape(authData.goto)
+    const postData = qs.parse(postUrl.split('?').pop())
+    console.log(postData, 'postData')
+    // { 'https://espace-client.edf.fr/sso/oauth2/INTERNET/authorize?service': 'X2',
+    //   response_type: 'code',
+    //     scope: 'openid email infotech',
+    //       client_id: 'SiteCP',
+    //         state: '3hp7fXUXlZqNbRRg2E82VKaHOD8',
+    //           redirect_uri:
+    //           'https://particulier.edf.fr/fr/accueil/espace-client/moduleopenidc.html',
+    //             nonce: 'cuq3gUDe3kDJXqAHy1bjuJKnvOCNefjaQa4PLlLReFE',
+    //               response_mode: 'form_post' }
+
+    // post url to construct :
+    // "url": "https://espace-client.edf.fr/sso/json/authenticate?realm=/INTERNET&service=X2&goto=https%3A%2F%2Fespace-client.edf.fr%2Fsso%2Foauth2%2FINTERNET%2Fauthorize%3Fservice%3DX2%26response_type%3Dcode%26scope%3Dopenid%2520email%2520infotech%26client_id%3DSiteCP%26state%3DPvx0dTBwHyAF0hWy1Ln8m99s63w%26redirect_uri%3Dhttps%253A%252F%252Fparticulier.edf.fr%252Ffr%252Faccueil%252Fespace-client%252Fmoduleopenidc.html%26nonce%3D8qILrQToCq_b1Ocoupyr9B39C3EXD2_JohhFxgKi0sA%26response_mode%3Dform_post&authIndexType=service&authIndexValue=X2",
+    const auth = await this.request.post(
+      `https://espace-client.edf.fr/sso/json/authenticate?realm=/INTERNET`,
+      {
+        qs: postData
+      }
+    )
+    // result
+    // {
+    //   "authId": "eyAidHlwIjogIkpXVCIsICJhbGciOiAiSFMyNTYiIH0.eyAib3RrIjogInRiM3Q3czhpbDF0amxjOHJicXBlNG80OTZ0IiwgInJlYWxtIjogIm89aW50ZXJuZXQsb3U9c2VydmljZXMsZGM9b3BlbmFtLGRjPWVkZixkYz1mciIsICJzZXNzaW9uSWQiOiAiQVFJQzV3TTJMWTRTZmN5bXRob0o4WTU1MmpVVnFIVEt2a3RBNVo0MFRRblpiZmMuKkFBSlRTUUFDTURJQUFsTkxBQk10TnpBME16WXlNemsxTmpjMU5UQXdOalk0QUFKVE1RQUNNREUuKiIgfQ.DEIJfFNwKYV-Wojl__H3DcRe5oRmbl0Xl_NiUj4nJ_w",
+    //   "template": "",
+    //   "stage": "UsernameAuth2",
+    //   "header": "#TO BE SUBSTITUTED#",
+    //   "callbacks": [
+    //     {
+    //       "type": "NameCallback",
+    //       "output": [
+    //         {
+    //           "name": "prompt",
+    //           "value": "#USERNAME#"
+    //         }
+    //       ],
+    //       "input": [
+    //         {
+    //           "name": "IDToken1",
+    //           "value": ""
+    //         }
+    //       ]
+    //     },
+    //     {
+    //       "type": "TextOutputCallback",
+    //       "output": [
+    //         {
+    //           "name": "message",
+    //           "value": " "
+    //         },
+    //         {
+    //           "name": "messageType",
+    //           "value": "2"
+    //         }
+    //       ]
+    //     },
+    //     {
+    //       "type": "TextOutputCallback",
+    //       "output": [
+    //         {
+    //           "name": "message",
+    //           "value": "https://particulier.edf.fr/fr/accueil/connexion/creer-espace-client.html"
+    //         },
+    //         {
+    //           "name": "messageType",
+    //           "value": "2"
+    //         }
+    //       ]
+    //     },
+    //     {
+    //       "type": "TextOutputCallback",
+    //       "output": [
+    //         {
+    //           "name": "message",
+    //           "value": "#BADEMAIL#"
+    //         },
+    //         {
+    //           "name": "messageType",
+    //           "value": "2"
+    //         }
+    //       ]
+    //     }
+    //   ]
+    // }
+
+    auth.callbacks[0].input[0].value = '<THE MAIL>'
+    const afterEmail = await this.request.post(
+      `https://espace-client.edf.fr/sso/json/authenticate?realm=/INTERNET`,
+      {
+        qs: postData,
+        body: auth
+      }
+    )
+
+    // {
+    //   "authId": "eyAidHlwIjogIkpXVCIsICJhbGciOiAiSFMyNTYiIH0.eyAib3RrIjogImY4ODdxNjZvZGlrZG9tMXFmdTBwOHNicm1vIiwgInJlYWxtIjogIm89aW50ZXJuZXQsb3U9c2VydmljZXMsZGM9b3BlbmFtLGRjPWVkZixkYz1mciIsICJzZXNzaW9uSWQiOiAiQVFJQzV3TTJMWTRTZmN5d0ZlZWt0Rno4X3lFVk0tLWdHUDBJRUZSM181dFVWMUUuKkFBSlRTUUFDTURJQUFsTkxBQk14TXpnME5UZzNOekk0TWpreU16TTBPVEl4QUFKVE1RQUNNREUuKiIgfQ.OmFE0JrNsIPmat_Zj4iGpIfiInWORvqQ-vS-yGtzOIE",
+    //   "template": "",
+    //   "stage": "CheckPASAuth1",
+    //   "header": "",
+    //   "callbacks": [
+    //     {
+    //       "type": "NameCallback",
+    //       "output": [
+    //         {
+    //           "name": "prompt",
+    //           "value": "29811848"
+    //         }
+    //       ],
+    //       "input": [
+    //         {
+    //           "name": "IDToken1",
+    //           "value": "29811848"
+    //         }
+    //       ]
+    //     }
+    //   ]
+    // }
+
+    // devrait envoyer
+    // {"authId":"eyAidHlwIjogIkpXVCIsICJhbGciOiAiSFMyNTYiIH0.eyAiYXV0aEluZGV4VmFsdWUiOiAiWDIiLCAib3RrIjogImVjdTllbXYyZjc0aG9lcGFwMTU4NjRiaWQiLCAiYXV0aEluZGV4VHlwZSI6ICJzZXJ2aWNlIiwgInJlYWxtIjogIm89aW50ZXJuZXQsb3U9c2VydmljZXMsZGM9b3BlbmFtLGRjPWVkZixkYz1mciIsICJzZXNzaW9uSWQiOiAiQVFJQzV3TTJMWTRTZmN4aFZHZVZHVUtzQk9nRHhBRF9nZmZ3QjZmVzNTeUxrTGcuKkFBSlRTUUFDTURJQUFsTkxBQk0wT1RjME5EZ3lNamt6TmpjeE1qSXdNamMzQUFKVE1RQUNNREUuKiIgfQ.x0FuEbfT20muQ-6NTIpQp1I8DfucsyLW3qz41bArOKo","template":"","stage":"CheckPASAuth1","header":"","callbacks":[{"type":"NameCallback","output":[{"name":"prompt","value":"29811848"}],"input":[{"name":"IDToken1","value":"eyAidHlwIjogIkpXVCIsICJraWQiOiAicGFzX3NlY3JldF9rZXlfMjAxOTEyMjEiLCAiYWxnIjogIkhTMjU2IiB9.eyAic3ViIjogIjI5ODExODQ4IiwgImlhdCI6IDE1NTAwNjQ0MzQsICJqdGkiOiAibWV6TVRtT3hpUDNoWXcvQ0x4T09FczRZczJFPSIgfQ.mp0d0rplG_Ddy5snW22npEh7bBBk7ob8Ltb-tY3b82w"}]}]}
+
+    console.log(JSON.stringify(afterEmail, null, 2))
+  }
+
+  async testSession() {
+    return true
+  }
+}
+
+const connector = new EdfConnector({
+  debug: true,
+  cheerio: false,
+  json: true,
   jar: true
 })
 
-const VENDOR = 'template'
-const baseUrl = 'http://books.toscrape.com'
-
-module.exports = new BaseKonnector(start)
-
-// The start function is run by the BaseKonnector instance only when it got all the account
-// information (fields). When you run this connector yourself in "standalone" mode or "dev" mode,
-// the account information come from ./konnector-dev-config.json file
-async function start(fields) {
-  log('info', 'Authenticating ...')
-  await authenticate(fields.login, fields.password)
-  log('info', 'Successfully logged in')
-  // The BaseKonnector instance expects a Promise as return of the function
-  log('info', 'Fetching the list of documents')
-  const $ = await request(`${baseUrl}/index.html`)
-  // cheerio (https://cheerio.js.org/) uses the same api as jQuery (http://jquery.com/)
-  log('info', 'Parsing list of documents')
-  const documents = await parseDocuments($)
-
-  // here we use the saveBills function even if what we fetch are not bills, but this is the most
-  // common case in connectors
-  log('info', 'Saving data to Cozy')
-  await saveBills(documents, fields, {
-    // this is a bank identifier which will be used to link bills to bank operations. These
-    // identifiers should be at least a word found in the title of a bank operation related to this
-    // bill. It is not case sensitive.
-    identifiers: ['books']
-  })
-}
-
-// this shows authentication using the [signin function](https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#module_signin)
-// even if this in another domain here, but it works as an example
-function authenticate(username, password) {
-  return signin({
-    url: `http://quotes.toscrape.com/login`,
-    formSelector: 'form',
-    formData: { username, password },
-    // the validate function will check if the login request was a success. Every website has
-    // different ways respond: http status code, error message in html ($), http redirection
-    // (fullResponse.request.uri.href)...
-    validate: (statusCode, $, fullResponse) => {
-      log(
-        'debug',
-        fullResponse.request.uri.href,
-        'not used here but should be usefull for other connectors'
-      )
-      // The login in toscrape.com always works excepted when no password is set
-      if ($(`a[href='/logout']`).length === 1) {
-        return true
-      } else {
-        // cozy-konnector-libs has its own logging function which format these logs with colors in
-        // standalone and dev mode and as JSON in production mode
-        log('error', $('.error').text())
-        return false
-      }
-    }
-  })
-}
-
-// The goal of this function is to parse a html page wrapped by a cheerio instance
-// and return an array of js objects which will be saved to the cozy by saveBills (https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#savebills)
-function parseDocuments($) {
-  // you can find documentation about the scrape function here :
-  // https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#scrape
-  const docs = scrape(
-    $,
-    {
-      title: {
-        sel: 'h3 a',
-        attr: 'title'
-      },
-      amount: {
-        sel: '.price_color',
-        parse: normalizePrice
-      },
-      fileurl: {
-        sel: 'img',
-        attr: 'src',
-        parse: src => `${baseUrl}/${src}`
-      }
-    },
-    'article'
-  )
-  return docs.map(doc => ({
-    ...doc,
-    // the saveBills function needs a date field
-    // even if it is a little artificial here (these are not real bills)
-    date: new Date(),
-    currency: '€',
-    filename: `${utils.formatDate(new Date())}_${VENDOR}_${doc.amount.toFixed(
-      2
-    )}€${doc.vendorRef ? '_' + doc.vendorRef : ''}.jpg`,
-    vendor: VENDOR,
-    metadata: {
-      // it can be interesting that we add the date of import. This is not mandatory but may be
-      // useful for debugging or data migration
-      importDate: new Date(),
-      // document version, useful for migration after change of document structure
-      version: 1
-    }
-  }))
-}
-
-// convert a price string to a float
-function normalizePrice(price) {
-  return parseFloat(price.replace('£', '').trim())
-}
+connector.run()
