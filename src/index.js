@@ -1,129 +1,198 @@
 const {
-  BaseKonnector,
-  requestFactory,
-  signin,
-  scrape,
-  saveBills,
+  CookieKonnector,
   log,
-  utils
+  solveCaptcha,
+  errors
 } = require('cozy-konnector-libs')
-const request = requestFactory({
-  // the debug mode shows all the details about http request and responses. Very useful for
-  // debugging but very verbose. That is why it is commented out by default
-  // debug: true,
-  // activates [cheerio](https://cheerio.js.org/) parsing on each page
-  cheerio: true,
-  // If cheerio is activated do not forget to deactivate json parsing (which is activated by
-  // default in cozy-konnector-libs
-  json: false,
-  // this allows request-promise to keep cookies between requests
-  jar: true
+const qs = require('querystring')
+
+class EdfConnector extends CookieKonnector {
+  async authenticate(fields) {
+    // I think it is needed
+    this._jar._jar.setCookieSync('i18next=fr', 'edf.fr', {})
+
+    // display the login form
+    await this.request(
+      'https://espace-client.edf.fr/sso/XUI/#login/Internet&authIndexType=service&authIndexValue=ldapservice'
+    )
+    // get authentication structure
+    const auth = await this.request.post(
+      'https://espace-client.edf.fr/sso/json/Internet/authenticate?authIndexType=service&authIndexValue=ldapservice'
+    )
+
+    const websiteKey = auth['callbacks'][4]['output'][0]['value']
+    const websiteURL =
+      'https://espace-client.edf.fr/sso/XUI/#login/Internet&authIndexType=service&authIndexValue=ldapservice'
+    const captchaToken = await solveCaptcha({ websiteURL, websiteKey })
+
+    auth['callbacks'][0]['input'][0]['value'] = fields.login
+    auth['callbacks'][1]['input'][0]['value'] = fields.password
+    auth['callbacks'][2]['input'][0]['value'] = captchaToken
+    auth['callbacks'][3]['input'][0]['value'] = '0'
+
+    try {
+      const { tokenId } = await this.request.post(
+        'https://espace-client.edf.fr/sso/json/Internet/authenticate?authIndexType=service&authIndexValue=ldapservice',
+        { body: auth }
+      )
+      this._jar._jar.setCookieSync(
+        `ivoiream=${tokenId}`,
+        'https://espace-client.edf.fr',
+        {}
+      )
+    } catch (err) {
+      // sometimes the session still works...
+      if (!(await this.testSession())) {
+        log('error', err.message)
+        throw new Error(errors.LOGIN_FAILED)
+      }
+    }
+  }
+
+  async fetch(fields) {
+    if (!(await this.testSession())) {
+      log('info', 'Found no correct session, logging in...')
+      await this.authenticate(fields)
+      log('info', 'Successfully logged in')
+    }
+
+    const { id } = await this.request.post(
+      'https://espace-client.edf.fr/sso/json/Internet/users?_action=idFromSession'
+    )
+
+    await this.request(
+      `https://espace-client.edf.fr/sso/json/internet/users/${id}`
+    )
+
+    this.request = this.requestFactory({
+      cheerio: true,
+      json: false,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0',
+        'Accept-Language': 'fr',
+        // 'Accept-Encoding': 'gzip, deflate, br',
+        Referer: 'https://espace-client.edf.fr/sso/XUI/',
+        'Accept-API-Version': 'protocol=1.0,resource=2.0'
+      }
+    })
+
+    const valid$ = await this.request(
+      'https://particulier.edf.fr/fr/accueil/espace-client/tableau-de-bord.html'
+    )
+
+    // sometimes edf return a form which we have to submit...
+    if (valid$('body').attr('onload')) {
+      const $form = valid$('form')
+      await this.request.post($form.attr('action'), {
+        form: getFormData($form)
+      })
+    }
+
+    await this.request(
+      'https://particulier.edf.fr/services/rest/openid/checkAuthenticate'
+    )
+
+    this.request = this.requestFactory({
+      cheerio: false,
+      json: true,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0',
+        'Accept-Language': 'fr',
+        Referer: 'https://espace-client.edf.fr/sso/XUI/',
+        'Accept-API-Version': 'protocol=1.0,resource=2.0'
+      }
+    })
+
+    await this.request(
+      'https://particulier.edf.fr/services/rest/authenticate/getListContracts'
+    )
+
+    await this.request(
+      'https://particulier.edf.fr/services/rest/edoc/getMyDocuments'
+    )
+
+    const attestationData = await this.request(
+      `https://particulier.edf.fr/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
+    )
+    const dataCsrfToken = await this.request(
+      `https://particulier.edf.fr/services/rest/init/initPage?_=${Date.now()}`
+    )
+    const csrfToken = dataCsrfToken.data
+
+    await this.saveFiles(
+      [
+        {
+          requestOptions: {
+            json: false
+          },
+          filename: 'attestation.pdf',
+          fileurl:
+            'https://particulier.edf.fr/services/rest/document/getAttestationContratPDFByData?' +
+            qs.encode({
+              csrfToken,
+              aN:
+                attestationData[0].listOfAttestationsContractByAccDTO[0].accDTO
+                  .numAccCrypt + '==',
+              bp: attestationData[0].bpDto.bpNumberCrypt + '==',
+              cl:
+                attestationData[0].listOfAttestationsContractByAccDTO[0]
+                  .listOfAttestationContract[0].firstLastNameCrypt + '==',
+              ct:
+                attestationData[0].listOfAttestationsContractByAccDTO[0]
+                  .listOfAttestationContract[0].attestationContractNumberCrypt +
+                '==',
+              ot: 'Tarif Bleu',
+              _: Date.now()
+            })
+        }
+      ],
+      fields
+    )
+  }
+
+  async testSession() {
+    try {
+      log('info', 'Testing session')
+      await this.request(
+        'https://particulier.edf.fr/bin/edf_rc/servlets/sasServlet?processus=TDB&forceAuth=true'
+      )
+      await this.request.post(
+        'https://espace-client.edf.fr/sso/json/Internet/users?_action=idFromSession'
+      )
+      log('info', 'Session is OK')
+      return true
+    } catch (err) {
+      log('warn', err.message)
+      log('warn', 'Session failed')
+      return false
+    }
+  }
+}
+
+const connector = new EdfConnector({
+  debug: 'simple',
+  cheerio: false,
+  json: true,
+  headers: {
+    'User-Agent':
+      'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0',
+    'Accept-Language': 'fr',
+    // 'Accept-Encoding': 'gzip, deflate, br',
+    Referer: 'https://espace-client.edf.fr/sso/XUI/',
+    'Accept-API-Version': 'protocol=1.0,resource=2.0',
+    'X-Password': 'anonymous',
+    'X-Username': 'anonymous',
+    'X-NoSession': 'true',
+    'X-Requested-With': 'XMLHttpRequest'
+  }
 })
 
-const VENDOR = 'template'
-const baseUrl = 'http://books.toscrape.com'
+connector.run()
 
-module.exports = new BaseKonnector(start)
-
-// The start function is run by the BaseKonnector instance only when it got all the account
-// information (fields). When you run this connector yourself in "standalone" mode or "dev" mode,
-// the account information come from ./konnector-dev-config.json file
-async function start(fields) {
-  log('info', 'Authenticating ...')
-  await authenticate(fields.login, fields.password)
-  log('info', 'Successfully logged in')
-  // The BaseKonnector instance expects a Promise as return of the function
-  log('info', 'Fetching the list of documents')
-  const $ = await request(`${baseUrl}/index.html`)
-  // cheerio (https://cheerio.js.org/) uses the same api as jQuery (http://jquery.com/)
-  log('info', 'Parsing list of documents')
-  const documents = await parseDocuments($)
-
-  // here we use the saveBills function even if what we fetch are not bills, but this is the most
-  // common case in connectors
-  log('info', 'Saving data to Cozy')
-  await saveBills(documents, fields, {
-    // this is a bank identifier which will be used to link bills to bank operations. These
-    // identifiers should be at least a word found in the title of a bank operation related to this
-    // bill. It is not case sensitive.
-    identifiers: ['books']
-  })
-}
-
-// this shows authentication using the [signin function](https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#module_signin)
-// even if this in another domain here, but it works as an example
-function authenticate(username, password) {
-  return signin({
-    url: `http://quotes.toscrape.com/login`,
-    formSelector: 'form',
-    formData: { username, password },
-    // the validate function will check if the login request was a success. Every website has
-    // different ways respond: http status code, error message in html ($), http redirection
-    // (fullResponse.request.uri.href)...
-    validate: (statusCode, $, fullResponse) => {
-      log(
-        'debug',
-        fullResponse.request.uri.href,
-        'not used here but should be usefull for other connectors'
-      )
-      // The login in toscrape.com always works excepted when no password is set
-      if ($(`a[href='/logout']`).length === 1) {
-        return true
-      } else {
-        // cozy-konnector-libs has its own logging function which format these logs with colors in
-        // standalone and dev mode and as JSON in production mode
-        log('error', $('.error').text())
-        return false
-      }
-    }
-  })
-}
-
-// The goal of this function is to parse a html page wrapped by a cheerio instance
-// and return an array of js objects which will be saved to the cozy by saveBills (https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#savebills)
-function parseDocuments($) {
-  // you can find documentation about the scrape function here :
-  // https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#scrape
-  const docs = scrape(
-    $,
-    {
-      title: {
-        sel: 'h3 a',
-        attr: 'title'
-      },
-      amount: {
-        sel: '.price_color',
-        parse: normalizePrice
-      },
-      fileurl: {
-        sel: 'img',
-        attr: 'src',
-        parse: src => `${baseUrl}/${src}`
-      }
-    },
-    'article'
-  )
-  return docs.map(doc => ({
-    ...doc,
-    // the saveBills function needs a date field
-    // even if it is a little artificial here (these are not real bills)
-    date: new Date(),
-    currency: '€',
-    filename: `${utils.formatDate(new Date())}_${VENDOR}_${doc.amount.toFixed(
-      2
-    )}€${doc.vendorRef ? '_' + doc.vendorRef : ''}.jpg`,
-    vendor: VENDOR,
-    metadata: {
-      // it can be interesting that we add the date of import. This is not mandatory but may be
-      // useful for debugging or data migration
-      importDate: new Date(),
-      // document version, useful for migration after change of document structure
-      version: 1
-    }
-  }))
-}
-
-// convert a price string to a float
-function normalizePrice(price) {
-  return parseFloat(price.replace('£', '').trim())
+function getFormData($form) {
+  return $form
+    .serializeArray()
+    .reduce((memo, input) => ({ ...memo, [input.name]: input.value }), {})
 }
