@@ -4,7 +4,7 @@
   "type": "konnector",
   "language": "node",
   "icon": "icon.png",
-  "slug": "edf",
+  "slug": "edf-test",
   "source": "git://github.com/konnectors/edf.git",
   "editor": "Cozy",
   "vendor_link": "https://particulier.edf.fr/fr/accueil.html",
@@ -40,8 +40,7 @@
       "type": "io.cozy.files"
     },
     "accounts": {
-      "type": "io.cozy.accounts",
-      "verbs": ["GET"]
+      "type": "io.cozy.accounts"
     }
   },
   "developer": {
