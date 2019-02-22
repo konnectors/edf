@@ -2,11 +2,206 @@ const {
   CookieKonnector,
   log,
   solveCaptcha,
-  errors
+  errors,
+  utils,
+  mkdirp
 } = require('cozy-konnector-libs')
 const qs = require('querystring')
+const format = require('date-fns/format')
 
 class EdfConnector extends CookieKonnector {
+  async fetch(fields) {
+    this.initRequestHtml()
+    if (!(await this.testSession())) {
+      log('info', 'Found no correct session, logging in...')
+      await this.authenticate(fields)
+      log('info', 'Successfully logged in')
+    }
+
+    // get user data but we do nothing with it at the moment
+    const { id } = await this.request.post(
+      'https://espace-client.edf.fr/sso/json/Internet/users?_action=idFromSession'
+    )
+    await this.request(
+      `https://espace-client.edf.fr/sso/json/internet/users/${id}`
+    )
+
+    await this.activateSession()
+
+    await this.request(
+      'https://particulier.edf.fr/services/rest/authenticate/getListContracts'
+    )
+
+    // need to do this call before getting files or else it does not work
+    await this.request(
+      'https://particulier.edf.fr/services/rest/edoc/getMyDocuments'
+    )
+
+    await this.getBillsForAllContracts(fields)
+
+    await this.getAttestationsForAllContracts(fields)
+
+    await this.getEcheancierBills(fields)
+  }
+
+  async getEcheancierBills(fields) {
+    const result = await this.request(
+      `https://particulier.edf.fr/services/rest/bill/consult?_=${Date.now()}`
+    )
+
+    const contractNumber = parseFloat(result.feSouscriptionResponse.tradeNumber)
+    await mkdirp(fields.folderPath, String(contractNumber))
+
+    if (result.monthlyPaymentAllowedStatus === 'MENS') {
+      const bills = result.paymentSchedule.deadlines
+        .filter(bill => bill.payment === 'EFFECTUE')
+        .map(bill => ({
+          vendor: 'EDF',
+          date: new Date(bill.encashmentDate),
+          amount: bill.electricityAmount + bill.gazAmount,
+          currency: '€',
+          metadata: {
+            importDate: new Date(),
+            version: 1
+          },
+          requestOptions: {
+            json: false
+          }
+        }))
+
+      const paymentDocuments = await this.request(
+        'https://particulier.edf.fr/services/rest/edoc/getPaymentsDocuments'
+      )
+
+      const csrfToken = await this.getCsrfToken()
+      const fileurl =
+        'https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?' +
+        qs.encode({
+          csrfToken,
+          dn: 'CalendrierPaiement',
+          pn:
+            paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument
+              .parNumber,
+          di:
+            paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument
+              .documentNumber,
+          bn: paymentDocuments[0].bpDto.bpNumberCrypt,
+          an: paymentDocuments[0].listOfPaymentsByAccDTO[0].accDTO.numAccCrypt
+        })
+      const filename = `echancier_EDF_${format(
+        new Date(
+          paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument.creationDate
+        ),
+        'YYYY'
+      )}.pdf`
+
+      await this.saveBills(
+        bills.map(bill => ({ ...bill, filename, fileurl })),
+        fields.folderPath + '/' + contractNumber,
+        {
+          identifiers: ['edf']
+        }
+      )
+    }
+  }
+
+  async getAttestationsForAllContracts(fields) {
+    const attestationData = await this.request(
+      `https://particulier.edf.fr/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
+    )
+
+    for (const contract of attestationData[0]
+      .listOfAttestationsContractByAccDTO) {
+      const csrfToken = await this.getCsrfToken()
+
+      await mkdirp(fields.folderPath, contract.accDTO.numAcc)
+
+      await this.saveFiles(
+        [
+          {
+            requestOptions: {
+              json: false
+            },
+            shouldReplaceFile: () => true,
+            filename: 'attestation.pdf',
+            fileurl:
+              'https://particulier.edf.fr/services/rest/document/getAttestationContratPDFByData?' +
+              qs.encode({
+                csrfToken,
+                aN: contract.accDTO.numAccCrypt + '==',
+                bp: contract.listOfAttestationContract[0].bpNumberCrypt + '==',
+                cl: contract.listOfAttestationContract[0].firstLastNameCrypt,
+                ct:
+                  contract.listOfAttestationContract[0]
+                    .attestationContractNumberCrypt + '==',
+                ot: 'Tarif Bleu',
+                _: Date.now()
+              })
+          }
+        ],
+        fields.folderPath + '/' + contract.accDTO.numAcc
+      )
+    }
+  }
+
+  async getBillsForAllContracts(fields) {
+    const billDocResp = await this.request(
+      'https://particulier.edf.fr/services/rest/edoc/getBillsDocuments'
+    )
+
+    const client = billDocResp[0].bpDto
+    const accList = billDocResp[0].listOfBillsByAccDTO
+    for (let acc of accList) {
+      await mkdirp(fields.folderPath, acc.accDTO.numAcc)
+      const contract = acc.accDTO
+      for (let bill of acc.listOfbills) {
+        // set bill data
+        const cozyBill = {
+          vendor: 'EDF',
+          vendorRef: bill.documentNumber,
+          amount: parseFloat(bill.billAmount),
+          currency: '€',
+          date: new Date(bill.creationDate),
+          metadata: {
+            importDate: new Date(),
+            version: 1
+          },
+          requestOptions: {
+            json: false
+          }
+        }
+
+        if (cozyBill.amount < 0) {
+          cozyBill.amount = Math.abs(cozyBill.amount)
+          cozyBill.isRefund = true
+        }
+
+        cozyBill.filename = `${utils.formatDate(
+          cozyBill.date
+        )}_EDF_${cozyBill.amount.toFixed(2)}€.pdf`
+        const csrfToken = await this.getCsrfToken()
+        cozyBill.fileurl =
+          'https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?' +
+          qs.encode({
+            csrfToken,
+            dn: 'FACTURE',
+            pn: bill.parNumber,
+            di: bill.documentNumber,
+            bn: client.bpNumberCrypt,
+            an: contract.numAccCrypt
+          })
+        await mkdirp(fields.folderPath, acc.accDTO.numAcc)
+
+        await this.saveBills(
+          [cozyBill],
+          `${fields.folderPath}/${acc.accDTO.numAcc}`,
+          {
+            identifiers: ['edf']
+          }
+        )
+      }
+    }
+  }
   async authenticate(fields) {
     // I think it is needed
     this._jar._jar.setCookieSync('i18next=fr', 'edf.fr', {})
@@ -49,116 +244,30 @@ class EdfConnector extends CookieKonnector {
     }
   }
 
-  async fetch(fields) {
-    if (!(await this.testSession())) {
-      log('info', 'Found no correct session, logging in...')
-      await this.authenticate(fields)
-      log('info', 'Successfully logged in')
-    }
-
-    const { id } = await this.request.post(
-      'https://espace-client.edf.fr/sso/json/Internet/users?_action=idFromSession'
-    )
-
-    await this.request(
-      `https://espace-client.edf.fr/sso/json/internet/users/${id}`
-    )
-
-    this.request = this.requestFactory({
-      cheerio: true,
-      json: false,
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0',
-        'Accept-Language': 'fr',
-        // 'Accept-Encoding': 'gzip, deflate, br',
-        Referer: 'https://espace-client.edf.fr/sso/XUI/',
-        'Accept-API-Version': 'protocol=1.0,resource=2.0'
-      }
-    })
-
-    const valid$ = await this.request(
+  async activateSession() {
+    const valid$ = await this.requestHtml(
       'https://particulier.edf.fr/fr/accueil/espace-client/tableau-de-bord.html'
     )
 
     // sometimes edf return a form which we have to submit...
     if (valid$('body').attr('onload')) {
       const $form = valid$('form')
-      await this.request.post($form.attr('action'), {
+      await this.requestHtml.post($form.attr('action'), {
         form: getFormData($form)
       })
     }
 
-    await this.request(
+    await this.requestHtml(
       'https://particulier.edf.fr/services/rest/openid/checkAuthenticate'
-    )
-
-    this.request = this.requestFactory({
-      cheerio: false,
-      json: true,
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0',
-        'Accept-Language': 'fr',
-        Referer: 'https://espace-client.edf.fr/sso/XUI/',
-        'Accept-API-Version': 'protocol=1.0,resource=2.0'
-      }
-    })
-
-    await this.request(
-      'https://particulier.edf.fr/services/rest/authenticate/getListContracts'
-    )
-
-    await this.request(
-      'https://particulier.edf.fr/services/rest/edoc/getMyDocuments'
-    )
-
-    const attestationData = await this.request(
-      `https://particulier.edf.fr/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
-    )
-    const dataCsrfToken = await this.request(
-      `https://particulier.edf.fr/services/rest/init/initPage?_=${Date.now()}`
-    )
-    const csrfToken = dataCsrfToken.data
-
-    await this.saveFiles(
-      [
-        {
-          requestOptions: {
-            json: false
-          },
-          filename: 'attestation.pdf',
-          fileurl:
-            'https://particulier.edf.fr/services/rest/document/getAttestationContratPDFByData?' +
-            qs.encode({
-              csrfToken,
-              aN:
-                attestationData[0].listOfAttestationsContractByAccDTO[0].accDTO
-                  .numAccCrypt + '==',
-              bp: attestationData[0].bpDto.bpNumberCrypt + '==',
-              cl:
-                attestationData[0].listOfAttestationsContractByAccDTO[0]
-                  .listOfAttestationContract[0].firstLastNameCrypt + '==',
-              ct:
-                attestationData[0].listOfAttestationsContractByAccDTO[0]
-                  .listOfAttestationContract[0].attestationContractNumberCrypt +
-                '==',
-              ot: 'Tarif Bleu',
-              _: Date.now()
-            })
-        }
-      ],
-      fields
     )
   }
 
   async testSession() {
     try {
       log('info', 'Testing session')
-      await this.request(
-        'https://particulier.edf.fr/bin/edf_rc/servlets/sasServlet?processus=TDB&forceAuth=true'
-      )
-      await this.request.post(
+      await this.activateSession()
+
+      await this.requestHtml.post(
         'https://espace-client.edf.fr/sso/json/Internet/users?_action=idFromSession'
       )
       log('info', 'Session is OK')
@@ -169,10 +278,32 @@ class EdfConnector extends CookieKonnector {
       return false
     }
   }
+
+  async getCsrfToken() {
+    const dataCsrfToken = await this.request(
+      `https://particulier.edf.fr/services/rest/init/initPage?_=${Date.now()}`
+    )
+    return dataCsrfToken.data
+  }
+
+  initRequestHtml() {
+    this.requestHtml = this.requestFactory({
+      cheerio: true,
+      json: false,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0',
+        'Accept-Language': 'fr',
+        Referer: 'https://espace-client.edf.fr/sso/XUI/',
+        'Accept-API-Version': 'protocol=1.0,resource=2.0'
+      }
+    })
+  }
 }
 
+// most of the request are done to the API
 const connector = new EdfConnector({
-  debug: 'simple',
+  debug: true,
   cheerio: false,
   json: true,
   headers: {
