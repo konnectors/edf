@@ -236,11 +236,19 @@ class EdfConnector extends CookieKonnector {
         {}
       )
     } catch (err) {
-      // sometimes the session still works...
-      if (!(await this.testSession())) {
-        log('error', err.message)
-        throw new Error(errors.LOGIN_FAILED)
-      }
+      log('error', err.message)
+      throw new Error(errors.LOGIN_FAILED)
+    }
+
+    let sessionWorks = null
+    try {
+      sessionWorks = await this.testSession()
+    } catch (err) {
+      log('error', err.message)
+      sessionWorks = false
+    }
+    if (!sessionWorks) {
+      throw new Error(errors.VENDOR_DOWN)
     }
   }
 
@@ -303,7 +311,7 @@ class EdfConnector extends CookieKonnector {
 
 // most of the request are done to the API
 const connector = new EdfConnector({
-  debug: true,
+  // debug: true,
   cheerio: false,
   json: true,
   headers: {
