@@ -28,9 +28,16 @@ class EdfConnector extends CookieKonnector {
 
     await this.activateSession()
 
-    await this.request(
+    const contracts = await this.request(
       'https://particulier.edf.fr/services/rest/authenticate/getListContracts'
     )
+    this.contractFolders = {}
+    for (const contractDetails of contracts.customerAccordContracts) {
+      const contractNumber = Number(contractDetails.number)
+      this.contractFolders[contractNumber] = `${contractNumber} ${
+        contractDetails.adress.city
+      }`
+    }
 
     // need to do this call before getting files or else it does not work
     await this.request(
@@ -50,7 +57,9 @@ class EdfConnector extends CookieKonnector {
     )
 
     const contractNumber = parseFloat(result.feSouscriptionResponse.tradeNumber)
-    await mkdirp(fields.folderPath, String(contractNumber))
+    const destinationFolder =
+      fields.folderPath + '/' + this.contractFolders[contractNumber]
+    await mkdirp(destinationFolder)
 
     if (result.monthlyPaymentAllowedStatus === 'MENS') {
       const bills = result.paymentSchedule.deadlines
@@ -97,7 +106,7 @@ class EdfConnector extends CookieKonnector {
 
       await this.saveBills(
         bills.map(bill => ({ ...bill, filename, fileurl })),
-        fields.folderPath + '/' + contractNumber,
+        destinationFolder,
         {
           identifiers: ['edf']
         }
@@ -114,7 +123,9 @@ class EdfConnector extends CookieKonnector {
       .listOfAttestationsContractByAccDTO) {
       const csrfToken = await this.getCsrfToken()
 
-      await mkdirp(fields.folderPath, contract.accDTO.numAcc)
+      const destinationFolder =
+        fields.folderPath + '/' + this.contractFolders[contract.accDTO.numAcc]
+      await mkdirp(destinationFolder)
 
       await this.saveFiles(
         [
@@ -139,7 +150,7 @@ class EdfConnector extends CookieKonnector {
               })
           }
         ],
-        fields.folderPath + '/' + contract.accDTO.numAcc
+        destinationFolder
       )
     }
   }
@@ -152,7 +163,9 @@ class EdfConnector extends CookieKonnector {
     const client = billDocResp[0].bpDto
     const accList = billDocResp[0].listOfBillsByAccDTO
     for (let acc of accList) {
-      await mkdirp(fields.folderPath, acc.accDTO.numAcc)
+      const destinationFolder =
+        fields.folderPath + '/' + this.contractFolders[acc.accDTO.numAcc]
+      await mkdirp(destinationFolder)
       const contract = acc.accDTO
       for (let bill of acc.listOfbills) {
         // set bill data
@@ -190,15 +203,9 @@ class EdfConnector extends CookieKonnector {
             bn: client.bpNumberCrypt,
             an: contract.numAccCrypt
           })
-        await mkdirp(fields.folderPath, acc.accDTO.numAcc)
-
-        await this.saveBills(
-          [cozyBill],
-          `${fields.folderPath}/${acc.accDTO.numAcc}`,
-          {
-            identifiers: ['edf']
-          }
-        )
+        await this.saveBills([cozyBill], destinationFolder, {
+          identifiers: ['edf']
+        })
       }
     }
   }
