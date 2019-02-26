@@ -37,9 +37,9 @@ class EdfConnector extends CookieKonnector {
       'https://particulier.edf.fr/services/rest/edoc/getMyDocuments'
     )
 
-    await this.getBillsForAllContracts(fields)
-
     await this.getAttestationsForAllContracts(fields)
+
+    await this.getBillsForAllContracts(fields)
 
     await this.getEcheancierBills(fields)
   }
@@ -88,12 +88,12 @@ class EdfConnector extends CookieKonnector {
           bn: paymentDocuments[0].bpDto.bpNumberCrypt,
           an: paymentDocuments[0].listOfPaymentsByAccDTO[0].accDTO.numAccCrypt
         })
-      const filename = `echancier_EDF_${format(
+      const filename = `${format(
         new Date(
           paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument.creationDate
         ),
         'YYYY'
-      )}.pdf`
+      )}_EDF_echancier.pdf`
 
       await this.saveBills(
         bills.map(bill => ({ ...bill, filename, fileurl })),
@@ -123,7 +123,7 @@ class EdfConnector extends CookieKonnector {
               json: false
             },
             shouldReplaceFile: () => true,
-            filename: 'attestation.pdf',
+            filename: 'attestation de contrat.pdf',
             fileurl:
               'https://particulier.edf.fr/services/rest/document/getAttestationContratPDFByData?' +
               qs.encode({
