@@ -66,6 +66,7 @@ class EdfConnector extends CookieKonnector {
         .filter(bill => bill.payment === 'EFFECTUE')
         .map(bill => ({
           vendor: 'EDF',
+          contractNumber,
           date: new Date(bill.encashmentDate),
           amount: bill.electricityAmount + bill.gazAmount,
           currency: '€',
@@ -172,6 +173,7 @@ class EdfConnector extends CookieKonnector {
         const cozyBill = {
           vendor: 'EDF',
           vendorRef: bill.documentNumber,
+          contractNumber: acc.accDTO.numAcc,
           amount: parseFloat(bill.billAmount),
           currency: '€',
           date: new Date(bill.creationDate),
