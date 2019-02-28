@@ -1,19 +1,19 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "name": "EDF",
   "type": "konnector",
   "language": "node",
-  "icon": "edf.svg",
-  "slug": "edf-test",
+  "icon": "icon.svg",
+  "slug": "edf",
   "source": "git://github.com/konnectors/edf.git",
   "editor": "Cozy",
-  "vendor_link": "https://particulier.edf.fr/fr/accueil.html",
+  "vendor_link": "https://espace-client.edf.fr/connexion/mon-espace-client/?realm=/INTERNET#login",
   "categories": [
     "energy"
   ],
   "fields": {
     "login": {
-      "type": "email"
+      "type": "text"
     },
     "password": {
       "type": "password"
@@ -40,18 +40,24 @@
       "type": "io.cozy.files"
     },
     "accounts": {
-      "type": "io.cozy.accounts"
+      "type": "io.cozy.accounts",
+      "verbs": [
+        "GET"
+      ]
     }
   },
   "developer": {
     "name": "Cozy Cloud",
     "url": "https://cozy.io"
   },
-  "langs": ["fr", "en"],
+  "langs": [
+    "fr",
+    "en"
+  ],
   "locales": {
     "fr": {
-      "short_description": "Récupère toutes factures et échéanciers EDF",
-      "long_description": "Récupère toutes factures et échéanciers EDF",
+      "short_description": "Récupère vos factures EDF",
+      "long_description": "Récupère vos factures EDF",
       "permissions": {
         "bank operations": {
           "description": "Utilisé pour relier les factures à des operations bancaires"
@@ -68,8 +74,8 @@
       }
     },
     "en": {
-      "short_description": "Retrieves all your EDF invoices",
-      "long_description": "Retrieves all your EDF invoices",
+      "short_description": "Fetch your EDF bills",
+      "long_description": "Fetch your EDF bills",
       "permissions": {
         "bank operations": {
           "description": "Required to link bank operations to bills"
@@ -86,6 +92,5 @@
       }
     }
   },
-  "banksTransactionRegExp": "\\bedf\\b",
   "manifest_version": "2"
 }
