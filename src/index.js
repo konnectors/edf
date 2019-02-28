@@ -234,6 +234,10 @@ class EdfConnector extends CookieKonnector {
       'https://espace-client.edf.fr/sso/json/Internet/authenticate?authIndexType=service&authIndexValue=ldapservice'
     )
 
+    await this.request.post(
+      'https://espace-client.edf.fr/sso/json/authenticate?realm=Internet&authIndexType=service&authIndexValue=ldapservice&authIndexType=service&authIndexValue=ldapservice'
+    )
+
     const websiteKey = auth['callbacks'][4]['output'][0]['value']
     const websiteURL =
       'https://espace-client.edf.fr/sso/XUI/#login/Internet&authIndexType=service&authIndexValue=ldapservice'
@@ -247,7 +251,16 @@ class EdfConnector extends CookieKonnector {
     try {
       const { tokenId } = await this.request.post(
         'https://espace-client.edf.fr/sso/json/Internet/authenticate?authIndexType=service&authIndexValue=ldapservice',
-        { body: auth }
+        {
+          body: auth,
+          gzip: true,
+          headers: {
+            Accept: 'application/json, text/javascript, */*; q=0.01',
+            Connection: 'keep-alive',
+            Pragma: 'no-cache',
+            TE: 'Trailers'
+          }
+        }
       )
       this._jar._jar.setCookieSync(
         `ivoiream=${tokenId}`,
