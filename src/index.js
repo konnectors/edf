@@ -8,6 +8,7 @@ const {
 } = require('cozy-konnector-libs')
 const qs = require('querystring')
 const format = require('date-fns/format')
+const TIME_LIMIT = Date.now() + 4 * 60 * 1000
 
 class EdfConnector extends CookieKonnector {
   async fetch(fields) {
@@ -46,9 +47,9 @@ class EdfConnector extends CookieKonnector {
 
     await this.getAttestationsForAllContracts(fields)
 
-    await this.getBillsForAllContracts(fields)
-
     await this.getEcheancierBills(fields)
+
+    await this.getBillsForAllContracts(fields)
   }
 
   async getEcheancierBills(fields) {
@@ -157,15 +158,23 @@ class EdfConnector extends CookieKonnector {
   }
 
   async getBillsForAllContracts(fields) {
+    // give the same amount of time for each contract
     const billDocResp = await this.request(
       'https://particulier.edf.fr/services/rest/edoc/getBillsDocuments'
     )
 
     const client = billDocResp[0].bpDto
     const accList = billDocResp[0].listOfBillsByAccDTO
+    let remainingContractsNb = accList.length
     for (let acc of accList) {
+      const contractTimeLimit = (TIME_LIMIT - Date.now()) / remainingContractsNb
       const destinationFolder =
         fields.folderPath + '/' + this.contractFolders[acc.accDTO.numAcc]
+      log(
+        'info',
+        `${Math.round(contractTimeLimit / 1000)}s for ${destinationFolder}`
+      )
+      remainingContractsNb--
       await mkdirp(destinationFolder)
       const contract = acc.accDTO
       for (let bill of acc.listOfbills) {
@@ -206,7 +215,8 @@ class EdfConnector extends CookieKonnector {
             an: contract.numAccCrypt
           })
         await this.saveBills([cozyBill], destinationFolder, {
-          identifiers: ['edf']
+          identifiers: ['edf'],
+          timeout: contractTimeLimit + Date.now()
         })
       }
     }
