@@ -12,7 +12,7 @@
     "energy"
   ],
   "fields": {
-    "login": {
+    "email": {
       "type": "email"
     },
     "password": {
