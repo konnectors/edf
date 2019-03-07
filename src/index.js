@@ -12,6 +12,8 @@ const TIME_LIMIT = Date.now() + 4 * 60 * 1000
 
 class EdfConnector extends CookieKonnector {
   async fetch(fields) {
+    log('info', 'fields')
+    log('info', JSON.stringify(Object.keys(fields)))
     this.initRequestHtml()
     if (!(await this.testSession())) {
       log('info', 'Found no correct session, logging in...')
