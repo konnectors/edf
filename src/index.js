@@ -12,8 +12,6 @@ const TIME_LIMIT = Date.now() + 4 * 60 * 1000
 
 class EdfConnector extends CookieKonnector {
   async fetch(fields) {
-    log('info', 'fields')
-    log('info', JSON.stringify(Object.keys(fields)))
     this.initRequestHtml()
     if (!(await this.testSession())) {
       log('info', 'Found no correct session, logging in...')
@@ -224,6 +222,15 @@ class EdfConnector extends CookieKonnector {
     }
   }
   async authenticate(fields) {
+    log('info', 'fields')
+    log('info', JSON.stringify(Object.keys(fields)))
+    if (!fields.email) {
+      log(
+        'error',
+        'The account is not correctly configured the email field is missing'
+      )
+      throw new Error(errors.LOGIN_FAILED)
+    }
     // I think it is needed
     this._jar._jar.setCookieSync('i18next=fr', 'edf.fr', {})
 
