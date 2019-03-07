@@ -1,10 +1,10 @@
 {
-  "version": "1.0.0",
+  "version": "1.2.0",
   "name": "EDF",
   "type": "konnector",
   "language": "node",
   "icon": "edf.svg",
-  "slug": "edf-test",
+  "slug": "edf",
   "source": "git://github.com/konnectors/edf.git",
   "editor": "Cozy",
   "vendor_link": "https://particulier.edf.fr/fr/accueil.html",
@@ -12,7 +12,7 @@
     "energy"
   ],
   "fields": {
-    "login": {
+    "email": {
       "type": "email"
     },
     "password": {
@@ -47,7 +47,10 @@
     "name": "Cozy Cloud",
     "url": "https://cozy.io"
   },
-  "langs": ["fr", "en"],
+  "langs": [
+    "fr",
+    "en"
+  ],
   "locales": {
     "fr": {
       "short_description": "Récupère toutes factures et échéanciers EDF",
