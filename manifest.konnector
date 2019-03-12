@@ -1,5 +1,5 @@
 {
-  "version": "1.1.4",
+  "version": "1.2.0",
   "name": "EDF",
   "type": "konnector",
   "language": "node",
@@ -12,7 +12,7 @@
     "energy"
   ],
   "fields": {
-    "email": {
+    "login": {
       "type": "email"
     },
     "password": {
@@ -53,8 +53,8 @@
   ],
   "locales": {
     "fr": {
-      "short_description": "Récupère vos factures",
-      "long_description": "Récupère sur le site EDF :<br><ul><li>Toutes vos factures</li><li>Votre dernier échéancier</li><li>Votre attestation de contrat toujours à jour (qui vaut pour attestation de domicile)</li>",
+      "short_description": "Récupère toutes factures et échéanciers EDF",
+      "long_description": "Récupère toutes factures et échéanciers EDF",
       "permissions": {
         "bank operations": {
           "description": "Utilisé pour relier les factures à des operations bancaires"
@@ -71,8 +71,8 @@
       }
     },
     "en": {
-      "short_description": "Fetch your bills",
-      "long_description": "Fetch on the EDF website:<br><ul><li>All your bills</li><li>Your last timetable</li><li>Your contract certificate always up-to-date (valid for proof of residence)</li>",
+      "short_description": "Retrieves all your EDF invoices",
+      "long_description": "Retrieves all your EDF invoices",
       "permissions": {
         "bank operations": {
           "description": "Required to link bank operations to bills"
