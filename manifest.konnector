@@ -5,7 +5,7 @@
   "language": "node",
   "icon": "edf.svg",
   "slug": "edf",
-  "source": "git://github.com/konnectors/edf.git",
+  "source": "git@github.com:konnectors/edf.git",
   "editor": "Cozy",
   "vendor_link": "https://particulier.edf.fr/fr/accueil.html",
   "categories": [
