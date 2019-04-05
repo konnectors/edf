@@ -84,6 +84,16 @@ class EdfConnector extends CookieKonnector {
         'https://particulier.edf.fr/services/rest/edoc/getPaymentsDocuments'
       )
 
+      if (
+        paymentDocuments.length === 0 ||
+        paymentDocuments[0].listOfPaymentsByAccDTO.length === 0 ||
+        !paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument ||
+        !paymentDocuments[0].bpDto
+      ) {
+        log('warn', `could not find payment document`)
+        return
+      }
+
       const csrfToken = await this.getCsrfToken()
       const fileurl =
         'https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?' +
@@ -121,8 +131,23 @@ class EdfConnector extends CookieKonnector {
       `https://particulier.edf.fr/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
     )
 
+    if (
+      attestationData.length === 0 ||
+      !attestationData[0].listOfAttestationsContractByAccDTO
+    ) {
+      log('warn', `Could not find an attestation`)
+      return
+    }
+
     for (const contract of attestationData[0]
       .listOfAttestationsContractByAccDTO) {
+      if (
+        !contract.listOfAttestationContract ||
+        contract.listOfAttestationContract.length === 0
+      ) {
+        log('warn', `Could not find an attestation for a contract`)
+        continue
+      }
       const csrfToken = await this.getCsrfToken()
 
       const destinationFolder =
@@ -164,6 +189,10 @@ class EdfConnector extends CookieKonnector {
     )
 
     const client = billDocResp[0].bpDto
+    if (!client) {
+      log('warn', `Could not find bills`)
+      return
+    }
     const accList = billDocResp[0].listOfBillsByAccDTO
     let remainingContractsNb = accList.length
     for (let acc of accList) {
