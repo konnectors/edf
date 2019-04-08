@@ -57,6 +57,11 @@ class EdfConnector extends CookieKonnector {
       `https://particulier.edf.fr/services/rest/bill/consult?_=${Date.now()}`
     )
 
+    if (!result || result.feSouscriptionResponse) {
+      log('warn', `getEcheancierBills: could not find contract`)
+      return
+    }
+
     const contractNumber = parseFloat(result.feSouscriptionResponse.tradeNumber)
     const destinationFolder =
       fields.folderPath + '/' + this.contractFolders[contractNumber]
