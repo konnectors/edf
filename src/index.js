@@ -57,7 +57,7 @@ class EdfConnector extends CookieKonnector {
       `https://particulier.edf.fr/services/rest/bill/consult?_=${Date.now()}`
     )
 
-    if (!result || result.feSouscriptionResponse) {
+    if (!result || !result.feSouscriptionResponse) {
       log('warn', `getEcheancierBills: could not find contract`)
       return
     }
@@ -192,6 +192,11 @@ class EdfConnector extends CookieKonnector {
     const billDocResp = await this.request(
       'https://particulier.edf.fr/services/rest/edoc/getBillsDocuments'
     )
+
+    if (billDocResp.length === 0 || !billDocResp[0].bpDto) {
+      log('warn', `getBillsForAllContracts: could not find bills`)
+      return
+    }
 
     const client = billDocResp[0].bpDto
     if (!client) {
