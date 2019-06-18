@@ -74,6 +74,7 @@ class EdfConnector extends CookieKonnector {
       result.paymentSchedule &&
       result.paymentSchedule.deadlines
     ) {
+      const startDate = new Date(result.paymentSchedule.startDate)
       const bills = result.paymentSchedule.deadlines
         .filter(bill => bill.payment === 'EFFECTUE')
         .map(bill => ({
@@ -82,12 +83,20 @@ class EdfConnector extends CookieKonnector {
           date: new Date(bill.encashmentDate),
           amount: bill.electricityAmount + bill.gazAmount,
           currency: '€',
-          metadata: {
-            importDate: new Date(),
-            version: 1
-          },
           requestOptions: {
             json: false
+          },
+          fileAttributes: {
+            metadata: {
+              classification: 'invoicing',
+              datetime: startDate,
+              datetimeLabel: 'startDate',
+              contentAuthor: 'edf',
+              categories: ['energy'],
+              subClassification: 'paiement_schedule',
+              isSubscription: true,
+              startDate
+            }
           }
         }))
 
@@ -131,7 +140,8 @@ class EdfConnector extends CookieKonnector {
         bills.map(bill => ({ ...bill, filename, fileurl })),
         destinationFolder,
         {
-          identifiers: ['edf']
+          identifiers: ['edf'],
+          sourceAccountIdentifier: fields.email
         }
       )
     }
@@ -201,7 +211,7 @@ class EdfConnector extends CookieKonnector {
                 datetimeLabel: 'startDate',
                 contentAuthor: 'edf',
                 categories: ['energy'],
-                subject: ['subscription'],
+                subjects: ['subscription'],
                 startDate,
                 issueDate: new Date()
               }
@@ -251,12 +261,20 @@ class EdfConnector extends CookieKonnector {
           amount: parseFloat(bill.billAmount),
           currency: '€',
           date: new Date(bill.creationDate),
-          metadata: {
-            importDate: new Date(),
-            version: 1
-          },
           requestOptions: {
             json: false
+          },
+          fileAttributes: {
+            metadata: {
+              classification: 'invoicing',
+              datetime: new Date(bill.creationDate),
+              datetimeLabel: 'issueDate',
+              contentAuthor: 'edf',
+              categories: ['energy'],
+              subClassification: 'invoice',
+              isSubscription: true,
+              issueDate: new Date(bill.creationDate)
+            }
           }
         }
 
@@ -281,7 +299,8 @@ class EdfConnector extends CookieKonnector {
           })
         await this.saveBills([cozyBill], destinationFolder, {
           identifiers: ['edf'],
-          timeout: contractTimeLimit + Date.now()
+          timeout: contractTimeLimit + Date.now(),
+          sourceAccountIdentifier: fields.email
         })
       }
     }
