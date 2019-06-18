@@ -67,7 +67,11 @@ class EdfConnector extends CookieKonnector {
       fields.folderPath + '/' + this.contractFolders[contractNumber]
     await mkdirp(destinationFolder)
 
-    if (result.monthlyPaymentAllowedStatus === 'MENS') {
+    if (
+      result.monthlyPaymentAllowedStatus === 'MENS' &&
+      result.paymentSchedule &&
+      result.paymentSchedule.deadlines
+    ) {
       const bills = result.paymentSchedule.deadlines
         .filter(bill => bill.payment === 'EFFECTUE')
         .map(bill => ({
