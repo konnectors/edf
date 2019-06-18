@@ -33,11 +33,13 @@ class EdfConnector extends CookieKonnector {
       'https://particulier.edf.fr/services/rest/authenticate/getListContracts'
     )
     this.contractFolders = {}
+    this.contractDetails = {}
     for (const contractDetails of contracts.customerAccordContracts) {
       const contractNumber = Number(contractDetails.number)
       this.contractFolders[contractNumber] = `${contractNumber} ${
         contractDetails.adress.city
       }`
+      this.contractDetails[contractNumber] = contractDetails
     }
 
     // need to do this call before getting files or else it does not work
@@ -163,6 +165,12 @@ class EdfConnector extends CookieKonnector {
         fields.folderPath + '/' + this.contractFolders[contract.accDTO.numAcc]
       await mkdirp(destinationFolder)
 
+      const startDate = new Date(
+        this.contractDetails[
+          contract.accDTO.numAcc
+        ].contracts[0].lifeContract.startDate
+      )
+
       await this.saveFiles(
         [
           {
@@ -183,7 +191,21 @@ class EdfConnector extends CookieKonnector {
                     .attestationContractNumberCrypt + '==',
                 ot: 'Tarif Bleu',
                 _: Date.now()
-              })
+              }),
+            fileAttributes: {
+              metadata: {
+                pdl: this.contractDetails[contract.accDTO.numAcc].contracts[0]
+                  .pdlnumber,
+                classification: 'certificate',
+                datetime: startDate,
+                datetimeLabel: 'startDate',
+                contentAuthor: 'edf',
+                categories: ['energy'],
+                subject: ['subscription'],
+                startDate,
+                issueDate: new Date()
+              }
+            }
           }
         ],
         destinationFolder
@@ -395,7 +417,7 @@ class EdfConnector extends CookieKonnector {
 
 // most of the request are done to the API
 const connector = new EdfConnector({
-  // debug: true,
+  // debug: 'json',
   cheerio: false,
   json: true,
   headers: {
