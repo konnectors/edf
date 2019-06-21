@@ -218,7 +218,10 @@ class EdfConnector extends CookieKonnector {
             }
           }
         ],
-        destinationFolder
+        destinationFolder,
+        {
+          sourceAccountIdentifier: fields.email
+        }
       )
     }
   }
