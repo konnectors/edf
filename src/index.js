@@ -468,7 +468,9 @@ class EdfConnector extends CookieKonnector {
         {
           street: `${json.bp.streetNumber} ${json.bp.streetName}`,
           postcode: json.bp.postCode,
-          city: json.bp.city
+          city: json.bp.city,
+          formattedAddress: `${json.bp.streetNumber} ${json.bp.streetName}`
+            + ` ${json.bp.postCode} ${json.bp.city}`,
         }
       ]
     }
