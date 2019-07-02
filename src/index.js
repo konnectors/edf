@@ -469,13 +469,14 @@ class EdfConnector extends CookieKonnector {
           street: `${json.bp.streetNumber} ${json.bp.streetName}`,
           postcode: json.bp.postCode,
           city: json.bp.city,
-          formattedAddress: `${json.bp.streetNumber} ${json.bp.streetName}`
-            + ` ${json.bp.postCode} ${json.bp.city}`,
+          formattedAddress:
+            `${json.bp.streetNumber} ${json.bp.streetName}` +
+            ` ${json.bp.postCode} ${json.bp.city}`
         }
       ]
     }
     if (json.bp.mail) {
-      ident.email = [{ address: json.bp.mail, type: 'home' }]
+      ident.email = [{ address: json.bp.mail }]
     }
     if (json.bp.mobilePhoneNumber) {
       if (ident.phone) {
