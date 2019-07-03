@@ -52,6 +52,15 @@ class EdfConnector extends CookieKonnector {
     await this.getEcheancierBills(fields)
 
     await this.getBillsForAllContracts(fields)
+
+    // Identity
+    try {
+      const ident = await this.fetchIdentity()
+      await this.saveIdentity(ident, fields.email)
+    } catch (e) {
+      log('warn', 'Error during identity scraping or saving')
+      log('warn', e)
+    }
   }
 
   async getEcheancierBills(fields) {
@@ -434,6 +443,57 @@ class EdfConnector extends CookieKonnector {
         'Accept-API-Version': 'protocol=1.0,resource=2.0'
       }
     })
+  }
+  async fetchIdentity() {
+    const json = await this.request(
+      'https://particulier.edf.fr/services/rest/context/getCustomerContext'
+    )
+    let ident = {}
+    if (!json.bp) {
+      throw 'Not enough data to make identiy, only request failed'
+    }
+    if (json.bp.lastName && json.bp.firstName) {
+      ident.name = {
+        givenName: json.bp.firstName,
+        familyName: json.bp.lastName
+      }
+    }
+    if (
+      json.bp.streetNumber &&
+      json.bp.streetName &&
+      json.bp.postCode &&
+      json.bp.city
+    ) {
+      ident.address = [
+        {
+          street: `${json.bp.streetNumber} ${json.bp.streetName}`,
+          postcode: json.bp.postCode,
+          city: json.bp.city,
+          formattedAddress:
+            `${json.bp.streetNumber} ${json.bp.streetName}` +
+            ` ${json.bp.postCode} ${json.bp.city}`
+        }
+      ]
+    }
+    if (json.bp.mail) {
+      ident.email = [{ address: json.bp.mail }]
+    }
+    if (json.bp.mobilePhoneNumber) {
+      if (ident.phone) {
+        ident.phone.push({ number: json.bp.mobilePhoneNumber, type: 'mobile' })
+      } else {
+        ident.phone = [{ number: json.bp.mobilePhoneNumber, type: 'mobile' }]
+      }
+    }
+    if (json.bp.fixePhoneNumber) {
+      if (ident.phone) {
+        ident.phone.push({ number: json.bp.fixePhoneNumber, type: 'home' })
+      } else {
+        ident.phone = [{ number: json.bp.fixePhoneNumber, type: 'home' }]
+      }
+    }
+
+    return ident
   }
 }
 
