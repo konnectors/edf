@@ -190,6 +190,8 @@ class EdfConnector extends CookieKonnector {
         ].contracts[0].lifeContract.startDate
       )
 
+      const issueDate = new Date()
+
       await this.saveFiles(
         [
           {
@@ -216,13 +218,13 @@ class EdfConnector extends CookieKonnector {
                 pdl: this.contractDetails[contract.accDTO.numAcc].contracts[0]
                   .pdlnumber,
                 classification: 'certificate',
-                datetime: startDate,
-                datetimeLabel: 'startDate',
+                datetime: issueDate,
+                datetimeLabel: 'issueDate',
                 contentAuthor: 'edf',
                 categories: ['energy'],
                 subjects: ['subscription'],
                 startDate,
-                issueDate: new Date()
+                issueDate: issueDate
               }
             }
           }
