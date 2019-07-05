@@ -199,7 +199,8 @@ class EdfConnector extends CookieKonnector {
               json: false
             },
             shouldReplaceFile: () => true,
-            filename: 'attestation de contrat.pdf',
+            shouldReplaceName: 'attestation de contrat.pdf',
+            filename: 'attestation de contrat edf.pdf',
             fileurl:
               'https://particulier.edf.fr/services/rest/document/getAttestationContratPDFByData?' +
               qs.encode({
