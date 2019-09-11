@@ -408,6 +408,7 @@ class EdfConnector extends CookieKonnector {
     await this.requestHtml(
       'https://particulier.edf.fr/services/rest/openid/checkAuthenticate'
     )
+    await this.saveSession()
   }
 
   async testSession() {
