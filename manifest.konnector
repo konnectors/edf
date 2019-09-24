@@ -1,5 +1,5 @@
 {
-  "version": "1.6.1",
+  "version": "1.7.0",
   "name": "EDF",
   "type": "konnector",
   "language": "node",
@@ -13,8 +13,7 @@
   ],
   "fields": {
     "email": {
-      "type": "email",
-      "identifier": true
+      "type": "email"
     },
     "password": {
       "type": "password"
