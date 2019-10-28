@@ -3,7 +3,7 @@
   "name": "EDF",
   "type": "konnector",
   "language": "node",
-  "icon": "edf.svg",
+  "icon": "icon.svg",
   "slug": "edf",
   "source": "git@github.com:konnectors/edf.git",
   "editor": "Cozy",
