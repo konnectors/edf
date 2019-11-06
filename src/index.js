@@ -11,6 +11,28 @@ const format = require('date-fns/format')
 const TIME_LIMIT = Date.now() + 4 * 60 * 1000
 
 class EdfConnector extends CookieKonnector {
+  async handleLoginFailedRerun() {
+    // we have a problem of false LOGIN_FAILED for this connector.
+    // the goal here is to set the job result as VENDOR_DOWN one time so that the job is run one
+    // more time
+    // If we get two LOGIN_FAILED in a row. The connector will not be run anymore and we will have
+    // to handle this manually if some false LOGIN_FAILED subsist.
+    const LOGIN_FAILED_LIMIT = 2
+    let { loginFailedCounter } = this.getAccountData() || {
+      loginFailedCounter: 0
+    }
+    if (loginFailedCounter >= LOGIN_FAILED_LIMIT) {
+      loginFailedCounter = 0
+    }
+    loginFailedCounter++
+    await this.saveAccountData({ loginFailedCounter })
+    throw new Error(
+      loginFailedCounter >= LOGIN_FAILED_LIMIT
+        ? errors.LOGIN_FAILED
+        : errors.VENDOR_DOWN
+    )
+  }
+
   async fetch(fields) {
     this.initRequestHtml()
     if (!(await this.testSession())) {
@@ -377,7 +399,7 @@ class EdfConnector extends CookieKonnector {
       )
     } catch (err) {
       log('error', err.message)
-      throw new Error(errors.LOGIN_FAILED)
+      await this.handleLoginFailedRerun()
     }
 
     let sessionWorks = null
