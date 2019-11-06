@@ -36,9 +36,9 @@ class EdfConnector extends CookieKonnector {
     this.contractDetails = {}
     for (const contractDetails of contracts.customerAccordContracts) {
       const contractNumber = Number(contractDetails.number)
-      this.contractFolders[contractNumber] = `${contractNumber} ${
-        contractDetails.adress.city
-      }`
+      this.contractFolders[
+        contractNumber
+      ] = `${contractNumber} ${contractDetails.adress.city}`
       this.contractDetails[contractNumber] = contractDetails
     }
 
