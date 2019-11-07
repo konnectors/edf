@@ -26,6 +26,7 @@ class EdfConnector extends CookieKonnector {
     }
     loginFailedCounter++
     await this.saveAccountData({ loginFailedCounter })
+    await this.resetSession()
     throw new Error(
       loginFailedCounter >= LOGIN_FAILED_LIMIT
         ? errors.LOGIN_FAILED
