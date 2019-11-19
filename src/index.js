@@ -58,9 +58,9 @@ class EdfConnector extends CookieKonnector {
     this.contractDetails = {}
     for (const contractDetails of contracts.customerAccordContracts) {
       const contractNumber = Number(contractDetails.number)
-      this.contractFolders[contractNumber] = `${contractNumber} ${
-        contractDetails.adress.city
-      }`
+      this.contractFolders[
+        contractNumber
+      ] = `${contractNumber} ${contractDetails.adress.city}`
       this.contractDetails[contractNumber] = contractDetails
     }
 
@@ -183,80 +183,84 @@ class EdfConnector extends CookieKonnector {
       `https://particulier.edf.fr/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
     )
 
-    if (
-      attestationData.length === 0 ||
-      !attestationData[0].listOfAttestationsContractByAccDTO
-    ) {
+    if (attestationData.length === 0) {
       log('warn', `Could not find an attestation`)
       return
     }
 
-    for (const contract of attestationData[0]
-      .listOfAttestationsContractByAccDTO) {
-      if (
-        !contract.listOfAttestationContract ||
-        contract.listOfAttestationContract.length === 0
-      ) {
-        log('warn', `Could not find an attestation for a contract`)
+    for (const bp of attestationData) {
+      if (!bp.listOfAttestationsContractByAccDTO) {
+        log('warn', `Could not find an attestation`)
         continue
       }
-      const csrfToken = await this.getCsrfToken()
 
-      const destinationFolder =
-        fields.folderPath + '/' + this.contractFolders[contract.accDTO.numAcc]
-      await mkdirp(destinationFolder)
+      for (const contract of bp.listOfAttestationsContractByAccDTO) {
+        if (
+          !contract.listOfAttestationContract ||
+          contract.listOfAttestationContract.length === 0
+        ) {
+          log('warn', `Could not find an attestation for a contract`)
+          continue
+        }
+        const csrfToken = await this.getCsrfToken()
 
-      const startDate = new Date(
-        this.contractDetails[
-          contract.accDTO.numAcc
-        ].contracts[0].lifeContract.startDate
-      )
+        const destinationFolder =
+          fields.folderPath + '/' + this.contractFolders[contract.accDTO.numAcc]
+        await mkdirp(destinationFolder)
 
-      const issueDate = new Date()
+        const startDate = new Date(
+          this.contractDetails[
+            contract.accDTO.numAcc
+          ].contracts[0].lifeContract.startDate
+        )
 
-      await this.saveFiles(
-        [
-          {
-            requestOptions: {
-              json: false
-            },
-            shouldReplaceFile: () => true,
-            shouldReplaceName: 'attestation de contrat.pdf',
-            filename: 'attestation de contrat edf.pdf',
-            fileurl:
-              'https://particulier.edf.fr/services/rest/document/getAttestationContratPDFByData?' +
-              qs.encode({
-                csrfToken,
-                aN: contract.accDTO.numAccCrypt + '==',
-                bp: contract.listOfAttestationContract[0].bpNumberCrypt + '==',
-                cl: contract.listOfAttestationContract[0].firstLastNameCrypt,
-                ct:
-                  contract.listOfAttestationContract[0]
-                    .attestationContractNumberCrypt + '==',
-                ot: 'Tarif Bleu',
-                _: Date.now()
-              }),
-            fileAttributes: {
-              metadata: {
-                pdl: this.contractDetails[contract.accDTO.numAcc].contracts[0]
-                  .pdlnumber,
-                classification: 'certificate',
-                datetime: issueDate,
-                datetimeLabel: 'issueDate',
-                contentAuthor: 'edf',
-                categories: ['energy'],
-                subjects: ['subscription'],
-                startDate,
-                issueDate: issueDate
+        const issueDate = new Date()
+
+        await this.saveFiles(
+          [
+            {
+              requestOptions: {
+                json: false
+              },
+              shouldReplaceFile: () => true,
+              shouldReplaceName: 'attestation de contrat.pdf',
+              filename: 'attestation de contrat edf.pdf',
+              fileurl:
+                'https://particulier.edf.fr/services/rest/document/getAttestationContratPDFByData?' +
+                qs.encode({
+                  csrfToken,
+                  aN: contract.accDTO.numAccCrypt + '==',
+                  bp:
+                    contract.listOfAttestationContract[0].bpNumberCrypt + '==',
+                  cl: contract.listOfAttestationContract[0].firstLastNameCrypt,
+                  ct:
+                    contract.listOfAttestationContract[0]
+                      .attestationContractNumberCrypt + '==',
+                  ot: 'Tarif Bleu',
+                  _: Date.now()
+                }),
+              fileAttributes: {
+                metadata: {
+                  pdl: this.contractDetails[contract.accDTO.numAcc].contracts[0]
+                    .pdlnumber,
+                  classification: 'certificate',
+                  datetime: issueDate,
+                  datetimeLabel: 'issueDate',
+                  contentAuthor: 'edf',
+                  categories: ['energy'],
+                  subjects: ['subscription'],
+                  startDate,
+                  issueDate: issueDate
+                }
               }
             }
+          ],
+          destinationFolder,
+          {
+            sourceAccountIdentifier: fields.email
           }
-        ],
-        destinationFolder,
-        {
-          sourceAccountIdentifier: fields.email
-        }
-      )
+        )
+      }
     }
   }
 
@@ -266,79 +270,87 @@ class EdfConnector extends CookieKonnector {
       'https://particulier.edf.fr/services/rest/edoc/getBillsDocuments'
     )
 
-    if (billDocResp.length === 0 || !billDocResp[0].bpDto) {
+    if (billDocResp.length === 0) {
       log('warn', `getBillsForAllContracts: could not find bills`)
       return
     }
 
-    const client = billDocResp[0].bpDto
-    if (!client) {
-      log('warn', `Could not find bills`)
-      return
-    }
-    const accList = billDocResp[0].listOfBillsByAccDTO
-    let remainingContractsNb = accList.length
-    for (let acc of accList) {
-      const contractTimeLimit = (TIME_LIMIT - Date.now()) / remainingContractsNb
-      const destinationFolder =
-        fields.folderPath + '/' + this.contractFolders[acc.accDTO.numAcc]
-      log(
-        'info',
-        `${Math.round(contractTimeLimit / 1000)}s for ${destinationFolder}`
-      )
-      remainingContractsNb--
-      await mkdirp(destinationFolder)
-      const contract = acc.accDTO
-      for (let bill of acc.listOfbills) {
-        // set bill data
-        const cozyBill = {
-          vendor: 'EDF',
-          vendorRef: bill.documentNumber,
-          contractNumber: acc.accDTO.numAcc,
-          amount: parseFloat(bill.billAmount),
-          currency: '€',
-          date: new Date(bill.creationDate),
-          requestOptions: {
-            json: false
-          },
-          fileAttributes: {
-            metadata: {
-              classification: 'invoicing',
-              datetime: new Date(bill.creationDate),
-              datetimeLabel: 'issueDate',
-              contentAuthor: 'edf',
-              categories: ['energy'],
-              subClassification: 'invoice',
-              isSubscription: true,
-              issueDate: new Date(bill.creationDate)
+    for (const bp of billDocResp) {
+      if (!bp.bpDto) {
+        log('warn', `getBillsForAllContracts: could not find bills`)
+        continue
+      }
+
+      const client = bp.bpDto
+      if (!client) {
+        log('warn', `Could not find bills`)
+        return
+      }
+      const accList = bp.listOfBillsByAccDTO
+      let remainingContractsNb = accList.length
+      for (let acc of accList) {
+        const contractTimeLimit =
+          (TIME_LIMIT - Date.now()) / remainingContractsNb
+        const destinationFolder =
+          fields.folderPath + '/' + this.contractFolders[acc.accDTO.numAcc]
+        log(
+          'info',
+          `${Math.round(contractTimeLimit / 1000)}s for ${destinationFolder}`
+        )
+        remainingContractsNb--
+        await mkdirp(destinationFolder)
+        const contract = acc.accDTO
+        for (let bill of acc.listOfbills) {
+          // set bill data
+          const cozyBill = {
+            vendor: 'EDF',
+            vendorRef: bill.documentNumber,
+            contractNumber: acc.accDTO.numAcc,
+            amount: parseFloat(bill.billAmount),
+            currency: '€',
+            date: new Date(bill.creationDate),
+            requestOptions: {
+              json: false
+            },
+            fileAttributes: {
+              metadata: {
+                classification: 'invoicing',
+                datetime: new Date(bill.creationDate),
+                datetimeLabel: 'issueDate',
+                contentAuthor: 'edf',
+                categories: ['energy'],
+                subClassification: 'invoice',
+                isSubscription: true,
+                issueDate: new Date(bill.creationDate)
+              }
             }
           }
-        }
 
-        if (cozyBill.amount < 0) {
-          cozyBill.amount = Math.abs(cozyBill.amount)
-          cozyBill.isRefund = true
-        }
+          if (cozyBill.amount < 0) {
+            cozyBill.amount = Math.abs(cozyBill.amount)
+            cozyBill.isRefund = true
+          }
 
-        cozyBill.filename = `${utils.formatDate(
-          cozyBill.date
-        )}_EDF_${cozyBill.amount.toFixed(2)}€.pdf`
-        const csrfToken = await this.getCsrfToken()
-        cozyBill.fileurl =
-          'https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?' +
-          qs.encode({
-            csrfToken,
-            dn: 'FACTURE',
-            pn: bill.parNumber,
-            di: bill.documentNumber,
-            bn: client.bpNumberCrypt,
-            an: contract.numAccCrypt
+          cozyBill.filename = `${utils.formatDate(
+            cozyBill.date
+          )}_EDF_${cozyBill.amount.toFixed(2)}€.pdf`
+          const csrfToken = await this.getCsrfToken()
+          cozyBill.fileurl =
+            'https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?' +
+            qs.encode({
+              csrfToken,
+              dn: 'FACTURE',
+              pn: bill.parNumber,
+              di: bill.documentNumber,
+              bn: client.bpNumberCrypt,
+              an: contract.numAccCrypt
+            })
+          await this.saveBills([cozyBill], destinationFolder, {
+            identifiers: ['edf'],
+            timeout: contractTimeLimit + Date.now(),
+            sourceAccountIdentifier: fields.email
           })
-        await this.saveBills([cozyBill], destinationFolder, {
-          identifiers: ['edf'],
-          timeout: contractTimeLimit + Date.now(),
-          sourceAccountIdentifier: fields.email
-        })
+        }
       }
     }
   }
