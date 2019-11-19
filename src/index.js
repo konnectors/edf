@@ -9,6 +9,7 @@ const {
 const qs = require('querystring')
 const format = require('date-fns/format')
 const TIME_LIMIT = Date.now() + 4 * 60 * 1000
+const get = require('lodash/get')
 
 class EdfConnector extends CookieKonnector {
   async handleLoginFailedRerun() {
@@ -275,6 +276,10 @@ class EdfConnector extends CookieKonnector {
       return
     }
 
+    let remainingContractsNb = billDocResp
+      .map(bp => get(bp, 'listOfBillsByAccDTO.accList', []).length)
+      .reduce((memo, n) => memo + n, 0)
+
     for (const bp of billDocResp) {
       if (!bp.bpDto) {
         log('warn', `getBillsForAllContracts: could not find bills`)
@@ -287,7 +292,6 @@ class EdfConnector extends CookieKonnector {
         return
       }
       const accList = bp.listOfBillsByAccDTO
-      let remainingContractsNb = accList.length
       for (let acc of accList) {
         const contractTimeLimit =
           (TIME_LIMIT - Date.now()) / remainingContractsNb
