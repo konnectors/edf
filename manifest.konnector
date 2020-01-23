@@ -58,7 +58,7 @@
   "locales": {
     "fr": {
       "short_description": "Récupère vos factures",
-      "long_description": "Récupère sur le site EDF :<br><ul><li>Toutes vos factures</li><li>Votre dernier échéancier</li><li>Votre attestation de contrat toujours à jour (qui vaut pour attestation de domicile)</li>",
+      "long_description": "Récupère sur le site EDF :\n- Toutes vos factures\n- Votre dernier échéancier\n- Votre attestation de contrat toujours à jour (qui vaut pour attestation de domicile)",
       "permissions": {
         "bank operations": {
           "description": "Utilisé pour relier les factures à des operations bancaires"
@@ -79,7 +79,7 @@
     },
     "en": {
       "short_description": "Fetch your bills",
-      "long_description": "Fetch on the EDF website:<br><ul><li>All your bills</li><li>Your last timetable</li><li>Your contract certificate always up-to-date (valid for proof of residence)</li>",
+      "long_description": "Fetch on the EDF website:\n- All your bills\n- Your last timetable\n- Your contract certificate always up-to-date (valid for proof of residence)",
       "permissions": {
         "bank operations": {
           "description": "Required to link bank operations to bills"
