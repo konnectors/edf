@@ -284,7 +284,7 @@ class EdfConnector extends CookieKonnector {
     }
 
     let remainingContractsNb = billDocResp
-      .map(bp => get(bp, 'listOfBillsByAccDTO.accList', []).length)
+      .map(bp => get(bp, 'listOfBillsByAccDTO', []).length)
       .reduce((memo, n) => memo + n, 0)
 
     for (const bp of billDocResp) {
