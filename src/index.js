@@ -112,6 +112,7 @@ class EdfConnector extends CookieKonnector {
         .map(bill => ({
           vendor: 'EDF',
           contractNumber,
+          startDate,
           date: new Date(bill.encashmentDate),
           amount: bill.electricityAmount + bill.gazAmount,
           currency: '€',
@@ -170,10 +171,12 @@ class EdfConnector extends CookieKonnector {
 
       await this.saveBills(
         bills.map(bill => ({ ...bill, filename, fileurl })),
-        destinationFolder,
+        { folderPath: destinationFolder },
         {
-          identifiers: ['edf'],
-          sourceAccountIdentifier: fields.email
+          sourceAccount: this.accountId,
+          sourceAccountIdentifier: fields.email,
+          linkBankOperations: false,
+          fileIdAttributes: ['vendorRef', 'startDate']
         }
       )
     }
@@ -226,6 +229,8 @@ class EdfConnector extends CookieKonnector {
               shouldReplaceFile: () => true,
               shouldReplaceName: 'attestation de contrat.pdf',
               filename: 'attestation de contrat edf.pdf',
+              vendorRef: this.contractDetails[contract.accDTO.numAcc]
+                .contracts[0].pdlnumber,
               fileurl:
                 'https://particulier.edf.fr/services/rest/document/getAttestationContratPDFByData?' +
                 qs.encode({
@@ -256,9 +261,11 @@ class EdfConnector extends CookieKonnector {
               }
             }
           ],
-          destinationFolder,
+          { folderPath: destinationFolder },
           {
-            sourceAccountIdentifier: fields.email
+            sourceAccount: this.accountId,
+            sourceAccountIdentifier: fields.email,
+            fileIdAttributes: ['vendorRef']
           }
         )
       }
@@ -349,11 +356,17 @@ class EdfConnector extends CookieKonnector {
               bn: client.bpNumberCrypt,
               an: contract.numAccCrypt
             })
-          await this.saveBills([cozyBill], destinationFolder, {
-            identifiers: ['edf'],
-            timeout: contractTimeLimit + Date.now(),
-            sourceAccountIdentifier: fields.email
-          })
+          await this.saveBills(
+            [cozyBill],
+            { folderPath: destinationFolder },
+            {
+              timeout: contractTimeLimit + Date.now(),
+              sourceAccount: this.accountId,
+              sourceAccountIdentifier: fields.email,
+              fileIdAttributes: ['vendorRef'],
+              linkBankOperations: false
+            }
+          )
         }
       }
     }
