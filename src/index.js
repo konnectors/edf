@@ -415,7 +415,17 @@ class EdfConnector extends CookieKonnector {
       )
     } catch (err) {
       log('error', err.message)
-      await this.handleLoginFailedRerun()
+      if (err.statusCode === 401) {
+        if (err.message.includes('Compte utilisateur verrouillé')) {
+          throw new Error(errors.LOGIN_FAILED_TOO_MANY_ATTEMPTS)
+        } else {
+          throw new Error(errors.LOGIN_FAILED)
+        }
+      } else if (err.statusCode === 500) {
+        await this.handleLoginFailedRerun()
+      } else {
+        throw new Error(errors.VENDOR_DOWN)
+      }
     }
 
     let sessionWorks = null
