@@ -1,6 +1,6 @@
 {
   "name": "cozy-konnector-edf",
-  "version": "1.10.0",
+  "version": "1.9.2",
   "description": "",
   "repository": {
     "type": "git",
@@ -37,12 +37,12 @@
     "travisDeployKey": "./bin/generate_travis_deploy_key"
   },
   "dependencies": {
-    "cozy-konnector-libs": "4.32.5"
+    "cozy-konnector-libs": "4.32.4"
   },
   "devDependencies": {
     "copy-webpack-plugin": "5.1.1",
     "cozy-app-publish": "0.20.2",
-    "cozy-jobs-cli": "1.11.3",
+    "cozy-jobs-cli": "1.11.2",
     "eslint-config-cozy-app": "1.4.0",
     "git-directory-deploy": "1.5.1",
     "husky": "4.2.1",
