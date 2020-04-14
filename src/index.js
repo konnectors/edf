@@ -358,7 +358,8 @@ class EdfConnector extends CookieKonnector {
   async authenticate(fields) {
     log('info', 'fields')
     log('info', JSON.stringify(Object.keys(fields)))
-    if (!fields.email) {
+    const email = fields.email || fields.login
+    if (!email) {
       log(
         'error',
         'The account is not correctly configured the email field is missing'
@@ -386,7 +387,7 @@ class EdfConnector extends CookieKonnector {
       'https://espace-client.edf.fr/sso/XUI/#login/Internet&authIndexType=service&authIndexValue=ldapservice'
     const captchaToken = await solveCaptcha({ websiteURL, websiteKey })
 
-    auth['callbacks'][0]['input'][0]['value'] = fields.email
+    auth['callbacks'][0]['input'][0]['value'] = email
     auth['callbacks'][1]['input'][0]['value'] = fields.password
     auth['callbacks'][2]['input'][0]['value'] = captchaToken
     auth['callbacks'][3]['input'][0]['value'] = '0'
