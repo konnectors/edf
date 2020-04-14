@@ -152,10 +152,14 @@ class EdfConnector extends CookieKonnector {
       )}_EDF_echancier.pdf`
 
       await this.saveBills(
-        bills.map(bill => ({ ...bill, filename, fileurl })),
+        bills.map(bill => ({
+          ...bill,
+          filename,
+          fileurl,
+          recurrence: 'monthly'
+        })),
         { folderPath: destinationFolder },
         {
-          sourceAccount: this.accountId,
           sourceAccountIdentifier: fields.email,
           linkBankOperations: false,
           fileIdAttributes: ['vendorRef', 'startDate']
@@ -245,7 +249,6 @@ class EdfConnector extends CookieKonnector {
           ],
           { folderPath: destinationFolder },
           {
-            sourceAccount: this.accountId,
             sourceAccountIdentifier: fields.email,
             fileIdAttributes: ['vendorRef']
           }
@@ -343,7 +346,6 @@ class EdfConnector extends CookieKonnector {
             { folderPath: destinationFolder },
             {
               timeout: contractTimeLimit + Date.now(),
-              sourceAccount: this.accountId,
               sourceAccountIdentifier: fields.email,
               fileIdAttributes: ['vendorRef'],
               linkBankOperations: false
