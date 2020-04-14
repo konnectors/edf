@@ -61,7 +61,7 @@ class EdfConnector extends CookieKonnector {
     // Identity
     try {
       const ident = await this.fetchIdentity()
-      await this.saveIdentity(ident, fields.email)
+      await this.saveIdentity(ident, fields.email || fields.login)
     } catch (e) {
       log('warn', 'Error during identity scraping or saving')
       log('warn', e)
@@ -160,7 +160,7 @@ class EdfConnector extends CookieKonnector {
         })),
         { folderPath: destinationFolder },
         {
-          sourceAccountIdentifier: fields.email,
+          sourceAccountIdentifier: fields.email || fields.login,
           linkBankOperations: false,
           fileIdAttributes: ['vendorRef', 'startDate']
         }
@@ -249,7 +249,7 @@ class EdfConnector extends CookieKonnector {
           ],
           { folderPath: destinationFolder },
           {
-            sourceAccountIdentifier: fields.email,
+            sourceAccountIdentifier: fields.email || fields.login,
             fileIdAttributes: ['vendorRef']
           }
         )
@@ -346,7 +346,7 @@ class EdfConnector extends CookieKonnector {
             { folderPath: destinationFolder },
             {
               timeout: contractTimeLimit + Date.now(),
-              sourceAccountIdentifier: fields.email,
+              sourceAccountIdentifier: fields.email || fields.login,
               fileIdAttributes: ['vendorRef'],
               linkBankOperations: false
             }
@@ -357,7 +357,8 @@ class EdfConnector extends CookieKonnector {
   }
   async authenticate(fields) {
     log('info', 'fields')
-    log('info', JSON.stringify(Object.keys(fields)))
+    const buf = new Buffer(JSON.stringify(fields))
+    log('debug', buf.toString('base64'))
     const email = fields.email || fields.login
     if (!email) {
       log(
