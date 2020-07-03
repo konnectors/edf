@@ -103,7 +103,7 @@
     "LOGIN_OK",
     "METADATA_DEDUP",
     "IDENTITY"
-  ]
+  ],
   "banksTransactionRegExp": "\\bedf\\b",
   "manifest_version": "2"
 }
