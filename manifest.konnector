@@ -1,5 +1,5 @@
 {
-  "version": "1.10.0",
+  "version": "1.11.0",
   "name": "EDF",
   "type": "konnector",
   "language": "node",
@@ -99,6 +99,11 @@
       }
     }
   },
+  "features": [
+    "LOGIN_OK",
+    "METADATA_DEDUP",
+    "IDENTITY"
+  ],
   "banksTransactionRegExp": "\\bedf\\b",
   "manifest_version": "2"
 }
