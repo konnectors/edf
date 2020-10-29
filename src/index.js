@@ -11,13 +11,14 @@ const {
   mkdirp
 } = require('cozy-konnector-libs')
 const qs = require('querystring')
-const format = require('date-fns/format')
+const { format } = require('date-fns')
 const TIME_LIMIT = Date.now() + 4 * 60 * 1000
 const get = require('lodash/get')
 
 class EdfConnector extends CookieKonnector {
   async fetch(fields) {
     this.initRequestHtml()
+    await this.resetSession()
     if (!(await this.testSession())) {
       log('info', 'Found no correct session, logging in...')
       await this.authenticate(fields)
@@ -148,7 +149,7 @@ class EdfConnector extends CookieKonnector {
         new Date(
           paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument.creationDate
         ),
-        'YYYY'
+        'yyyy'
       )}_EDF_echancier.pdf`
 
       await this.saveBills(
@@ -356,9 +357,6 @@ class EdfConnector extends CookieKonnector {
     }
   }
   async authenticate(fields) {
-    log('info', 'fields')
-    const buf = new Buffer(JSON.stringify(fields))
-    log('debug', buf.toString('base64'))
     const email = fields.email || fields.login
     if (!email) {
       log(
@@ -467,8 +465,8 @@ class EdfConnector extends CookieKonnector {
       log('info', 'Session is OK')
       return true
     } catch (err) {
-      log('warn', err.message)
-      log('warn', 'Session failed')
+      log('debug', err.message)
+      log('debug', 'Session failed')
       return false
     }
   }
@@ -548,7 +546,7 @@ class EdfConnector extends CookieKonnector {
 
 // most of the request are done to the API
 const connector = new EdfConnector({
-  // debug: 'json',
+  // debug: true,
   cheerio: false,
   json: true,
   headers: {
