@@ -4,7 +4,7 @@
   "type": "konnector",
   "language": "node",
   "icon": "icon.svg",
-  "slug": "edf",
+  "slug": "edfclientside",
   "source": "git@github.com:konnectors/edf.git",
   "editor": "Cozy",
   "vendor_link": "https://particulier.edf.fr/fr/accueil.html",
