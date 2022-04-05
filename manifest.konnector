@@ -1,19 +1,31 @@
 {
-  "version": "1.13.5",
-  "name": "EDF ccc",
+  "version": "1.12.0",
+  "name": "EDF",
   "type": "konnector",
   "language": "node",
   "icon": "icon.svg",
-  "slug": "edfclientside",
+  "slug": "edf",
   "source": "git@github.com:konnectors/edf.git",
   "editor": "Cozy",
   "vendor_link": "https://particulier.edf.fr/fr/accueil.html",
   "categories": [
     "energy"
   ],
-  "clientSide": true,
-  "fields": {},
-  "folders": [{"defaultDir": "$administrative/$konnector/$account"}],
+  "fields": {
+    "email": {
+      "type": "email",
+      "identifier": true
+    },
+    "password": {
+      "type": "password"
+    },
+    "advancedFields": {
+      "folderPath": {
+        "advanced": true,
+        "isRequired": false
+      }
+    }
+  },
   "data_types": [
     "bill"
   ],
@@ -87,9 +99,6 @@
       }
     }
   },
-  "qualification_labels": [
-    "energy_invoice"
-  ],
   "features": [
     "LOGIN_OK",
     "METADATA_DEDUP",
