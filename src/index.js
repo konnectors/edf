@@ -555,7 +555,7 @@ class EdfContentScript extends ContentScript {
     return true
   }
 
-  findAndSendCredentials(e) {
+  findAndSendCredentials() {
     const emailField = document.querySelector('#emailHid')
     const passwordField = document.querySelector('#password2-password-field')
     if (emailField && passwordField) {
@@ -653,5 +653,5 @@ connector
     ],
   })
   .catch(err => {
-    console.warn(err)
+    log.warn(err)
   })
