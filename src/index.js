@@ -1,5 +1,6 @@
 import { ContentScript } from 'cozy-clisk/dist/contentscript'
-import { kyScraper as ky } from 'cozy-clisk/dist/contentscript/utils'
+// import { kyScraper as ky } from 'cozy-clisk/dist/contentscript/utils'
+import ky from 'ky'
 import Minilog from '@cozy/minilog'
 import get from 'lodash/get'
 import { format } from 'date-fns'
