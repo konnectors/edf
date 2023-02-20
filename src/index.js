@@ -1,10 +1,10 @@
-import {ContentScript} from 'cozy-clisk/dist/contentscript'
-import {kyScraper as ky} from 'cozy-clisk/dist/contentscript/utils'
+import { ContentScript } from 'cozy-clisk/dist/contentscript'
+import { kyScraper as ky } from 'cozy-clisk/dist/contentscript/utils'
 import Minilog from '@cozy/minilog'
 import get from 'lodash/get'
-import {format} from 'date-fns'
+import { format } from 'date-fns'
 import waitFor from 'p-wait-for'
-import {formatHousing} from './utils'
+import { formatHousing } from './utils'
 
 const log = Minilog('ContentScript')
 Minilog.enable()
@@ -14,15 +14,15 @@ const DEFAULT_PAGE_URL =
   BASE_URL + '/fr/accueil/espace-client/tableau-de-bord.html'
 
 class EdfContentScript extends ContentScript {
-  /////////
-  //PILOT//
-  /////////
+  // ///////
+  // PILOT//
+  // ///////
   async ensureAuthenticated() {
     await this.goto(DEFAULT_PAGE_URL)
     log.debug('waiting for any authentication confirmation or login form...')
     await Promise.race([
-      this.runInWorkerUntilTrue({method: 'waitForAuthenticated'}),
-      this.runInWorkerUntilTrue({method: 'waitForLoginForm'}),
+      this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
+      this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
     ])
     if (await this.runInWorker('checkAuthenticated')) {
       this.log('Authenticated')
@@ -51,7 +51,7 @@ class EdfContentScript extends ContentScript {
     await this.goto(DEFAULT_PAGE_URL)
     await Promise.all([
       this.autoLogin(credentials),
-      this.runInWorkerUntilTrue({method: 'waitForAuthenticated'}),
+      this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
     ])
   }
 
@@ -69,7 +69,7 @@ class EdfContentScript extends ContentScript {
     this.log('wait for password field or otp')
     await Promise.race([
       this.waitForElementInWorker(passwordInputSelector),
-      this.waitForElementInWorker(otpNeededSelector),
+      this.waitForElementInWorker(otpNeededSelector)
     ])
 
     if (await this.runInWorker('checkOtpNeeded')) {
@@ -82,19 +82,19 @@ class EdfContentScript extends ContentScript {
     await this.runInWorker(
       'fillText',
       passwordInputSelector,
-      credentials.password,
+      credentials.password
     )
     await this.runInWorker('click', passwordNextButtonSelector)
   }
 
   async waitForUserAuthentication() {
     log.debug('waitForUserAuthentication start')
-    await this.setWorkerState({visible: true, url: DEFAULT_PAGE_URL})
-    await this.runInWorkerUntilTrue({method: 'waitForAuthenticated'})
+    await this.setWorkerState({ visible: true, url: DEFAULT_PAGE_URL })
+    await this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
     if (this.store && this.store.email && this.store.password) {
       await this.saveCredentials(this.store)
     }
-    await this.setWorkerState({visible: false})
+    await this.setWorkerState({ visible: false })
   }
 
   async fetch(context) {
@@ -107,9 +107,9 @@ class EdfContentScript extends ContentScript {
     const housing = formatHousing(
       contracts,
       echeancierResult,
-      await this.fetchHousing(),
+      await this.fetchHousing()
     )
-    await this.saveIdentity({contact, housing})
+    await this.saveIdentity({ contact, housing })
   }
 
   async fetchHousing() {
@@ -120,7 +120,7 @@ class EdfContentScript extends ContentScript {
     await this.runInWorker('click', continueLinkSelector)
     await Promise.race([
       this.waitForElementInWorker(notConnectedSelector),
-      this.waitForElementInWorker('.header-logo'),
+      this.waitForElementInWorker('.header-logo')
     ])
 
     const isConnected = await this.runInWorker('checkConnected')
@@ -136,7 +136,7 @@ class EdfContentScript extends ContentScript {
       housingType = {},
       lifeStyle = {},
       surfaceInSqMeter = {},
-      residenceType = {},
+      residenceType = {}
     } = await this.runInWorker('getHomeProfile')
 
     const contractElec = await this.runInWorker('getContractElec')
@@ -152,7 +152,7 @@ class EdfContentScript extends ContentScript {
       surfaceInSqMeter,
       residenceType,
       contractElec,
-      rawConsumptions,
+      rawConsumptions
     }
   }
 
@@ -174,12 +174,12 @@ class EdfContentScript extends ContentScript {
     }
 
     const contractNumber = parseFloat(
-      get(result, 'feSouscriptionResponse.tradeNumber'),
+      get(result, 'feSouscriptionResponse.tradeNumber')
     )
     const subPath = contracts.folders[contractNumber]
     if (!subPath) {
       log.warn(
-        `fetchEcheancierBills: could not create subPath for ${contractNumber}`,
+        `fetchEcheancierBills: could not create subPath for ${contractNumber}`
       )
       return
     }
@@ -199,7 +199,7 @@ class EdfContentScript extends ContentScript {
           startDate,
           date: new Date(bill.encashmentDate),
           amount: bill.electricityAmount + bill.gazAmount,
-          currency: '€',
+          currency: '€'
         }))
 
       const paymentDocuments = await ky
@@ -228,16 +228,16 @@ class EdfContentScript extends ContentScript {
           di: paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument
             .documentNumber,
           bn: paymentDocuments[0].bpDto.bpNumberCrypt,
-          an: paymentDocuments[0].listOfPaymentsByAccDTO[0].accDTO.numAccCrypt,
+          an: paymentDocuments[0].listOfPaymentsByAccDTO[0].accDTO.numAccCrypt
         })
       const filename = `${format(
         new Date(
           get(
             paymentDocuments[0],
-            'listOfPaymentsByAccDTO[0].lastPaymentDocument.creationDate',
-          ),
+            'listOfPaymentsByAccDTO[0].lastPaymentDocument.creationDate'
+          )
         ),
-        'yyyy',
+        'yyyy'
       )}_EDF_echancier.pdf`
 
       await this.saveBills(
@@ -254,21 +254,21 @@ class EdfContentScript extends ContentScript {
               datetimeLabel: 'startDate',
               isSubscription: true,
               startDate: bill.date,
-              carbonCopy: true,
-            },
-          },
+              carbonCopy: true
+            }
+          }
         })),
         {
           context,
           subPath,
           fileIdAttributes: ['vendorRef', 'startDate'],
           contentType: 'application/pdf',
-          qualificationLabel: 'energy_invoice',
-        },
+          qualificationLabel: 'energy_invoice'
+        }
       )
     }
 
-    return {isMonthly}
+    return { isMonthly }
   }
 
   async fetchBillsForAllContracts(contracts, context) {
@@ -308,7 +308,7 @@ class EdfContentScript extends ContentScript {
             contractNumber: contract.numAcc,
             amount: parseFloat(bill.billAmount),
             currency: '€',
-            date: new Date(bill.creationDate),
+            date: new Date(bill.creationDate)
           }
 
           if (cozyBill.amount < 0) {
@@ -318,7 +318,7 @@ class EdfContentScript extends ContentScript {
 
           cozyBill.filename = `${format(
             cozyBill.date,
-            'yyyy-MM-dd',
+            'yyyy-MM-dd'
           )}_EDF_${cozyBill.amount.toFixed(2)}€.pdf`
           const csrfToken = await this.getCsrfToken()
           cozyBill.fileurl =
@@ -330,7 +330,7 @@ class EdfContentScript extends ContentScript {
               pn: bill.parNumber,
               di: bill.documentNumber,
               bn: client.bpNumberCrypt,
-              an: contract.numAccCrypt,
+              an: contract.numAccCrypt
             })
 
           cozyBill.fileAttributes = {
@@ -341,15 +341,15 @@ class EdfContentScript extends ContentScript {
               datetimeLabel: 'issueDate',
               isSubscription: true,
               issueDate: new Date(bill.creationDate),
-              carbonCopy: true,
-            },
+              carbonCopy: true
+            }
           }
           await this.saveBills([cozyBill], {
             context,
             subPath,
             fileIdAttributes: ['vendorRef'],
             contentType: 'application/pdf',
-            qualificationLabel: 'energy_invoice',
+            qualificationLabel: 'energy_invoice'
           })
         }
       }
@@ -372,8 +372,7 @@ class EdfContentScript extends ContentScript {
     await this.clickAndWait(myDocumentsLinkSelector, contractDisplayedSelector)
     const attestationData = await ky
       .get(
-        BASE_URL +
-          `/services/rest/edoc/getAttestationsContract?_=${Date.now()}`,
+        BASE_URL + `/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
       )
       .json()
 
@@ -422,16 +421,16 @@ class EdfContentScript extends ContentScript {
                     contract.listOfAttestationContract[0]
                       .attestationContractNumberCrypt + '==',
                   ot: 'Tarif Bleu',
-                  _: Date.now(),
-                }),
-            },
+                  _: Date.now()
+                })
+            }
           ],
           {
             context,
             subPath,
             fileIdAttributes: ['vendorRef'],
-            contentType: 'application/pdf',
-          },
+            contentType: 'application/pdf'
+          }
         )
       }
     }
@@ -443,7 +442,7 @@ class EdfContentScript extends ContentScript {
       .get(BASE_URL + '/services/rest/authenticate/getListContracts')
       .json()
 
-    const result = {folders: {}, details: {}}
+    const result = { folders: {}, details: {} }
 
     for (const contractDetails of contracts.customerAccordContracts) {
       const contractNumber = Number(contractDetails.number)
@@ -468,7 +467,7 @@ class EdfContentScript extends ContentScript {
     if (json.bp.lastName && json.bp.firstName) {
       ident.name = {
         givenName: json.bp.firstName,
-        familyName: json.bp.lastName,
+        familyName: json.bp.lastName
       }
     }
     if (
@@ -484,25 +483,25 @@ class EdfContentScript extends ContentScript {
           city: json.bp.city,
           formattedAddress:
             `${json.bp.streetNumber} ${json.bp.streetName}` +
-            ` ${json.bp.postCode} ${json.bp.city}`,
-        },
+            ` ${json.bp.postCode} ${json.bp.city}`
+        }
       ]
     }
     if (json.bp.mail) {
-      ident.email = [{address: json.bp.mail}]
+      ident.email = [{ address: json.bp.mail }]
     }
     if (json.bp.mobilePhoneNumber) {
       if (ident.phone) {
-        ident.phone.push({number: json.bp.mobilePhoneNumber, type: 'mobile'})
+        ident.phone.push({ number: json.bp.mobilePhoneNumber, type: 'mobile' })
       } else {
-        ident.phone = [{number: json.bp.mobilePhoneNumber, type: 'mobile'}]
+        ident.phone = [{ number: json.bp.mobilePhoneNumber, type: 'mobile' }]
       }
     }
     if (json.bp.fixePhoneNumber) {
       if (ident.phone) {
-        ident.phone.push({number: json.bp.fixePhoneNumber, type: 'home'})
+        ident.phone.push({ number: json.bp.fixePhoneNumber, type: 'home' })
       } else {
-        ident.phone = [{number: json.bp.fixePhoneNumber, type: 'home'}]
+        ident.phone = [{ number: json.bp.fixePhoneNumber, type: 'home' }]
       }
     }
 
@@ -516,16 +515,16 @@ class EdfContentScript extends ContentScript {
     const mail = get(context, 'bp.mail')
     if (mail) {
       return {
-        sourceAccountIdentifier: mail,
+        sourceAccountIdentifier: mail
       }
     } else {
       throw new Error('No user data identifier. The connector should be fixed')
     }
   }
 
-  //////////
-  //WORKER//
-  //////////
+  // ////////
+  // WORKER//
+  // ////////
   async checkAuthenticated() {
     // try to subscribe a listener in the password field if present and not already done
     const passwordField = document.querySelector('#password2-password-field')
@@ -533,7 +532,7 @@ class EdfContentScript extends ContentScript {
     if (passwordField && !subscribed) {
       passwordField.addEventListener(
         'change',
-        this.findAndSendCredentials.bind(this),
+        this.findAndSendCredentials.bind(this)
       )
       window.__passwordField_subscribed = true
     }
@@ -550,7 +549,7 @@ class EdfContentScript extends ContentScript {
   async waitForLoginForm() {
     await waitFor(this.checkLoginForm, {
       interval: 1000,
-      timeout: 30 * 1000,
+      timeout: 30 * 1000
     })
     return true
   }
@@ -561,7 +560,7 @@ class EdfContentScript extends ContentScript {
     if (emailField && passwordField) {
       this.sendToPilot({
         email: emailField.value,
-        password: passwordField.value,
+        password: passwordField.value
       })
     }
     return true
@@ -577,8 +576,8 @@ class EdfContentScript extends ContentScript {
       () => Boolean(window.sessionStorage.getItem('datacache:profil')),
       {
         interval: 1000,
-        timeout: 30 * 1000,
-      },
+        timeout: 30 * 1000
+      }
     )
   }
 
@@ -586,14 +585,14 @@ class EdfContentScript extends ContentScript {
     await waitFor(
       () => {
         const result = Boolean(
-          window.sessionStorage.getItem('datacache:profil'),
+          window.sessionStorage.getItem('datacache:profil')
         )
         return result
       },
       {
         interval: 1000,
-        timeout: 30 * 1000,
-      },
+        timeout: 30 * 1000
+      }
     )
   }
 
@@ -607,7 +606,7 @@ class EdfContentScript extends ContentScript {
 
   getContractElec() {
     const contractStorage = window.sessionStorage.getItem(
-      'datacache:contract-elec',
+      'datacache:contract-elec'
     )
     if (contractStorage) {
       return JSON.parse(contractStorage).value.data
@@ -618,20 +617,20 @@ class EdfContentScript extends ContentScript {
   getConsumptions() {
     const result = {}
     const elecConsumptionKey = Object.keys(window.sessionStorage).find(k =>
-      k.includes('datacache:monthly-elec-consumptions'),
+      k.includes('datacache:monthly-elec-consumptions')
     )
     if (elecConsumptionKey) {
       result.elec = JSON.parse(
-        window.sessionStorage.getItem(elecConsumptionKey),
+        window.sessionStorage.getItem(elecConsumptionKey)
       ).value.data
     }
 
     const gasConsumptionKey = Object.keys(window.sessionStorage).find(k =>
-      k.includes('datacache:monthly-gas-consumptions'),
+      k.includes('datacache:monthly-gas-consumptions')
     )
     if (gasConsumptionKey) {
       result.gas = JSON.parse(
-        window.sessionStorage.getItem(gasConsumptionKey),
+        window.sessionStorage.getItem(gasConsumptionKey)
       ).value.data
     }
     return result
@@ -649,8 +648,8 @@ connector
       'getHomeProfile',
       'getContractElec',
       'getConsumptions',
-      'waitForSessionStorage',
-    ],
+      'waitForSessionStorage'
+    ]
   })
   .catch(err => {
     log.warn(err)
