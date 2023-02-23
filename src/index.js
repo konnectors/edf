@@ -1,5 +1,4 @@
 import { ContentScript } from 'cozy-clisk/dist/contentscript'
-// import { kyScraper as ky } from 'cozy-clisk/dist/contentscript/utils'
 import ky from 'ky'
 import Minilog from '@cozy/minilog'
 import get from 'lodash/get'
@@ -20,35 +19,38 @@ class EdfContentScript extends ContentScript {
   // ///////
   async ensureAuthenticated() {
     await this.goto(DEFAULT_PAGE_URL)
-    log.debug('waiting for any authentication confirmation or login form...')
+    this.log(
+      'info',
+      'waiting for any authentication confirmation or login form...'
+    )
     await Promise.race([
       this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
       this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
     ])
     if (await this.runInWorker('checkAuthenticated')) {
-      this.log('Authenticated')
+      this.log('info', 'Authenticated')
       return true
     }
-    log.debug('Not authenticated')
+    this.log('debug', 'Not authenticated')
 
     let credentials = await this.getCredentials()
     if (credentials && credentials.email && credentials.password) {
       try {
-        log.debug('Got credentials, trying autologin')
+        this.log('debug', 'Got credentials, trying autologin')
         await this.tryAutoLogin(credentials)
       } catch (err) {
         log.warn('autoLogin error' + err.message)
         await this.waitForUserAuthentication()
       }
     } else {
-      log.debug('No credentials saved, waiting for user input')
+      this.log('debug', 'No credentials saved, waiting for user input')
       await this.waitForUserAuthentication()
     }
     return true
   }
 
   async tryAutoLogin(credentials) {
-    this.log('autologin start')
+    this.log('info', 'autologin start')
     await this.goto(DEFAULT_PAGE_URL)
     await Promise.all([
       this.autoLogin(credentials),
@@ -57,7 +59,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async autoLogin(credentials) {
-    this.log('fill email field')
+    this.log('debug', 'fill email field')
     const emailInputSelector = '#email'
     const passwordInputSelector = '#password2-password-field'
     const emailNextButtonSelector = '#username-next-button > span'
@@ -67,7 +69,7 @@ class EdfContentScript extends ContentScript {
     await this.runInWorker('fillText', emailInputSelector, credentials.email)
     await this.runInWorker('click', emailNextButtonSelector)
 
-    this.log('wait for password field or otp')
+    this.log('debug', 'wait for password field or otp')
     await Promise.race([
       this.waitForElementInWorker(passwordInputSelector),
       this.waitForElementInWorker(otpNeededSelector)
@@ -77,9 +79,9 @@ class EdfContentScript extends ContentScript {
       log.warn('Found otp needed')
       throw new Error('OTP_NEEDED')
     }
-    log.debug('No otp needed')
+    this.log('debug', 'No otp needed')
 
-    log.debug('fill password field')
+    this.log('debug', 'fill password field')
     await this.runInWorker(
       'fillText',
       passwordInputSelector,
@@ -89,7 +91,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async waitForUserAuthentication() {
-    log.debug('waitForUserAuthentication start')
+    this.log('info', 'waitForUserAuthentication start')
     await this.setWorkerState({ visible: true, url: DEFAULT_PAGE_URL })
     await this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
     if (this.store && this.store.email && this.store.password) {
@@ -99,7 +101,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetch(context) {
-    log.debug('fetch start')
+    this.log('info', 'fetch start')
     const contact = await this.fetchContact()
     const contracts = await this.fetchContracts()
     await this.fetchAttestations(contracts, context)
@@ -158,7 +160,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchEcheancierBills(contracts, context) {
-    this.log('fetching echeancier bills')
+    this.log('debug', 'fetching echeancier bills')
 
     // files won't download if this page is not fully loaded before
     const fullpageLoadedSelector = '.timeline-header__download'
@@ -273,7 +275,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchBillsForAllContracts(contracts, context) {
-    this.log('fetchBillsForAllContracts')
+    this.log('debug', 'fetchBillsForAllContracts')
     // files won't download if this page is not fully loaded before
     const billButtonSelector = '#facture'
     const billListSelector = '#factureSelection'
@@ -378,13 +380,13 @@ class EdfContentScript extends ContentScript {
       .json()
 
     if (attestationData.length === 0) {
-      this.log('Could not find any attestation')
+      this.log('debug', 'Could not find any attestation')
       return
     }
 
     for (const bp of attestationData) {
       if (!bp.listOfAttestationsContractByAccDTO) {
-        this.log('Could not find an attestation')
+        this.log('debug', 'Could not find an attestation')
         continue
       }
 
@@ -393,8 +395,8 @@ class EdfContentScript extends ContentScript {
           !contract.listOfAttestationContract ||
           contract.listOfAttestationContract.length === 0
         ) {
-          this.log('Could not find an attestation for')
-          this.log(bp)
+          this.log('debug', 'Could not find an attestation for')
+          this.log('debug', bp)
           continue
         }
         const csrfToken = await this.getCsrfToken()
@@ -423,7 +425,13 @@ class EdfContentScript extends ContentScript {
                       .attestationContractNumberCrypt + '==',
                   ot: 'Tarif Bleu',
                   _: Date.now()
-                })
+                }),
+              fileAttributes: {
+                metadata: {
+                  contentAuthor: 'edf',
+                  carbonCopy: true
+                }
+              }
             }
           ],
           {
@@ -438,7 +446,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchContracts() {
-    this.log('fetching contracts')
+    this.log('debug', 'fetching contracts')
     const contracts = await ky
       .get(BASE_URL + '/services/rest/authenticate/getListContracts')
       .json()
@@ -456,7 +464,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchContact() {
-    this.log('fetching identity')
+    this.log('debug', 'fetching identity')
     const json = await ky
       .get(BASE_URL + '/services/rest/context/getCustomerContext')
       .json()
