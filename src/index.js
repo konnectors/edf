@@ -1,95 +1,199 @@
-process.env.SENTRY_DSN =
-  process.env.SENTRY_DSN ||
-  'https://1191bfff317448918eff878a159396e2@sentry.cozycloud.cc/131'
+import { ContentScript } from 'cozy-clisk/dist/contentscript'
+import ky from 'ky'
+import Minilog from '@cozy/minilog'
+import get from 'lodash/get'
+import { format } from 'date-fns'
+import waitFor from 'p-wait-for'
+import { formatHousing } from './utils'
 
-const {
-  CookieKonnector,
-  log,
-  solveCaptcha,
-  errors,
-  utils,
-  mkdirp
-} = require('cozy-konnector-libs')
-const qs = require('querystring')
-const { format } = require('date-fns')
-const TIME_LIMIT = Date.now() + 4 * 60 * 1000
-const get = require('lodash/get')
+const log = Minilog('ContentScript')
+Minilog.enable()
 
-class EdfConnector extends CookieKonnector {
-  async fetch(fields) {
-    this.initRequestHtml()
-    await this.resetSession()
-    if (!(await this.testSession())) {
-      log('info', 'Found no correct session, logging in...')
-      await this.authenticate(fields)
-      log('info', 'Successfully logged in')
+const BASE_URL = 'https://particulier.edf.fr'
+const DEFAULT_PAGE_URL =
+  BASE_URL + '/fr/accueil/espace-client/tableau-de-bord.html'
+
+class EdfContentScript extends ContentScript {
+  // ///////
+  // PILOT//
+  // ///////
+  async ensureAuthenticated() {
+    await this.goto(DEFAULT_PAGE_URL)
+    this.log(
+      'info',
+      'waiting for any authentication confirmation or login form...'
+    )
+    await Promise.race([
+      this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
+      this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
+    ])
+    if (await this.runInWorker('checkAuthenticated')) {
+      this.log('info', 'Authenticated')
+      return true
     }
+    this.log('debug', 'Not authenticated')
 
-    // get user data but we do nothing with it at the moment
-    const { id } = await this.request.post(
-      'https://espace-client.edf.fr/sso/json/Internet/users?_action=idFromSession'
-    )
-    await this.request(
-      `https://espace-client.edf.fr/sso/json/internet/users/${id}`
-    )
-
-    await this.activateSession()
-
-    const contracts = await this.request(
-      'https://particulier.edf.fr/services/rest/authenticate/getListContracts'
-    )
-    this.contractFolders = {}
-    this.contractDetails = {}
-    for (const contractDetails of contracts.customerAccordContracts) {
-      const contractNumber = Number(contractDetails.number)
-      this.contractFolders[
-        contractNumber
-      ] = `${contractNumber} ${contractDetails.adress.city}`
-      this.contractDetails[contractNumber] = contractDetails
+    let credentials = await this.getCredentials()
+    if (credentials && credentials.email && credentials.password) {
+      try {
+        this.log('debug', 'Got credentials, trying autologin')
+        await this.tryAutoLogin(credentials)
+      } catch (err) {
+        log.warn('autoLogin error' + err.message)
+        await this.waitForUserAuthentication()
+      }
+    } else {
+      this.log('debug', 'No credentials saved, waiting for user input')
+      await this.waitForUserAuthentication()
     }
+    return true
+  }
 
-    // need to do this call before getting files or else it does not work
-    await this.request(
-      'https://particulier.edf.fr/services/rest/edoc/getMyDocuments'
+  async tryAutoLogin(credentials) {
+    this.log('info', 'autologin start')
+    await this.goto(DEFAULT_PAGE_URL)
+    await Promise.all([
+      this.autoLogin(credentials),
+      this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
+    ])
+  }
+
+  async autoLogin(credentials) {
+    this.log('debug', 'fill email field')
+    const emailInputSelector = '#email'
+    const passwordInputSelector = '#password2-password-field'
+    const emailNextButtonSelector = '#username-next-button > span'
+    const passwordNextButtonSelector = '#password2-next-button > span'
+    const otpNeededSelector = '.auth #title-hotp3'
+    await this.waitForElementInWorker(emailInputSelector)
+    await this.runInWorker('fillText', emailInputSelector, credentials.email)
+    await this.runInWorker('click', emailNextButtonSelector)
+
+    this.log('debug', 'wait for password field or otp')
+    await Promise.race([
+      this.waitForElementInWorker(passwordInputSelector),
+      this.waitForElementInWorker(otpNeededSelector)
+    ])
+
+    if (await this.runInWorker('checkOtpNeeded')) {
+      log.warn('Found otp needed')
+      throw new Error('OTP_NEEDED')
+    }
+    this.log('debug', 'No otp needed')
+
+    this.log('debug', 'fill password field')
+    await this.runInWorker(
+      'fillText',
+      passwordInputSelector,
+      credentials.password
     )
+    await this.runInWorker('click', passwordNextButtonSelector)
+  }
 
-    await this.getAttestationsForAllContracts(fields)
+  async waitForUserAuthentication() {
+    this.log('info', 'waitForUserAuthentication start')
+    await this.setWorkerState({ visible: true, url: DEFAULT_PAGE_URL })
+    await this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
+    if (this.store && this.store.email && this.store.password) {
+      await this.saveCredentials(this.store)
+    }
+    await this.setWorkerState({ visible: false })
+  }
 
-    await this.getEcheancierBills(fields)
+  async fetch(context) {
+    this.log('info', 'fetch start')
+    const contact = await this.fetchContact()
+    const contracts = await this.fetchContracts()
+    await this.fetchAttestations(contracts, context)
+    await this.fetchBillsForAllContracts(contracts, context)
+    const echeancierResult = await this.fetchEcheancierBills(contracts, context)
+    const housing = formatHousing(
+      contracts,
+      echeancierResult,
+      await this.fetchHousing()
+    )
+    await this.saveIdentity({ contact, housing })
+  }
 
-    await this.getBillsForAllContracts(fields)
+  async fetchHousing() {
+    const consoLinkSelector = "[data-label='ma_conso']"
+    const continueLinkSelector = "a[href='https://equilibre.edf.fr/comprendre']"
+    const notConnectedSelector = 'div.session-expired-message button'
+    await this.clickAndWait(consoLinkSelector, continueLinkSelector)
+    await this.runInWorker('click', continueLinkSelector)
+    await Promise.race([
+      this.waitForElementInWorker(notConnectedSelector),
+      this.waitForElementInWorker('.header-logo')
+    ])
 
-    // Identity
-    try {
-      const ident = await this.fetchIdentity()
-      await this.saveIdentity(ident, fields.email || fields.login)
-    } catch (e) {
-      log('warn', 'Error during identity scraping or saving')
-      log('warn', e)
+    const isConnected = await this.runInWorker('checkConnected')
+    if (!isConnected) {
+      await this.runInWorker('click', notConnectedSelector)
+    }
+    this.runInWorker('waitForSessionStorage')
+
+    const {
+      constructionDate = {},
+      equipment = {},
+      heatingSystem = {},
+      housingType = {},
+      lifeStyle = {},
+      surfaceInSqMeter = {},
+      residenceType = {}
+    } = await this.runInWorker('getHomeProfile')
+
+    const contractElec = await this.runInWorker('getContractElec')
+
+    const rawConsumptions = await this.runInWorker('getConsumptions')
+
+    return {
+      constructionDate,
+      equipment,
+      heatingSystem,
+      housingType,
+      lifeStyle,
+      surfaceInSqMeter,
+      residenceType,
+      contractElec,
+      rawConsumptions
     }
   }
 
-  async getEcheancierBills(fields) {
-    const result = await this.request(
-      `https://particulier.edf.fr/services/rest/bill/consult?_=${Date.now()}`
-    )
+  async fetchEcheancierBills(contracts, context) {
+    this.log('debug', 'fetching echeancier bills')
+
+    // files won't download if this page is not fully loaded before
+    const fullpageLoadedSelector = '.timeline-header__download'
+    const billLinkSelector = "a.accessPage[href*='factures-et-paiements.html']"
+    await this.clickAndWait(billLinkSelector, fullpageLoadedSelector)
+
+    const result = await ky
+      .get(`${BASE_URL}/services/rest/bill/consult?_=${Date.now()}`)
+      .json()
 
     if (!result || !result.feSouscriptionResponse) {
-      log('warn', `getEcheancierBills: could not find contract`)
+      log.warn('fetchEcheancierBills: could not find contract')
       return
     }
 
-    const contractNumber = parseFloat(result.feSouscriptionResponse.tradeNumber)
-    const destinationFolder =
-      fields.folderPath + '/' + this.contractFolders[contractNumber]
-    await mkdirp(destinationFolder)
+    const contractNumber = parseFloat(
+      get(result, 'feSouscriptionResponse.tradeNumber')
+    )
+    const subPath = contracts.folders[contractNumber]
+    if (!subPath) {
+      log.warn(
+        `fetchEcheancierBills: could not create subPath for ${contractNumber}`
+      )
+      return
+    }
 
-    if (
+    const isMonthly =
       result.monthlyPaymentAllowedStatus === 'MENS' &&
       result.paymentSchedule &&
-      result.paymentSchedule.deadlines
-    ) {
-      const startDate = new Date(result.paymentSchedule.startDate)
+      get(result, 'paymentSchedule.deadlines')
+
+    if (isMonthly) {
+      const startDate = new Date(get(result, 'paymentSchedule.startDate'))
       const bills = result.paymentSchedule.deadlines
         .filter(bill => bill.payment === 'EFFECTUE')
         .map(bill => ({
@@ -98,27 +202,12 @@ class EdfConnector extends CookieKonnector {
           startDate,
           date: new Date(bill.encashmentDate),
           amount: bill.electricityAmount + bill.gazAmount,
-          currency: '€',
-          requestOptions: {
-            json: false
-          },
-          fileAttributes: {
-            metadata: {
-              classification: 'invoicing',
-              datetime: startDate,
-              datetimeLabel: 'startDate',
-              contentAuthor: 'edf',
-              categories: ['energy'],
-              subClassification: 'paiement_schedule',
-              isSubscription: true,
-              startDate
-            }
-          }
+          currency: '€'
         }))
 
-      const paymentDocuments = await this.request(
-        'https://particulier.edf.fr/services/rest/edoc/getPaymentsDocuments'
-      )
+      const paymentDocuments = await ky
+        .get(BASE_URL + '/services/rest/edoc/getPaymentsDocuments')
+        .json()
 
       if (
         paymentDocuments.length === 0 ||
@@ -126,28 +215,30 @@ class EdfConnector extends CookieKonnector {
         !paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument ||
         !paymentDocuments[0].bpDto
       ) {
-        log('warn', `could not find payment document`)
+        log.warn('could not find payment document')
         return
       }
 
       const csrfToken = await this.getCsrfToken()
       const fileurl =
-        'https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?' +
-        qs.encode({
+        BASE_URL +
+        '/services/rest/document/getDocumentGetXByData?' +
+        new URLSearchParams({
           csrfToken,
           dn: 'CalendrierPaiement',
-          pn:
-            paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument
-              .parNumber,
-          di:
-            paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument
-              .documentNumber,
+          pn: paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument
+            .parNumber,
+          di: paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument
+            .documentNumber,
           bn: paymentDocuments[0].bpDto.bpNumberCrypt,
           an: paymentDocuments[0].listOfPaymentsByAccDTO[0].accDTO.numAccCrypt
         })
       const filename = `${format(
         new Date(
-          paymentDocuments[0].listOfPaymentsByAccDTO[0].lastPaymentDocument.creationDate
+          get(
+            paymentDocuments[0],
+            'listOfPaymentsByAccDTO[0].lastPaymentDocument.creationDate'
+          )
         ),
         'yyyy'
       )}_EDF_echancier.pdf`
@@ -157,31 +248,145 @@ class EdfConnector extends CookieKonnector {
           ...bill,
           filename,
           fileurl,
-          recurrence: 'monthly'
+          recurrence: 'monthly',
+          fileAttributes: {
+            metadata: {
+              invoiceNumber: bill.vendorRef,
+              contentAuthor: 'edf',
+              datetime: bill.date,
+              datetimeLabel: 'startDate',
+              isSubscription: true,
+              startDate: bill.date,
+              carbonCopy: true
+            }
+          }
         })),
-        { folderPath: destinationFolder },
         {
-          sourceAccountIdentifier: fields.email || fields.login,
-          linkBankOperations: false,
-          fileIdAttributes: ['vendorRef', 'startDate']
+          context,
+          subPath,
+          fileIdAttributes: ['vendorRef', 'startDate'],
+          contentType: 'application/pdf',
+          qualificationLabel: 'energy_invoice'
         }
       )
     }
+
+    return { isMonthly }
   }
 
-  async getAttestationsForAllContracts(fields) {
-    const attestationData = await this.request(
-      `https://particulier.edf.fr/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
-    )
+  async fetchBillsForAllContracts(contracts, context) {
+    this.log('debug', 'fetchBillsForAllContracts')
+    // files won't download if this page is not fully loaded before
+    const billButtonSelector = '#facture'
+    const billListSelector = '#factureSelection'
+    await this.clickAndWait(billButtonSelector, billListSelector)
+    const billDocResp = await ky
+      .get(BASE_URL + '/services/rest/edoc/getBillsDocuments')
+      .json()
+
+    if (billDocResp.length === 0) {
+      log.warn('fetchBillsForAllContracts: could not find bills')
+      return
+    }
+
+    for (const bp of billDocResp) {
+      if (!bp.bpDto) {
+        log.warn('fetchBillsForAllContracts: could not find bills')
+        continue
+      }
+
+      const client = bp.bpDto
+      if (!client) {
+        log.warn('fetchBillsForAllContracts: Could not find bills')
+        return
+      }
+      const accList = bp.listOfBillsByAccDTO
+      for (let acc of accList) {
+        const contract = acc.accDTO
+        const subPath = contracts.folders[contract.numAcc]
+        for (let bill of acc.listOfbills) {
+          const cozyBill = {
+            vendor: 'EDF',
+            vendorRef: bill.documentNumber,
+            contractNumber: contract.numAcc,
+            amount: parseFloat(bill.billAmount),
+            currency: '€',
+            date: new Date(bill.creationDate)
+          }
+
+          if (cozyBill.amount < 0) {
+            cozyBill.amount = Math.abs(cozyBill.amount)
+            cozyBill.isRefund = true
+          }
+
+          cozyBill.filename = `${format(
+            cozyBill.date,
+            'yyyy-MM-dd'
+          )}_EDF_${cozyBill.amount.toFixed(2)}€.pdf`
+          const csrfToken = await this.getCsrfToken()
+          cozyBill.fileurl =
+            BASE_URL +
+            '/services/rest/document/getDocumentGetXByData?' +
+            new URLSearchParams({
+              csrfToken,
+              dn: 'FACTURE',
+              pn: bill.parNumber,
+              di: bill.documentNumber,
+              bn: client.bpNumberCrypt,
+              an: contract.numAccCrypt
+            })
+
+          cozyBill.fileAttributes = {
+            metadata: {
+              invoiceNumber: bill.vendorRef,
+              contentAuthor: 'edf',
+              datetime: new Date(bill.creationDate),
+              datetimeLabel: 'issueDate',
+              isSubscription: true,
+              issueDate: new Date(bill.creationDate),
+              carbonCopy: true
+            }
+          }
+          await this.saveBills([cozyBill], {
+            context,
+            subPath,
+            fileIdAttributes: ['vendorRef'],
+            contentType: 'application/pdf',
+            qualificationLabel: 'energy_invoice'
+          })
+        }
+      }
+    }
+  }
+
+  async getCsrfToken() {
+    const dataCsrfToken = await ky
+      .get(BASE_URL + `/services/rest/init/initPage?_=${Date.now()}`)
+      .json()
+    return dataCsrfToken.data
+  }
+
+  async fetchAttestations(contracts, context) {
+    await this.goto(DEFAULT_PAGE_URL)
+
+    const myDocumentsLinkSelector = "a.accessPage[href*='mes-documents.html']"
+    const contractDisplayedSelector = '.contract-icon'
+    await this.waitForElementInWorker(myDocumentsLinkSelector)
+    await this.clickAndWait(myDocumentsLinkSelector, contractDisplayedSelector)
+    const attestationData = await ky
+      .get(
+        BASE_URL + `/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
+      )
+      .json()
 
     if (attestationData.length === 0) {
-      log('warn', `Could not find an attestation`)
+      this.log('debug', 'Could not find any attestation')
       return
     }
 
     for (const bp of attestationData) {
       if (!bp.listOfAttestationsContractByAccDTO) {
-        log('warn', `Could not find an attestation`)
+        this.log('debug', 'Could not find an attestation')
         continue
       }
 
@@ -190,37 +395,26 @@ class EdfConnector extends CookieKonnector {
           !contract.listOfAttestationContract ||
           contract.listOfAttestationContract.length === 0
         ) {
-          log('warn', `Could not find an attestation for a contract`)
+          this.log('debug', 'Could not find an attestation for')
+          this.log('debug', bp)
           continue
         }
         const csrfToken = await this.getCsrfToken()
 
-        const destinationFolder =
-          fields.folderPath + '/' + this.contractFolders[contract.accDTO.numAcc]
-        await mkdirp(destinationFolder)
-
-        const startDate = new Date(
-          this.contractDetails[
-            contract.accDTO.numAcc
-          ].contracts[0].lifeContract.startDate
-        )
-
-        const issueDate = new Date()
+        const subPath = contracts.folders[contract.accDTO.numAcc]
 
         await this.saveFiles(
           [
             {
-              requestOptions: {
-                json: false
-              },
               shouldReplaceFile: () => true,
-              shouldReplaceName: 'attestation de contrat.pdf',
               filename: 'attestation de contrat edf.pdf',
-              vendorRef: this.contractDetails[contract.accDTO.numAcc]
-                .contracts[0].pdlnumber,
+              vendorRef:
+                contracts.details[contract.accDTO.numAcc].contracts[0]
+                  .pdlnumber,
               fileurl:
-                'https://particulier.edf.fr/services/rest/document/getAttestationContratPDFByData?' +
-                qs.encode({
+                BASE_URL +
+                '/services/rest/document/getAttestationContratPDFByData?' +
+                new URLSearchParams({
                   csrfToken,
                   aN: contract.accDTO.numAccCrypt + '==',
                   bp:
@@ -234,270 +428,50 @@ class EdfConnector extends CookieKonnector {
                 }),
               fileAttributes: {
                 metadata: {
-                  pdl: this.contractDetails[contract.accDTO.numAcc].contracts[0]
-                    .pdlnumber,
-                  classification: 'certificate',
-                  datetime: issueDate,
-                  datetimeLabel: 'issueDate',
                   contentAuthor: 'edf',
-                  categories: ['energy'],
-                  subjects: ['subscription'],
-                  startDate,
-                  issueDate: issueDate
+                  carbonCopy: true
                 }
               }
             }
           ],
-          { folderPath: destinationFolder },
           {
-            sourceAccountIdentifier: fields.email || fields.login,
-            fileIdAttributes: ['vendorRef']
+            context,
+            subPath,
+            fileIdAttributes: ['vendorRef'],
+            contentType: 'application/pdf'
           }
         )
       }
     }
   }
 
-  async getBillsForAllContracts(fields) {
-    // give the same amount of time for each contract
-    const billDocResp = await this.request(
-      'https://particulier.edf.fr/services/rest/edoc/getBillsDocuments'
-    )
+  async fetchContracts() {
+    this.log('debug', 'fetching contracts')
+    const contracts = await ky
+      .get(BASE_URL + '/services/rest/authenticate/getListContracts')
+      .json()
 
-    if (billDocResp.length === 0) {
-      log('warn', `getBillsForAllContracts: could not find bills`)
-      return
+    const result = { folders: {}, details: {} }
+
+    for (const contractDetails of contracts.customerAccordContracts) {
+      const contractNumber = Number(contractDetails.number)
+      result.folders[
+        contractNumber
+      ] = `${contractNumber} ${contractDetails.adress.city}`
+      result.details[contractNumber] = contractDetails
     }
-
-    let remainingContractsNb = billDocResp
-      .map(bp => get(bp, 'listOfBillsByAccDTO', []).length)
-      .reduce((memo, n) => memo + n, 0)
-
-    for (const bp of billDocResp) {
-      if (!bp.bpDto) {
-        log('warn', `getBillsForAllContracts: could not find bills`)
-        continue
-      }
-
-      const client = bp.bpDto
-      if (!client) {
-        log('warn', `Could not find bills`)
-        return
-      }
-      const accList = bp.listOfBillsByAccDTO
-      for (let acc of accList) {
-        const contractTimeLimit =
-          (TIME_LIMIT - Date.now()) / remainingContractsNb
-        const destinationFolder =
-          fields.folderPath + '/' + this.contractFolders[acc.accDTO.numAcc]
-        log(
-          'info',
-          `${Math.round(contractTimeLimit / 1000)}s for ${destinationFolder}`
-        )
-        remainingContractsNb--
-        await mkdirp(destinationFolder)
-        const contract = acc.accDTO
-        for (let bill of acc.listOfbills) {
-          // set bill data
-          const cozyBill = {
-            vendor: 'EDF',
-            vendorRef: bill.documentNumber,
-            contractNumber: acc.accDTO.numAcc,
-            amount: parseFloat(bill.billAmount),
-            currency: '€',
-            date: new Date(bill.creationDate),
-            requestOptions: {
-              json: false
-            },
-            fileAttributes: {
-              metadata: {
-                classification: 'invoicing',
-                datetime: new Date(bill.creationDate),
-                datetimeLabel: 'issueDate',
-                contentAuthor: 'edf',
-                categories: ['energy'],
-                subClassification: 'invoice',
-                isSubscription: true,
-                issueDate: new Date(bill.creationDate)
-              }
-            }
-          }
-
-          if (cozyBill.amount < 0) {
-            cozyBill.amount = Math.abs(cozyBill.amount)
-            cozyBill.isRefund = true
-          }
-
-          cozyBill.filename = `${utils.formatDate(
-            cozyBill.date
-          )}_EDF_${cozyBill.amount.toFixed(2)}€.pdf`
-          const csrfToken = await this.getCsrfToken()
-          cozyBill.fileurl =
-            'https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?' +
-            qs.encode({
-              csrfToken,
-              dn: 'FACTURE',
-              pn: bill.parNumber,
-              di: bill.documentNumber,
-              bn: client.bpNumberCrypt,
-              an: contract.numAccCrypt
-            })
-          await this.saveBills(
-            [cozyBill],
-            { folderPath: destinationFolder },
-            {
-              timeout: contractTimeLimit + Date.now(),
-              sourceAccountIdentifier: fields.email || fields.login,
-              fileIdAttributes: ['vendorRef'],
-              linkBankOperations: false
-            }
-          )
-        }
-      }
-    }
-  }
-  async authenticate(fields) {
-    const email = fields.email || fields.login
-    if (!email) {
-      log(
-        'error',
-        'The account is not correctly configured the email field is missing'
-      )
-      throw new Error(errors.LOGIN_FAILED)
-    }
-    // I think it is needed
-    this._jar._jar.setCookieSync('i18next=fr', 'edf.fr', {})
-
-    // display the login form
-    await this.request(
-      'https://espace-client.edf.fr/sso/XUI/#login/Internet&authIndexType=service&authIndexValue=ldapservice'
-    )
-    // get authentication structure
-    const auth = await this.request.post(
-      'https://espace-client.edf.fr/sso/json/Internet/authenticate?authIndexType=service&authIndexValue=ldapservice'
-    )
-
-    await this.request.post(
-      'https://espace-client.edf.fr/sso/json/authenticate?realm=Internet&authIndexType=service&authIndexValue=ldapservice&authIndexType=service&authIndexValue=ldapservice'
-    )
-
-    const websiteKey = auth['callbacks'][4]['output'][0]['value']
-    const websiteURL =
-      'https://espace-client.edf.fr/sso/XUI/#login/Internet&authIndexType=service&authIndexValue=ldapservice'
-    const captchaToken = await solveCaptcha({ websiteURL, websiteKey })
-
-    auth['callbacks'][0]['input'][0]['value'] = email
-    auth['callbacks'][1]['input'][0]['value'] = fields.password
-    auth['callbacks'][2]['input'][0]['value'] = captchaToken
-    auth['callbacks'][3]['input'][0]['value'] = '0'
-
-    try {
-      const { tokenId } = await this.request.post(
-        'https://espace-client.edf.fr/sso/json/Internet/authenticate?authIndexType=service&authIndexValue=ldapservice',
-        {
-          body: auth,
-          gzip: true,
-          headers: {
-            Accept: 'application/json, text/javascript, */*; q=0.01',
-            Connection: 'keep-alive',
-            Pragma: 'no-cache',
-            TE: 'Trailers'
-          }
-        }
-      )
-      this._jar._jar.setCookieSync(
-        `ivoiream=${tokenId}`,
-        'https://espace-client.edf.fr',
-        {}
-      )
-    } catch (err) {
-      log('error', err.message)
-      if (err.statusCode === 401) {
-        if (err.message.includes('Compte utilisateur verrouillé')) {
-          throw new Error(errors.LOGIN_FAILED_TOO_MANY_ATTEMPTS)
-        } else {
-          throw new Error(errors.LOGIN_FAILED)
-        }
-      } else {
-        throw new Error(errors.VENDOR_DOWN)
-      }
-    }
-
-    let sessionWorks = null
-    try {
-      sessionWorks = await this.testSession()
-    } catch (err) {
-      log('error', err.message)
-      sessionWorks = false
-    }
-    if (!sessionWorks) {
-      throw new Error(errors.VENDOR_DOWN)
-    }
+    return result
   }
 
-  async activateSession() {
-    const valid$ = await this.requestHtml(
-      'https://particulier.edf.fr/fr/accueil/espace-client/tableau-de-bord.html'
-    )
+  async fetchContact() {
+    this.log('debug', 'fetching identity')
+    const json = await ky
+      .get(BASE_URL + '/services/rest/context/getCustomerContext')
+      .json()
 
-    // sometimes edf return a form which we have to submit...
-    if (valid$('body').attr('onload')) {
-      const $form = valid$('form')
-      await this.requestHtml.post($form.attr('action'), {
-        form: getFormData($form)
-      })
-    }
-
-    await this.requestHtml(
-      'https://particulier.edf.fr/services/rest/openid/checkAuthenticate'
-    )
-    await this.saveSession()
-  }
-
-  async testSession() {
-    try {
-      log('info', 'Testing session')
-      await this.activateSession()
-
-      await this.requestHtml.post(
-        'https://espace-client.edf.fr/sso/json/Internet/users?_action=idFromSession'
-      )
-      log('info', 'Session is OK')
-      return true
-    } catch (err) {
-      log('debug', err.message)
-      log('debug', 'Session failed')
-      return false
-    }
-  }
-
-  async getCsrfToken() {
-    const dataCsrfToken = await this.request(
-      `https://particulier.edf.fr/services/rest/init/initPage?_=${Date.now()}`
-    )
-    return dataCsrfToken.data
-  }
-
-  initRequestHtml() {
-    this.requestHtml = this.requestFactory({
-      cheerio: true,
-      json: false,
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0',
-        'Accept-Language': 'fr',
-        Referer: 'https://espace-client.edf.fr/sso/XUI/',
-        'Accept-API-Version': 'protocol=1.0,resource=2.0'
-      }
-    })
-  }
-  async fetchIdentity() {
-    const json = await this.request(
-      'https://particulier.edf.fr/services/rest/context/getCustomerContext'
-    )
     let ident = {}
     if (!json.bp) {
-      throw 'Not enough data to make identiy, only request failed'
+      throw new Error('Not enough data to make identiy, only request failed')
     }
     if (json.bp.lastName && json.bp.firstName) {
       ident.name = {
@@ -542,31 +516,150 @@ class EdfConnector extends CookieKonnector {
 
     return ident
   }
-}
 
-// most of the request are done to the API
-const connector = new EdfConnector({
-  // debug: true,
-  cheerio: false,
-  json: true,
-  headers: {
-    'User-Agent':
-      'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0',
-    'Accept-Language': 'fr',
-    // 'Accept-Encoding': 'gzip, deflate, br',
-    Referer: 'https://espace-client.edf.fr/sso/XUI/',
-    'Accept-API-Version': 'protocol=1.0,resource=2.0',
-    'X-Password': 'anonymous',
-    'X-Username': 'anonymous',
-    'X-NoSession': 'true',
-    'X-Requested-With': 'XMLHttpRequest'
+  async getUserDataFromWebsite() {
+    const context = await ky
+      .get(BASE_URL + '/services/rest/context/getCustomerContext')
+      .json()
+    const mail = get(context, 'bp.mail')
+    if (mail) {
+      return {
+        sourceAccountIdentifier: mail
+      }
+    } else {
+      throw new Error('No user data identifier. The connector should be fixed')
+    }
   }
-})
 
-connector.run()
+  // ////////
+  // WORKER//
+  // ////////
+  async checkAuthenticated() {
+    // try to subscribe a listener in the password field if present and not already done
+    const passwordField = document.querySelector('#password2-password-field')
+    const subscribed = window.__passwordField_subscribed
+    if (passwordField && !subscribed) {
+      passwordField.addEventListener(
+        'change',
+        this.findAndSendCredentials.bind(this)
+      )
+      window.__passwordField_subscribed = true
+    }
 
-function getFormData($form) {
-  return $form
-    .serializeArray()
-    .reduce((memo, input) => ({ ...memo, [input.name]: input.value }), {})
+    return Boolean(document.querySelector('.isAuthentified.show'))
+  }
+  async checkLoginForm() {
+    return Boolean(document.querySelector('.auth #email'))
+  }
+  async checkOtpNeeded() {
+    return Boolean(document.querySelector('.auth #title-hotp3'))
+  }
+
+  async waitForLoginForm() {
+    await waitFor(this.checkLoginForm, {
+      interval: 1000,
+      timeout: 30 * 1000
+    })
+    return true
+  }
+
+  findAndSendCredentials() {
+    const emailField = document.querySelector('#emailHid')
+    const passwordField = document.querySelector('#password2-password-field')
+    if (emailField && passwordField) {
+      this.sendToPilot({
+        email: emailField.value,
+        password: passwordField.value
+      })
+    }
+    return true
+  }
+
+  checkConnected() {
+    const notConnectedSelector = 'div.session-expired-message button'
+    return !document.querySelector(notConnectedSelector)
+  }
+
+  async waitForHomeProfile() {
+    return await waitFor(
+      () => Boolean(window.sessionStorage.getItem('datacache:profil')),
+      {
+        interval: 1000,
+        timeout: 30 * 1000
+      }
+    )
+  }
+
+  async waitForSessionStorage() {
+    await waitFor(
+      () => {
+        const result = Boolean(
+          window.sessionStorage.getItem('datacache:profil')
+        )
+        return result
+      },
+      {
+        interval: 1000,
+        timeout: 30 * 1000
+      }
+    )
+  }
+
+  getHomeProfile() {
+    const homeStorage = window.sessionStorage.getItem('datacache:profil')
+    if (homeStorage) {
+      return JSON.parse(homeStorage).value.data.housing
+    }
+    return {}
+  }
+
+  getContractElec() {
+    const contractStorage = window.sessionStorage.getItem(
+      'datacache:contract-elec'
+    )
+    if (contractStorage) {
+      return JSON.parse(contractStorage).value.data
+    }
+    return {}
+  }
+
+  getConsumptions() {
+    const result = {}
+    const elecConsumptionKey = Object.keys(window.sessionStorage).find(k =>
+      k.includes('datacache:monthly-elec-consumptions')
+    )
+    if (elecConsumptionKey) {
+      result.elec = JSON.parse(
+        window.sessionStorage.getItem(elecConsumptionKey)
+      ).value.data
+    }
+
+    const gasConsumptionKey = Object.keys(window.sessionStorage).find(k =>
+      k.includes('datacache:monthly-gas-consumptions')
+    )
+    if (gasConsumptionKey) {
+      result.gas = JSON.parse(
+        window.sessionStorage.getItem(gasConsumptionKey)
+      ).value.data
+    }
+    return result
+  }
 }
+
+const connector = new EdfContentScript()
+connector
+  .init({
+    additionalExposedMethodsNames: [
+      'waitForLoginForm',
+      'checkOtpNeeded',
+      'checkConnected',
+      'waitForHomeProfile',
+      'getHomeProfile',
+      'getContractElec',
+      'getConsumptions',
+      'waitForSessionStorage'
+    ]
+  })
+  .catch(err => {
+    log.warn(err)
+  })
