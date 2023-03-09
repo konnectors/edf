@@ -94,9 +94,6 @@ class EdfContentScript extends ContentScript {
     this.log('info', 'waitForUserAuthentication start')
     await this.setWorkerState({ visible: true, url: DEFAULT_PAGE_URL })
     await this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
-    if (this.store && this.store.email && this.store.password) {
-      await this.saveCredentials(this.store)
-    }
     await this.setWorkerState({ visible: false })
   }
 
@@ -112,6 +109,9 @@ class EdfContentScript extends ContentScript {
       echeancierResult,
       await this.fetchHousing()
     )
+    if (this.store && this.store.email && this.store.password) {
+      await this.saveCredentials(this.store)
+    }
     await this.saveIdentity({ contact, housing })
   }
 
