@@ -99,6 +99,9 @@ class EdfContentScript extends ContentScript {
 
   async fetch(context) {
     this.log('info', 'fetch start')
+    if (this.store && this.store.email && this.store.password) {
+      await this.saveCredentials(this.store)
+    }
     const contact = await this.fetchContact()
     const contracts = await this.fetchContracts()
     await this.fetchAttestations(contracts, context)
@@ -109,9 +112,6 @@ class EdfContentScript extends ContentScript {
       echeancierResult,
       await this.fetchHousing()
     )
-    if (this.store && this.store.email && this.store.password) {
-      await this.saveCredentials(this.store)
-    }
     await this.saveIdentity({ contact, housing })
   }
 
