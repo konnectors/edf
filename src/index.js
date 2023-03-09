@@ -94,14 +94,14 @@ class EdfContentScript extends ContentScript {
     this.log('info', 'waitForUserAuthentication start')
     await this.setWorkerState({ visible: true, url: DEFAULT_PAGE_URL })
     await this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
-    if (this.store && this.store.email && this.store.password) {
-      await this.saveCredentials(this.store)
-    }
     await this.setWorkerState({ visible: false })
   }
 
   async fetch(context) {
     this.log('info', 'fetch start')
+    if (this.store && this.store.email && this.store.password) {
+      await this.saveCredentials(this.store)
+    }
     const contact = await this.fetchContact()
     const contracts = await this.fetchContracts()
     await this.fetchAttestations(contracts, context)
