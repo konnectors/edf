@@ -116,7 +116,8 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchHousing() {
-    const consoLinkSelector = "[data-label='ma_conso']"
+    const consoLinkSelector =
+      'a[href="/fr/accueil/economies-energie/comprendre-reduire-consommation-electrique-gaz.html"]'
     const continueLinkSelector = "a[href='https://equilibre.edf.fr/comprendre']"
     const notConnectedSelector = 'div.session-expired-message button'
     await this.clickAndWait(consoLinkSelector, continueLinkSelector)
