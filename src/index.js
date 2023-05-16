@@ -17,7 +17,7 @@ class EdfContentScript extends ContentScript {
   // ///////
   // PILOT//
   // ///////
-  async ensureAuthenticated() {
+  async goToLoginForm() {
     await this.goto(DEFAULT_PAGE_URL)
     this.log(
       'info',
@@ -27,6 +27,23 @@ class EdfContentScript extends ContentScript {
       this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
       this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
     ])
+  }
+  async ensureNotAuthenticated() {
+    this.log('info', 'ensureNotAuthenticated')
+    await this.goToLoginForm()
+    const authenticated = await this.runInWorker('checkAuthenticated')
+    if (authenticated === false) {
+      this.log('info', 'Already not authenticated')
+      return true
+    }
+    this.log('info', 'authenticated, triggering the deconnection')
+    window.deconnexion()
+    await this.waitForElementInWorker('#connexion')
+    return true
+  }
+
+  async ensureAuthenticated() {
+    await this.goToLoginForm()
     if (await this.runInWorker('checkAuthenticated')) {
       this.log('info', 'Authenticated')
       return true
