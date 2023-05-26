@@ -10206,12 +10206,19 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       return true
     }
     this.log('info', 'authenticated, triggering the deconnection')
-    window.deconnexion()
-    await this.waitForElementInWorker('#connexion')
+    await this.runInWorker('logout')
+    await this.waitForElementInWorker(`[data-label='Je me reconnecte']`)
     return true
   }
 
-  async ensureAuthenticated() {
+  async logout() {
+    window.deconnexion()
+  }
+
+  async ensureAuthenticated(account) {
+    if (!account) {
+      await this.ensureNotAuthenticated()
+    }
     await this.goToLoginForm()
     if (await this.runInWorker('checkAuthenticated')) {
       this.log('info', 'Authenticated')
@@ -10836,7 +10843,8 @@ connector
       'getHomeProfile',
       'getContractElec',
       'getConsumptions',
-      'waitForSessionStorage'
+      'waitForSessionStorage',
+      'logout'
     ]
   })
   .catch(err => {
