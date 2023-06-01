@@ -50,7 +50,7 @@ export function convertHeatingSystem(heatingSystem) {
   return result
 }
 
-export function convertBakingTypes(bakingTypes) {
+export function convertBakingTypes(bakingTypes = {}) {
   const result = Object.keys(bakingTypes).reduce(
     (memo, e) =>
       bakingTypes[e]
