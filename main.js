@@ -6569,7 +6569,7 @@ function convertHeatingSystem(heatingSystem) {
   return result
 }
 
-function convertBakingTypes(bakingTypes) {
+function convertBakingTypes(bakingTypes = {}) {
   const result = Object.keys(bakingTypes).reduce(
     (memo, e) =>
       bakingTypes[e]
@@ -10317,13 +10317,22 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     await this.runInWorker('click', continueLinkSelector)
     await Promise.race([
       this.waitForElementInWorker(notConnectedSelector),
-      this.waitForElementInWorker('.header-logo')
+      this.waitForElementInWorker('.header-logo'),
+      this.waitForElementInWorker('button.multi-site-button')
     ])
 
+    // first step : if not connected, click on the connect button
     const isConnected = await this.runInWorker('checkConnected')
     if (!isConnected) {
       await this.runInWorker('click', notConnectedSelector)
     }
+
+    // second step, if multiple contracts, select the first one
+    const multipleContracts = await this.runInWorker('checkMultipleContracts')
+    if (multipleContracts) {
+      await this.runInWorker('click', 'button.multi-site-button')
+    }
+
     this.runInWorker('waitForSessionStorage')
 
     const {
@@ -10612,7 +10621,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
                   ct:
                     contract.listOfAttestationContract[0]
                       .attestationContractNumberCrypt + '==',
-                  ot: 'Tarif Bleu',
+                  ot: contract.listOfAttestationContract[0].offerName,
                   _: Date.now()
                 }),
               fileAttributes: {
@@ -10732,7 +10741,13 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       window.__passwordField_subscribed = true
     }
 
-    return Boolean(document.querySelector('.isAuthentified.show'))
+    const $contracts = document.querySelectorAll('.selected-contrat')
+    const isAuthentifiedWithMultipleContracts = Boolean($contracts.length)
+
+    const isAuthentifiedWithOneContract = Boolean(
+      document.querySelector('.isAuthentified.show')
+    )
+    return isAuthentifiedWithOneContract || isAuthentifiedWithMultipleContracts
   }
   async checkLoginForm() {
     return Boolean(document.querySelector('.auth #email'))
@@ -10764,6 +10779,10 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   checkConnected() {
     const notConnectedSelector = 'div.session-expired-message button'
     return !document.querySelector(notConnectedSelector)
+  }
+
+  checkMultipleContracts() {
+    return document.querySelector('button.multi-site-button')
   }
 
   async waitForHomeProfile() {
@@ -10839,6 +10858,7 @@ connector
       'waitForLoginForm',
       'checkOtpNeeded',
       'checkConnected',
+      'checkMultipleContracts',
       'waitForHomeProfile',
       'getHomeProfile',
       'getContractElec',
