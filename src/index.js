@@ -571,7 +571,13 @@ class EdfContentScript extends ContentScript {
       window.__passwordField_subscribed = true
     }
 
-    return Boolean(document.querySelector('.isAuthentified.show'))
+    const $contracts = document.querySelectorAll('.selected-contrat')
+    const isAuthentifiedWithMultipleContracts = Boolean($contracts.length)
+
+    const isAuthentifiedWithOneContract = Boolean(
+      document.querySelector('.isAuthentified.show')
+    )
+    return isAuthentifiedWithOneContract || isAuthentifiedWithMultipleContracts
   }
   async checkLoginForm() {
     return Boolean(document.querySelector('.auth #email'))
