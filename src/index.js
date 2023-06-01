@@ -148,13 +148,22 @@ class EdfContentScript extends ContentScript {
     await this.runInWorker('click', continueLinkSelector)
     await Promise.race([
       this.waitForElementInWorker(notConnectedSelector),
-      this.waitForElementInWorker('.header-logo')
+      this.waitForElementInWorker('.header-logo'),
+      this.waitForElementInWorker('button.multi-site-button')
     ])
 
+    // first step : if not connected, click on the connect button
     const isConnected = await this.runInWorker('checkConnected')
     if (!isConnected) {
       await this.runInWorker('click', notConnectedSelector)
     }
+
+    // second step, if multiple contracts, select the first one
+    const multipleContracts = await this.runInWorker('checkMultipleContracts')
+    if (multipleContracts) {
+      await this.runInWorker('click', 'button.multi-site-button')
+    }
+
     this.runInWorker('waitForSessionStorage')
 
     const {
@@ -448,7 +457,7 @@ class EdfContentScript extends ContentScript {
                   ct:
                     contract.listOfAttestationContract[0]
                       .attestationContractNumberCrypt + '==',
-                  ot: 'Tarif Bleu',
+                  ot: contract.listOfAttestationContract[0].offerName,
                   _: Date.now()
                 }),
               fileAttributes: {
@@ -611,6 +620,10 @@ class EdfContentScript extends ContentScript {
     return !document.querySelector(notConnectedSelector)
   }
 
+  checkMultipleContracts() {
+    return document.querySelector('button.multi-site-button')
+  }
+
   async waitForHomeProfile() {
     return await waitFor(
       () => Boolean(window.sessionStorage.getItem('datacache:profil')),
@@ -684,6 +697,7 @@ connector
       'waitForLoginForm',
       'checkOtpNeeded',
       'checkConnected',
+      'checkMultipleContracts',
       'waitForHomeProfile',
       'getHomeProfile',
       'getContractElec',
