@@ -6,7 +6,7 @@ const log = Minilog('Utils')
 export function convertResidenceType(residenceType) {
   const residenceTypeMap = {
     Principale: 'primary',
-    Secondaire: 'secondary',
+    Secondaire: 'secondary'
   }
   const result = residenceTypeMap[residenceType]
 
@@ -19,7 +19,7 @@ export function convertResidenceType(residenceType) {
 export function convertHousingType(housingType) {
   const housingTypeMap = {
     Appartement: 'appartment',
-    Maison: 'house',
+    Maison: 'house'
   }
   const result = housingTypeMap[housingType]
 
@@ -39,7 +39,7 @@ export function convertHeatingSystem(heatingSystem) {
     Bois: 'wood',
     Charbon: 'coal',
     Propane: 'propane',
-    Autre: 'other',
+    Autre: 'other'
   }
   const result = heatingSystemMap[heatingSystem]
 
@@ -54,9 +54,9 @@ export function convertBakingTypes(bakingTypes) {
   const result = Object.keys(bakingTypes).reduce(
     (memo, e) =>
       bakingTypes[e]
-        ? [...memo, {type: e.slice(0, -6), number: bakingTypes[e]}]
+        ? [...memo, { type: e.slice(0, -6), number: bakingTypes[e] }]
         : memo,
-    [],
+    []
   )
   return result
 }
@@ -71,7 +71,7 @@ export function convertWaterHeatingSystem(waterHeatingSystem) {
     Bois: 'wood',
     Charbon: 'coal',
     Propane: 'propane',
-    Autre: 'other',
+    Autre: 'other'
   }
   const result = waterHeatingSystemMap[waterHeatingSystem]
 
@@ -92,7 +92,7 @@ export function convertConsumption(yearlyData = [], monthlyData = []) {
     }
     memo[intYear].push({
       month: intMonth,
-      consumptionkWh: d.consumption.energy,
+      consumptionkWh: d.consumption.energy
     })
     return memo
   }, {})
@@ -102,7 +102,7 @@ export function convertConsumption(yearlyData = [], monthlyData = []) {
     const yearResult = {
       year: parseInt(data.year, 10),
       consumptionkWh: data.consumption.energy,
-      months: monthsIndexByYear[data.year],
+      months: monthsIndexByYear[data.year]
     }
     result.push(yearResult)
   }
@@ -127,18 +127,18 @@ export function formatHousing(
     surfaceInSqMeter,
     residenceType,
     contractElec,
-    rawConsumptions,
-  },
+    rawConsumptions
+  }
 ) {
   const consumptions = {
     electricity: convertConsumption(
       get(rawConsumptions, 'elec.yearlyElecEnergies'),
-      get(rawConsumptions, 'elec.monthlyElecEnergies'),
+      get(rawConsumptions, 'elec.monthlyElecEnergies')
     ),
     gas: convertConsumption(
       get(rawConsumptions, 'gas.yearlyGasEnergies'),
-      get(rawConsumptions, 'gas.monthlyGasEnergies'),
-    ),
+      get(rawConsumptions, 'gas.monthlyGasEnergies')
+    )
   }
 
   const result = []
@@ -153,20 +153,20 @@ export function formatHousing(
         contract_type: get(c, 'subscribeOffer.offerName'),
         powerkVA: parseInt(
           get(contractElec, 'supplyContractParameters.SUBSCRIBED_POWER'),
-          10,
+          10
         ),
         [energyType + '_consumptions']: consumptions[energyType],
-        charging_type: echeancierResult.isMonthly ? 'monthly' : 'yearly',
+        charging_type: echeancierResult.isMonthly ? 'monthly' : 'yearly'
       }
 
       // even if the api does not show it, real pdl number for gas is pce_number
       const pdlKeyMap = {
         electricity: 'pdl_number',
-        gas: 'pce_number',
+        gas: 'pce_number'
       }
       return {
         ...mappedContract,
-        [pdlKeyMap[energyType]]: c.pdlnumber,
+        [pdlKeyMap[energyType]]: c.pdlnumber
       }
     })
     const housing = {
@@ -176,14 +176,14 @@ export function formatHousing(
       residents_number: lifeStyle.noOfOccupants,
       living_space_m2: surfaceInSqMeter,
       heating_system: convertHeatingSystem(
-        heatingSystem.principalHeatingSystemType,
+        heatingSystem.principalHeatingSystemType
       ),
       water_heating_system: convertWaterHeatingSystem(
-        get(equipment, 'sanitoryHotWater.sanitoryHotWaterType'),
+        get(equipment, 'sanitoryHotWater.sanitoryHotWaterType')
       ),
       baking_types: convertBakingTypes(equipment.cookingEquipment),
       address: detail.adress,
-      energy_providers: energyProviders,
+      energy_providers: energyProviders
     }
     result.push(housing)
   }
