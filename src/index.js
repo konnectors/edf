@@ -140,10 +140,37 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchHousing() {
+    this.log('info', 'fetchHousing starts')
+    const notConnectedSelector = 'div.session-expired-message button'
+    await this.navigateToConsoPage(notConnectedSelector)
+
+    // first step : if not connected, click on the connect button
+    const isConnected = await this.runInWorker('checkConnected')
+    if (!isConnected) {
+      await this.runInWorker('click', notConnectedSelector)
+    }
+    await Promise.race([
+      this.waitForElementInWorker('button.multi-site-button'),
+      this.waitForElementInWorker('a[class="header-dashboard-button"]')
+    ])
+    // second step, if multiple contracts, select the first one
+    const multipleContracts = await this.runInWorker('checkMultipleContracts')
+    if (multipleContracts) {
+      const multipleHousing = await this.fetchMultipleHousings()
+      this.log('info', 'fetchMutlipleHousing done')
+      return multipleHousing
+    } else {
+      const singleHousing = await this.fetchSingleHousing()
+      this.log('info', 'fetchSingleHousing done')
+      return singleHousing
+    }
+  }
+
+  async navigateToConsoPage(notConnectedSelector) {
+    this.log('info', 'navigateToConsoPage starts')
     const consoLinkSelector =
       'a[href="/fr/accueil/economies-energie/comprendre-reduire-consommation-electrique-gaz.html"]'
     const continueLinkSelector = "a[href='https://equilibre.edf.fr/comprendre']"
-    const notConnectedSelector = 'div.session-expired-message button'
     await this.clickAndWait(consoLinkSelector, continueLinkSelector)
     await this.runInWorker('click', continueLinkSelector)
     await Promise.race([
@@ -151,21 +178,66 @@ class EdfContentScript extends ContentScript {
       this.waitForElementInWorker('.header-logo'),
       this.waitForElementInWorker('button.multi-site-button')
     ])
+  }
 
-    // first step : if not connected, click on the connect button
-    const isConnected = await this.runInWorker('checkConnected')
-    if (!isConnected) {
-      await this.runInWorker('click', notConnectedSelector)
+  async fetchMultipleHousings() {
+    this.log('info', 'fetchMultipleHousings starts')
+
+    const multiContractsIds = await this.runInWorker('getMultiContractsIds')
+    let multipleHousings = []
+    await this.runInWorker('selectContract', multiContractsIds[0])
+    for (let i = 0; i < multiContractsIds.length; i++) {
+      await this.runInWorker('waitForSessionStorage')
+      const {
+        constructionDate = {},
+        equipment = {},
+        heatingSystem = {},
+        housingType = {},
+        lifeStyle = {},
+        surfaceInSqMeter = {},
+        residenceType = {}
+      } = await this.runInWorker('getHomeProfile')
+
+      const contractElec = await this.runInWorker('getContractElec')
+
+      const rawConsumptions = await this.runInWorker('getConsumptions')
+
+      const pdlNumber = await this.runInWorker('getContractPdlNumber')
+
+      const houseConsumption = {
+        pdlNumber,
+        constructionDate,
+        equipment,
+        heatingSystem,
+        housingType,
+        lifeStyle,
+        surfaceInSqMeter,
+        residenceType,
+        contractElec,
+        rawConsumptions
+      }
+      multipleHousings.push(houseConsumption)
+
+      if (i === multiContractsIds.length - 1) {
+        this.log('info', 'no more contracts after this one')
+        break
+      }
+      await this.runInWorker('changeContract', multiContractsIds[i + 1])
+      await this.waitForElementInWorker('button')
+      await this.clickAndWait('button', 'button.multi-site-button')
+      await this.clickAndWait(
+        `button[id="${multiContractsIds[i + 1]}"]`,
+        'a[class="header-dashboard-button"]'
+      )
     }
+    return multipleHousings
+  }
 
-    // second step, if multiple contracts, select the first one
-    const multipleContracts = await this.runInWorker('checkMultipleContracts')
-    if (multipleContracts) {
-      await this.runInWorker('click', 'button.multi-site-button')
-    }
-
-    this.runInWorker('waitForSessionStorage')
-
+  async fetchSingleHousing() {
+    this.log('info', 'fetchSingleHousing starts')
+    await this.runInWorker('waitForSessionStorage')
+    this.log('info', 'sessionStorage is fullfilled')
+    const result = []
     const {
       constructionDate = {},
       equipment = {},
@@ -179,8 +251,10 @@ class EdfContentScript extends ContentScript {
     const contractElec = await this.runInWorker('getContractElec')
 
     const rawConsumptions = await this.runInWorker('getConsumptions')
+    const pdlNumber = await this.runInWorker('getContractPdlNumber')
 
-    return {
+    result.push({
+      pdlNumber,
       constructionDate,
       equipment,
       heatingSystem,
@@ -190,7 +264,18 @@ class EdfContentScript extends ContentScript {
       residenceType,
       contractElec,
       rawConsumptions
-    }
+    })
+    return result
+  }
+
+  async changeContract(id) {
+    this.log('info', 'changeContract starts')
+    window.localStorage.setItem('site-ext-id', `${id}`)
+    window.location.reload()
+  }
+
+  selectContract(id) {
+    document.querySelector(`button[id="${id}"]`).click()
   }
 
   async fetchEcheancierBills(contracts, context) {
@@ -484,7 +569,6 @@ class EdfContentScript extends ContentScript {
     const contracts = await ky
       .get(BASE_URL + '/services/rest/authenticate/getListContracts')
       .json()
-
     const result = { folders: {}, details: {} }
 
     for (const contractDetails of contracts.customerAccordContracts) {
@@ -650,6 +734,7 @@ class EdfContentScript extends ContentScript {
   }
 
   getHomeProfile() {
+    this.log('info', 'getHomeProfile starts')
     const homeStorage = window.sessionStorage.getItem('datacache:profil')
     if (homeStorage) {
       return JSON.parse(homeStorage).value.data.housing
@@ -688,6 +773,22 @@ class EdfContentScript extends ContentScript {
     }
     return result
   }
+
+  getMultiContractsIds() {
+    let contractsIds = []
+    const foundContracts = document.querySelectorAll('button.multi-site-button')
+    for (const contract of foundContracts) {
+      contractsIds.push(contract.getAttribute('id'))
+    }
+    return contractsIds
+  }
+
+  getContractPdlNumber() {
+    const pdlNumber = JSON.parse(
+      window.localStorage.getItem('site-ext-id')
+    ).value
+    return pdlNumber
+  }
 }
 
 const connector = new EdfContentScript()
@@ -703,7 +804,11 @@ connector
       'getContractElec',
       'getConsumptions',
       'waitForSessionStorage',
-      'logout'
+      'logout',
+      'getMultiContractsIds',
+      'selectContract',
+      'changeContract',
+      'getContractPdlNumber'
     ]
   })
   .catch(err => {
