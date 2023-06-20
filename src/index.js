@@ -156,11 +156,13 @@ class EdfContentScript extends ContentScript {
     // second step, if multiple contracts, select the first one
     const multipleContracts = await this.runInWorker('checkMultipleContracts')
     if (multipleContracts) {
-      const multipleHousing = await this.fetchMultipleHousings()
+      const multiContractsIds = await this.runInWorker('getMultiContractsIds')
+      await this.runInWorker('selectContract', multiContractsIds[0])
+      const multipleHousing = await this.computeHousing(multiContractsIds)
       this.log('info', 'fetchMutlipleHousing done')
       return multipleHousing
     } else {
-      const singleHousing = await this.fetchSingleHousing()
+      const singleHousing = await this.computeHousing()
       this.log('info', 'fetchSingleHousing done')
       return singleHousing
     }
@@ -180,13 +182,14 @@ class EdfContentScript extends ContentScript {
     ])
   }
 
-  async fetchMultipleHousings() {
-    this.log('info', 'fetchMultipleHousings starts')
-
-    const multiContractsIds = await this.runInWorker('getMultiContractsIds')
-    let multipleHousings = []
-    await this.runInWorker('selectContract', multiContractsIds[0])
-    for (let i = 0; i < multiContractsIds.length; i++) {
+  async computeHousing(multiContractsIds) {
+    this.log('info', 'computeHousing starts')
+    // Here if there is a single contract, we don't need the precise id of it
+    // So no need to retrieve it, but the function is waiting for an array, so we give it with a single entry
+    // To avoid unecessary steps in computeHousing
+    const contractsIds = multiContractsIds ? multiContractsIds : ['1']
+    let computedHousings = []
+    for (let i = 0; i < contractsIds.length; i++) {
       await this.runInWorker('waitForSessionStorage')
       const {
         constructionDate = {},
@@ -216,56 +219,21 @@ class EdfContentScript extends ContentScript {
         contractElec,
         rawConsumptions
       }
-      multipleHousings.push(houseConsumption)
+      computedHousings.push(houseConsumption)
 
-      if (i === multiContractsIds.length - 1) {
+      if (i === contractsIds.length - 1) {
         this.log('info', 'no more contracts after this one')
         break
       }
-      await this.runInWorker('changeContract', multiContractsIds[i + 1])
+      await this.runInWorker('changeContract', contractsIds[i + 1])
       await this.waitForElementInWorker('button')
       await this.clickAndWait('button', 'button.multi-site-button')
       await this.clickAndWait(
-        `button[id="${multiContractsIds[i + 1]}"]`,
+        `button[id="${contractsIds[i + 1]}"]`,
         'a[class="header-dashboard-button"]'
       )
     }
-    return multipleHousings
-  }
-
-  async fetchSingleHousing() {
-    this.log('info', 'fetchSingleHousing starts')
-    await this.runInWorker('waitForSessionStorage')
-    this.log('info', 'sessionStorage is fullfilled')
-    const result = []
-    const {
-      constructionDate = {},
-      equipment = {},
-      heatingSystem = {},
-      housingType = {},
-      lifeStyle = {},
-      surfaceInSqMeter = {},
-      residenceType = {}
-    } = await this.runInWorker('getHomeProfile')
-
-    const contractElec = await this.runInWorker('getContractElec')
-
-    const rawConsumptions = await this.runInWorker('getConsumptions')
-    const pdlNumber = await this.runInWorker('getContractPdlNumber')
-
-    result.push({
-      pdlNumber,
-      constructionDate,
-      equipment,
-      heatingSystem,
-      housingType,
-      lifeStyle,
-      surfaceInSqMeter,
-      residenceType,
-      contractElec,
-      rawConsumptions
-    })
-    return result
+    return computedHousings
   }
 
   async changeContract(id) {
@@ -275,6 +243,7 @@ class EdfContentScript extends ContentScript {
   }
 
   selectContract(id) {
+    this.log('info', 'selectContract starts')
     document.querySelector(`button[id="${id}"]`).click()
   }
 
