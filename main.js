@@ -6711,44 +6711,33 @@ function getEnergyTypeFromContract(contract) {
     : 'gas'
 }
 
-function formatHousing(
-  contracts,
-  echeancierResult,
-  {
-    constructionDate,
-    equipment,
-    heatingSystem,
-    housingType,
-    lifeStyle,
-    surfaceInSqMeter,
-    residenceType,
-    contractElec,
-    rawConsumptions
-  }
-) {
-  const consumptions = {
-    electricity: convertConsumption(
-      lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(rawConsumptions, 'elec.yearlyElecEnergies'),
-      lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(rawConsumptions, 'elec.monthlyElecEnergies')
-    ),
-    gas: convertConsumption(
-      lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(rawConsumptions, 'gas.yearlyGasEnergies'),
-      lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(rawConsumptions, 'gas.monthlyGasEnergies')
-    )
-  }
-
+function formatHousing(contracts, echeancierResult, housingArray) {
   const result = []
-  for (const key in contracts.details) {
-    const detail = contracts.details[key]
+  for (const oneHousing of housingArray) {
+    const consumptions = {
+      electricity: convertConsumption(
+        lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(oneHousing.rawConsumptions, 'elec.yearlyElecEnergies'),
+        lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(oneHousing.rawConsumptions, 'elec.monthlyElecEnergies')
+      ),
+      gas: convertConsumption(
+        lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(oneHousing.rawConsumptions, 'gas.yearlyGasEnergies'),
+        lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(oneHousing.rawConsumptions, 'gas.monthlyGasEnergies')
+      )
+    }
+    const contractId = checkPdlNumber(contracts, oneHousing.pdlNumber)
+    const detail = contracts.details[contractId]
     const energyProviders = detail.contracts.map(c => {
       const energyType = getEnergyTypeFromContract(c)
       const mappedContract = {
-        vendor: 'edfclientside',
+        vendor: 'edf.fr',
         contract_number: c.number,
         energy_type: energyType,
         contract_type: lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(c, 'subscribeOffer.offerName'),
         powerkVA: parseInt(
-          lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(contractElec, 'supplyContractParameters.SUBSCRIBED_POWER'),
+          lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(
+            oneHousing.contractElec,
+            'supplyContractParameters.SUBSCRIBED_POWER'
+          ),
           10
         ),
         [energyType + '_consumptions']: consumptions[energyType],
@@ -6766,25 +6755,37 @@ function formatHousing(
       }
     })
     const housing = {
-      construction_year: constructionDate,
-      residence_type: convertResidenceType(residenceType),
-      housing_type: convertHousingType(housingType),
-      residents_number: lifeStyle.noOfOccupants,
-      living_space_m2: surfaceInSqMeter,
+      construction_year: oneHousing.constructionDate,
+      residence_type: convertResidenceType(oneHousing.residenceType),
+      housing_type: convertHousingType(oneHousing.housingType),
+      residents_number: oneHousing.lifeStyle.noOfOccupants,
+      living_space_m2: oneHousing.surfaceInSqMeter,
       heating_system: convertHeatingSystem(
-        heatingSystem.principalHeatingSystemType
+        oneHousing.heatingSystem.principalHeatingSystemType
       ),
       water_heating_system: convertWaterHeatingSystem(
-        lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(equipment, 'sanitoryHotWater.sanitoryHotWaterType')
+        lodash_get__WEBPACK_IMPORTED_MODULE_1___default()(oneHousing.equipment, 'sanitoryHotWater.sanitoryHotWaterType')
       ),
-      baking_types: convertBakingTypes(equipment.cookingEquipment),
+      baking_types: convertBakingTypes(oneHousing.equipment.cookingEquipment),
       address: detail.adress,
       energy_providers: energyProviders
     }
     result.push(housing)
   }
-
   return result
+}
+
+function checkPdlNumber(contracts, pdlNumber) {
+  const detailsKeys = Object.keys(contracts.details)
+  for (const key of detailsKeys) {
+    const foundContracts = contracts.details[key].contracts
+    for (const contract of foundContracts) {
+      if (contract.pdlnumber === pdlNumber) {
+        return contracts.details[key].number.substring(2)
+      }
+    }
+  }
+  return false
 }
 
 
@@ -10386,10 +10387,39 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async fetchHousing() {
+    this.log('info', 'fetchHousing starts')
+    const notConnectedSelector = 'div.session-expired-message button'
+    await this.navigateToConsoPage(notConnectedSelector)
+
+    // first step : if not connected, click on the connect button
+    const isConnected = await this.runInWorker('checkConnected')
+    if (!isConnected) {
+      await this.runInWorker('click', notConnectedSelector)
+    }
+    await Promise.race([
+      this.waitForElementInWorker('button.multi-site-button'),
+      this.waitForElementInWorker('a[class="header-dashboard-button"]')
+    ])
+    // second step, if multiple contracts, select the first one
+    const multipleContracts = await this.runInWorker('checkMultipleContracts')
+    if (multipleContracts) {
+      const multiContractsIds = await this.runInWorker('getMultiContractsIds')
+      await this.runInWorker('selectContract', multiContractsIds[0])
+      const multipleHousing = await this.computeHousing(multiContractsIds)
+      this.log('info', 'fetchMutlipleHousing done')
+      return multipleHousing
+    } else {
+      const singleHousing = await this.computeHousing()
+      this.log('info', 'fetchSingleHousing done')
+      return singleHousing
+    }
+  }
+
+  async navigateToConsoPage(notConnectedSelector) {
+    this.log('info', 'navigateToConsoPage starts')
     const consoLinkSelector =
       'a[href="/fr/accueil/economies-energie/comprendre-reduire-consommation-electrique-gaz.html"]'
     const continueLinkSelector = "a[href='https://equilibre.edf.fr/comprendre']"
-    const notConnectedSelector = 'div.session-expired-message button'
     await this.clickAndWait(consoLinkSelector, continueLinkSelector)
     await this.runInWorker('click', continueLinkSelector)
     await Promise.race([
@@ -10397,46 +10427,71 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       this.waitForElementInWorker('.header-logo'),
       this.waitForElementInWorker('button.multi-site-button')
     ])
+  }
 
-    // first step : if not connected, click on the connect button
-    const isConnected = await this.runInWorker('checkConnected')
-    if (!isConnected) {
-      await this.runInWorker('click', notConnectedSelector)
+  async computeHousing(multiContractsIds) {
+    this.log('info', 'computeHousing starts')
+    // Here if there is a single contract, we don't need the precise id of it
+    // So no need to retrieve it, but the function is waiting for an array, so we give it with a single entry
+    // To avoid unecessary steps in computeHousing
+    const contractsIds = multiContractsIds ? multiContractsIds : ['1']
+    let computedHousings = []
+    for (let i = 0; i < contractsIds.length; i++) {
+      await this.runInWorker('waitForSessionStorage')
+      const {
+        constructionDate = {},
+        equipment = {},
+        heatingSystem = {},
+        housingType = {},
+        lifeStyle = {},
+        surfaceInSqMeter = {},
+        residenceType = {}
+      } = await this.runInWorker('getHomeProfile')
+
+      const contractElec = await this.runInWorker('getContractElec')
+
+      const rawConsumptions = await this.runInWorker('getConsumptions')
+
+      const pdlNumber = await this.runInWorker('getContractPdlNumber')
+
+      const houseConsumption = {
+        pdlNumber,
+        constructionDate,
+        equipment,
+        heatingSystem,
+        housingType,
+        lifeStyle,
+        surfaceInSqMeter,
+        residenceType,
+        contractElec,
+        rawConsumptions
+      }
+      computedHousings.push(houseConsumption)
+
+      if (i === contractsIds.length - 1) {
+        this.log('info', 'no more contracts after this one')
+        break
+      }
+      await this.runInWorker('changeContract', contractsIds[i + 1])
+      await this.waitForElementInWorker('button')
+      await this.clickAndWait('button', 'button.multi-site-button')
+      await this.clickAndWait(
+        `button[id="${contractsIds[i + 1]}"]`,
+        'a[class="header-dashboard-button"]'
+      )
     }
+    return computedHousings
+  }
 
-    // second step, if multiple contracts, select the first one
-    const multipleContracts = await this.runInWorker('checkMultipleContracts')
-    if (multipleContracts) {
-      await this.runInWorker('click', 'button.multi-site-button')
-    }
+  async changeContract(id) {
+    this.log('info', 'changeContract starts')
+    window.localStorage.setItem('site-ext-id', `${id}`)
+    window.location.reload()
+  }
 
-    this.runInWorker('waitForSessionStorage')
-
-    const {
-      constructionDate = {},
-      equipment = {},
-      heatingSystem = {},
-      housingType = {},
-      lifeStyle = {},
-      surfaceInSqMeter = {},
-      residenceType = {}
-    } = await this.runInWorker('getHomeProfile')
-
-    const contractElec = await this.runInWorker('getContractElec')
-
-    const rawConsumptions = await this.runInWorker('getConsumptions')
-
-    return {
-      constructionDate,
-      equipment,
-      heatingSystem,
-      housingType,
-      lifeStyle,
-      surfaceInSqMeter,
-      residenceType,
-      contractElec,
-      rawConsumptions
-    }
+  selectContract(id) {
+    this.log('info', 'selectContract starts')
+    document.querySelector(`button[id="${id}"]`).click()
   }
 
   async fetchEcheancierBills(contracts, context) {
@@ -10724,7 +10779,6 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     this.log('debug', 'fetching contracts')
     const contracts = await ky__WEBPACK_IMPORTED_MODULE_5__["default"].get(BASE_URL + '/services/rest/authenticate/getListContracts')
       .json()
-
     const result = { folders: {}, details: {} }
 
     for (const contractDetails of contracts.customerAccordContracts) {
@@ -10888,6 +10942,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   getHomeProfile() {
+    this.log('info', 'getHomeProfile starts')
     const homeStorage = window.sessionStorage.getItem('datacache:profil')
     if (homeStorage) {
       return JSON.parse(homeStorage).value.data.housing
@@ -10926,6 +10981,22 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     }
     return result
   }
+
+  getMultiContractsIds() {
+    let contractsIds = []
+    const foundContracts = document.querySelectorAll('button.multi-site-button')
+    for (const contract of foundContracts) {
+      contractsIds.push(contract.getAttribute('id'))
+    }
+    return contractsIds
+  }
+
+  getContractPdlNumber() {
+    const pdlNumber = JSON.parse(
+      window.localStorage.getItem('site-ext-id')
+    ).value
+    return pdlNumber
+  }
 }
 
 const connector = new EdfContentScript()
@@ -10941,7 +11012,11 @@ connector
       'getContractElec',
       'getConsumptions',
       'waitForSessionStorage',
-      'logout'
+      'logout',
+      'getMultiContractsIds',
+      'selectContract',
+      'changeContract',
+      'getContractPdlNumber'
     ]
   })
   .catch(err => {
