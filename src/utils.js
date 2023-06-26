@@ -115,44 +115,33 @@ export function getEnergyTypeFromContract(contract) {
     : 'gas'
 }
 
-export function formatHousing(
-  contracts,
-  echeancierResult,
-  {
-    constructionDate,
-    equipment,
-    heatingSystem,
-    housingType,
-    lifeStyle,
-    surfaceInSqMeter,
-    residenceType,
-    contractElec,
-    rawConsumptions
-  }
-) {
-  const consumptions = {
-    electricity: convertConsumption(
-      get(rawConsumptions, 'elec.yearlyElecEnergies'),
-      get(rawConsumptions, 'elec.monthlyElecEnergies')
-    ),
-    gas: convertConsumption(
-      get(rawConsumptions, 'gas.yearlyGasEnergies'),
-      get(rawConsumptions, 'gas.monthlyGasEnergies')
-    )
-  }
-
+export function formatHousing(contracts, echeancierResult, housingArray) {
   const result = []
-  for (const key in contracts.details) {
-    const detail = contracts.details[key]
+  for (const oneHousing of housingArray) {
+    const consumptions = {
+      electricity: convertConsumption(
+        get(oneHousing.rawConsumptions, 'elec.yearlyElecEnergies'),
+        get(oneHousing.rawConsumptions, 'elec.monthlyElecEnergies')
+      ),
+      gas: convertConsumption(
+        get(oneHousing.rawConsumptions, 'gas.yearlyGasEnergies'),
+        get(oneHousing.rawConsumptions, 'gas.monthlyGasEnergies')
+      )
+    }
+    const contractId = checkPdlNumber(contracts, oneHousing.pdlNumber)
+    const detail = contracts.details[contractId]
     const energyProviders = detail.contracts.map(c => {
       const energyType = getEnergyTypeFromContract(c)
       const mappedContract = {
-        vendor: 'edfclientside',
+        vendor: 'edf.fr',
         contract_number: c.number,
         energy_type: energyType,
         contract_type: get(c, 'subscribeOffer.offerName'),
         powerkVA: parseInt(
-          get(contractElec, 'supplyContractParameters.SUBSCRIBED_POWER'),
+          get(
+            oneHousing.contractElec,
+            'supplyContractParameters.SUBSCRIBED_POWER'
+          ),
           10
         ),
         [energyType + '_consumptions']: consumptions[energyType],
@@ -170,23 +159,35 @@ export function formatHousing(
       }
     })
     const housing = {
-      construction_year: constructionDate,
-      residence_type: convertResidenceType(residenceType),
-      housing_type: convertHousingType(housingType),
-      residents_number: lifeStyle.noOfOccupants,
-      living_space_m2: surfaceInSqMeter,
+      construction_year: oneHousing.constructionDate,
+      residence_type: convertResidenceType(oneHousing.residenceType),
+      housing_type: convertHousingType(oneHousing.housingType),
+      residents_number: oneHousing.lifeStyle.noOfOccupants,
+      living_space_m2: oneHousing.surfaceInSqMeter,
       heating_system: convertHeatingSystem(
-        heatingSystem.principalHeatingSystemType
+        oneHousing.heatingSystem.principalHeatingSystemType
       ),
       water_heating_system: convertWaterHeatingSystem(
-        get(equipment, 'sanitoryHotWater.sanitoryHotWaterType')
+        get(oneHousing.equipment, 'sanitoryHotWater.sanitoryHotWaterType')
       ),
-      baking_types: convertBakingTypes(equipment.cookingEquipment),
+      baking_types: convertBakingTypes(oneHousing.equipment.cookingEquipment),
       address: detail.adress,
       energy_providers: energyProviders
     }
     result.push(housing)
   }
-
   return result
+}
+
+function checkPdlNumber(contracts, pdlNumber) {
+  const detailsKeys = Object.keys(contracts.details)
+  for (const key of detailsKeys) {
+    const foundContracts = contracts.details[key].contracts
+    for (const contract of foundContracts) {
+      if (contract.pdlnumber === pdlNumber) {
+        return contracts.details[key].number.substring(2)
+      }
+    }
+  }
+  return false
 }
