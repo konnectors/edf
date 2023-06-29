@@ -1,5 +1,4 @@
 import Minilog from '@cozy/minilog'
-import get from 'lodash/get'
 
 const log = Minilog('Utils')
 
@@ -110,7 +109,7 @@ export function convertConsumption(yearlyData = [], monthlyData = []) {
 }
 
 export function getEnergyTypeFromContract(contract) {
-  return get(contract, 'subscribeOffer.energy') === 'ELECTRICITE'
+  return contract?.subscribeOffer?.energy === 'ELECTRICITE'
     ? 'electricity'
     : 'gas'
 }
@@ -120,12 +119,12 @@ export function formatHousing(contracts, echeancierResult, housingArray) {
   for (const oneHousing of housingArray) {
     const consumptions = {
       electricity: convertConsumption(
-        get(oneHousing.rawConsumptions, 'elec.yearlyElecEnergies'),
-        get(oneHousing.rawConsumptions, 'elec.monthlyElecEnergies')
+        oneHousing.rawConsumptions?.elec?.yearlyElecEnergies,
+        oneHousing.rawConsumptions?.elec?.monthlyElecEnergies
       ),
       gas: convertConsumption(
-        get(oneHousing.rawConsumptions, 'gas.yearlyGasEnergies'),
-        get(oneHousing.rawConsumptions, 'gas.monthlyGasEnergies')
+        oneHousing.rawConsumptions?.gas?.yearlyGasEnergies,
+        oneHousing.rawConsumptions?.gas.monthlyGasEnergies
       )
     }
     const contractId = checkPdlNumber(contracts, oneHousing.pdlNumber)
@@ -136,12 +135,9 @@ export function formatHousing(contracts, echeancierResult, housingArray) {
         vendor: 'edf.fr',
         contract_number: c.number,
         energy_type: energyType,
-        contract_type: get(c, 'subscribeOffer.offerName'),
+        contract_type: c?.subscribeOffer?.offerName,
         powerkVA: parseInt(
-          get(
-            oneHousing.contractElec,
-            'supplyContractParameters.SUBSCRIBED_POWER'
-          ),
+          oneHousing.contractElec?.supplyContractParameters?.SUBSCRIBED_POWER,
           10
         ),
         [energyType + '_consumptions']: consumptions[energyType],
@@ -168,7 +164,7 @@ export function formatHousing(contracts, echeancierResult, housingArray) {
         oneHousing.heatingSystem.principalHeatingSystemType
       ),
       water_heating_system: convertWaterHeatingSystem(
-        get(oneHousing.equipment, 'sanitoryHotWater.sanitoryHotWaterType')
+        oneHousing.equipment?.sanitoryHotWater?.sanitoryHotWaterType
       ),
       baking_types: convertBakingTypes(oneHousing.equipment.cookingEquipment),
       address: detail.adress,
