@@ -124,7 +124,7 @@ export function formatHousing(contracts, echeancierResult, housingArray) {
       ),
       gas: convertConsumption(
         oneHousing.rawConsumptions?.gas?.yearlyGasEnergies,
-        oneHousing.rawConsumptions?.gas.monthlyGasEnergies
+        oneHousing.rawConsumptions?.gas?.monthlyGasEnergies
       )
     }
     const contractId = checkPdlNumber(contracts, oneHousing.pdlNumber)
