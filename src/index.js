@@ -46,6 +46,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async ensureAuthenticated({ account }) {
+    this.bridge.addEventListener('workerEvent', this.onWorkerEvent.bind(this))
     if (!account) {
       await this.ensureNotAuthenticated()
     }
@@ -123,6 +124,7 @@ class EdfContentScript extends ContentScript {
   async fetch(context) {
     this.log('info', 'fetch start')
     if (this.store && this.store.email && this.store.password) {
+      this.log('info', 'saving credentials')
       await this.saveCredentials(this.store)
     }
     const contact = await this.fetchContact()
@@ -623,23 +625,44 @@ class EdfContentScript extends ContentScript {
     }
   }
 
+  async onWorkerEvent(event, payload) {
+    if (event === 'loginSubmit') {
+      const { email, password } = payload || {}
+      if (email && password) {
+        // store the email and password in the pilot to send it
+        // in the beginning of the fetch method when the launcher
+        // is ready to receive it
+        this.store = { email, password }
+      }
+    }
+  }
+
   // ////////
   // WORKER//
   // ////////
-  async checkAuthenticated() {
-    // try to subscribe a listener in the password field if present and not already done
-    const passwordField = document.querySelector('#password2-password-field')
-    const subscribed = window.__passwordField_subscribed
-    if (passwordField && !subscribed) {
-      passwordField.addEventListener(
-        'change',
-        this.findAndSendCredentials.bind(this)
-      )
-      window.__passwordField_subscribed = true
+  onWorkerReady() {
+    const $finalSubmitButton = document.querySelector('#password2-next-button')
+    if ($finalSubmitButton) {
+      $finalSubmitButton.addEventListener('click', () => {
+        const email = document.querySelector('#emailHid')?.value
+        const password = document.querySelector(
+          '#password2-password-field'
+        )?.value
+        this.bridge.emit('workerEvent', 'loginSubmit', { email, password })
+      })
     }
-
+  }
+  async checkAuthenticated() {
     const $contracts = document.querySelectorAll('.selected-contrat')
     const isAuthentifiedWithMultipleContracts = Boolean($contracts.length)
+    const vendorErrorMsg = document.querySelector(
+      '.auth__title--error'
+    )?.innerText
+
+    if (vendorErrorMsg) {
+      this.log('error', vendorErrorMsg)
+      throw new Error('VENDOR_DOWN')
+    }
 
     const isAuthentifiedWithOneContract = Boolean(
       document.querySelector('.isAuthentified.show')
