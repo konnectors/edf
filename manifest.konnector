@@ -8,7 +8,7 @@
   "slug": "edf",
   "source": "git@github.com:konnectors/edf.git",
   "editor": "Cozy",
-  "vendor_link": "https://particulier.edf.fr/fr/accueil/aide-contact/faq.html",
+  "vendor_link": "https://particulier.edf.fr/fr/accueil.html",
   "categories": [
     "energy"
   ],
