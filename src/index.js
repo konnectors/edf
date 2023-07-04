@@ -254,10 +254,10 @@ class EdfContentScript extends ContentScript {
     const billLinkSelector = "a.accessPage[href*='factures-et-paiements.html']"
     await this.clickAndWait(billLinkSelector, fullpageLoadedSelector)
 
-    const result = await ky
-      .get(`${BASE_URL}/services/rest/bill/consult?_=${Date.now()}`)
-      .json()
-
+    const result = await this.runInWorker(
+      'getKyJson',
+      `${BASE_URL}/services/rest/bill/consult?_=${Date.now()}`
+    )
     if (!result || !result.feSouscriptionResponse) {
       log.warn('fetchEcheancierBills: could not find contract')
       return
@@ -292,9 +292,10 @@ class EdfContentScript extends ContentScript {
           currency: '€'
         }))
 
-      const paymentDocuments = await ky
-        .get(BASE_URL + '/services/rest/edoc/getPaymentsDocuments')
-        .json()
+      const paymentDocuments = await this.runInWorker(
+        'getKyJson',
+        BASE_URL + '/services/rest/edoc/getPaymentsDocuments'
+      )
 
       if (
         paymentDocuments.length === 0 ||
@@ -364,9 +365,11 @@ class EdfContentScript extends ContentScript {
     const billButtonSelector = '#facture'
     const billListSelector = '#factureSelection'
     await this.clickAndWait(billButtonSelector, billListSelector)
-    const billDocResp = await ky
-      .get(BASE_URL + '/services/rest/edoc/getBillsDocuments')
-      .json()
+
+    const billDocResp = await this.runInWorker(
+      'getKyJson',
+      BASE_URL + '/services/rest/edoc/getBillsDocuments'
+    )
 
     if (billDocResp.length === 0) {
       log.warn('fetchBillsForAllContracts: could not find bills')
@@ -444,9 +447,10 @@ class EdfContentScript extends ContentScript {
   }
 
   async getCsrfToken() {
-    const dataCsrfToken = await ky
-      .get(BASE_URL + `/services/rest/init/initPage?_=${Date.now()}`)
-      .json()
+    const dataCsrfToken = await this.runInWorker(
+      'getKyJson',
+      BASE_URL + `/services/rest/init/initPage?_=${Date.now()}`
+    )
     return dataCsrfToken.data
   }
 
@@ -457,11 +461,11 @@ class EdfContentScript extends ContentScript {
     const contractDisplayedSelector = '.contract-icon'
     await this.waitForElementInWorker(myDocumentsLinkSelector)
     await this.clickAndWait(myDocumentsLinkSelector, contractDisplayedSelector)
-    const attestationData = await ky
-      .get(
-        BASE_URL + `/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
-      )
-      .json()
+
+    const attestationData = await this.runInWorker(
+      'getKyJson',
+      BASE_URL + `/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
+    )
 
     if (attestationData.length === 0) {
       this.log('debug', 'Could not find any attestation')
@@ -531,9 +535,11 @@ class EdfContentScript extends ContentScript {
 
   async fetchContracts() {
     this.log('debug', 'fetching contracts')
-    const contracts = await ky
-      .get(BASE_URL + '/services/rest/authenticate/getListContracts')
-      .json()
+
+    const contracts = await this.runInWorker(
+      'getKyJson',
+      BASE_URL + '/services/rest/authenticate/getListContracts'
+    )
     const result = { folders: {}, details: {} }
 
     for (const contractDetails of contracts.customerAccordContracts) {
@@ -548,9 +554,11 @@ class EdfContentScript extends ContentScript {
 
   async fetchContact() {
     this.log('debug', 'fetching identity')
-    const json = await ky
-      .get(BASE_URL + '/services/rest/context/getCustomerContext')
-      .json()
+
+    const json = await this.runInWorker(
+      'getKyJson',
+      BASE_URL + '/services/rest/context/getCustomerContext'
+    )
 
     let ident = {}
     if (!json.bp) {
@@ -601,9 +609,10 @@ class EdfContentScript extends ContentScript {
   }
 
   async getUserDataFromWebsite() {
-    const context = await ky
-      .get(BASE_URL + '/services/rest/context/getCustomerContext')
-      .json()
+    const context = await this.runInWorker(
+      'getKyJson',
+      BASE_URL + '/services/rest/context/getCustomerContext'
+    )
     const mail = context?.bp?.mail
     if (mail) {
       return {
@@ -754,12 +763,17 @@ class EdfContentScript extends ContentScript {
     ).value
     return pdlNumber
   }
+
+  getKyJson(url) {
+    return ky.get(url).json()
+  }
 }
 
 const connector = new EdfContentScript()
 connector
   .init({
     additionalExposedMethodsNames: [
+      'getKyJson',
       'waitForLoginForm',
       'checkOtpNeeded',
       'checkConnected',
