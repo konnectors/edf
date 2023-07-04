@@ -45,7 +45,7 @@ class EdfContentScript extends ContentScript {
     window.deconnexion()
   }
 
-  async ensureAuthenticated(account) {
+  async ensureAuthenticated({ account }) {
     if (!account) {
       await this.ensureNotAuthenticated()
     }
