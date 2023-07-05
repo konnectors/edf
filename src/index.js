@@ -409,6 +409,7 @@ class EdfContentScript extends ContentScript {
       for (let acc of accList) {
         const contract = acc.accDTO
         const subPath = contracts.folders[contract.numAcc]
+        const cozyBills = []
         for (let bill of acc.listOfbills) {
           const cozyBill = {
             vendor: 'EDF',
@@ -452,14 +453,15 @@ class EdfContentScript extends ContentScript {
               carbonCopy: true
             }
           }
-          await this.saveBills([cozyBill], {
-            context,
-            subPath,
-            fileIdAttributes: ['vendorRef'],
-            contentType: 'application/pdf',
-            qualificationLabel: 'energy_invoice'
-          })
+          cozyBills.push(cozyBill)
         }
+        await this.saveBills(cozyBills, {
+          context,
+          subPath,
+          fileIdAttributes: ['vendorRef'],
+          contentType: 'application/pdf',
+          qualificationLabel: 'energy_invoice'
+        })
       }
     }
   }
@@ -697,18 +699,6 @@ class EdfContentScript extends ContentScript {
       interval: 1000,
       timeout: 30 * 1000
     })
-    return true
-  }
-
-  findAndSendCredentials() {
-    const emailField = document.querySelector('#emailHid')
-    const passwordField = document.querySelector('#password2-password-field')
-    if (emailField && passwordField) {
-      this.sendToPilot({
-        email: emailField.value,
-        password: passwordField.value
-      })
-    }
     return true
   }
 
