@@ -4,6 +4,7 @@ import Minilog from '@cozy/minilog'
 import { format } from 'date-fns'
 import waitFor from 'p-wait-for'
 import { formatHousing } from './utils'
+import { wrapTimerFactory } from 'cozy-clisk/dist/libs/wrapTimer'
 
 const log = Minilog('ContentScript')
 Minilog.enable()
@@ -13,6 +14,21 @@ const DEFAULT_PAGE_URL =
   BASE_URL + '/fr/accueil/espace-client/tableau-de-bord.html'
 
 class EdfContentScript extends ContentScript {
+  constructor() {
+    super()
+    const logInfo = message => this.log('info', message)
+    const wrapTimerInfo = wrapTimerFactory({ logFn: logInfo })
+
+    this.fetchContact = wrapTimerInfo(this, 'fetchContact')
+    this.fetchContracts = wrapTimerInfo(this, 'fetchContracts')
+    this.fetchBillsForAllContracts = wrapTimerInfo(
+      this,
+      'fetchBillsForAllContracts'
+    )
+    this.fetchEcheancierBills = wrapTimerInfo(this, 'fetchEcheancierBills')
+    this.fetchHousing = wrapTimerInfo(this, 'fetchHousing')
+  }
+
   // ///////
   // PILOT//
   // ///////
