@@ -5,6 +5,10 @@ import { format } from 'date-fns'
 import waitFor from 'p-wait-for'
 import { formatHousing } from './utils'
 import { wrapTimerFactory } from 'cozy-clisk/dist/libs/wrapTimer'
+import { Q } from 'cozy-client/dist/queries/dsl'
+
+// TODO use a flag to change this value
+let FORCE_FETCH_ALL = false
 
 const log = Minilog('ContentScript')
 Minilog.enable()
@@ -139,6 +143,21 @@ class EdfContentScript extends ContentScript {
 
   async fetch(context) {
     this.log('info', 'fetch start')
+    const { sourceAccountIdentifier, manifest, trigger } = context
+
+    // force fetch all data (the long way) when last trigger execution is older than 30 days
+    // or when the last job was an error
+    const isLastJobError =
+      trigger.current_state.last_failure > trigger.current_state.last_success
+    const distanceInDays = getDateDistanceInDays(
+      trigger.current_state.last_execution
+    )
+    if (distanceInDays >= 30 || isLastJobError) {
+      this.log('debug', `isLastJobError: ${isLastJobError}`)
+      this.log('debug', `distanceInDays: ${distanceInDays}`)
+      FORCE_FETCH_ALL = true
+    }
+
     if (this.store && this.store.email && this.store.password) {
       this.log('info', 'saving credentials')
       await this.saveCredentials(this.store)
@@ -148,12 +167,42 @@ class EdfContentScript extends ContentScript {
     await this.fetchAttestations(contracts, context)
     await this.fetchBillsForAllContracts(contracts, context)
     const echeancierResult = await this.fetchEcheancierBills(contracts, context)
-    const housing = formatHousing(
-      contracts,
-      echeancierResult,
-      await this.fetchHousing()
-    )
-    await this.saveIdentity({ contact, housing })
+
+    // fetch the housing data only if we do not have an existing identity or if the existing
+    // identity is older than 1 month
+    let lastIdentityUpdatedSinceDays = Infinity
+    if (!FORCE_FETCH_ALL) {
+      const existingIdentities = await this.queryAll(
+        Q('io.cozy.identities')
+          .where({
+            identifier: sourceAccountIdentifier,
+            'cozyMetadata.createdByApp': manifest.slug
+          })
+          .indexFields(['identifier', 'cozyMetadata.createdByApp'])
+      )
+      const existingIdentity = existingIdentities?.[0]
+      lastIdentityUpdatedSinceDays = existingIdentity
+        ? getDateDistanceInDays(existingIdentity.cozyMetadata.updatedAt)
+        : Infinity
+    }
+
+    if (FORCE_FETCH_ALL || lastIdentityUpdatedSinceDays >= 30) {
+      this.log(
+        'info',
+        `Existing identity updated since more than 30 days or no identity. Updating it`
+      )
+      const housing = formatHousing(
+        contracts,
+        echeancierResult,
+        await this.fetchHousing()
+      )
+      await this.saveIdentity({ contact, housing })
+    } else {
+      this.log(
+        'info',
+        `Existing identity last updated ${lastIdentityUpdatedSinceDays} ago. No need to update it`
+      )
+    }
   }
 
   async fetchHousing() {
@@ -822,3 +871,10 @@ connector
   .catch(err => {
     log.warn(err)
   })
+
+function getDateDistanceInDays(dateString) {
+  const distanceMs = Date.now() - new Date(dateString).getTime()
+  const days = 1000 * 60 * 60 * 24
+
+  return Math.floor(distanceMs / days)
+}
