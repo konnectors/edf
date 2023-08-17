@@ -14735,7 +14735,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     }
   }
 
-  async onWorkerEvent(event, payload) {
+  async onWorkerEvent({ event, payload }) {
     if (event === 'loginSubmit') {
       const { email, password } = payload || {}
       if (email && password) {
@@ -14751,16 +14751,23 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   // WORKER//
   // ////////
   onWorkerReady() {
-    const $finalSubmitButton = document.querySelector('#password2-next-button')
-    if ($finalSubmitButton) {
-      $finalSubmitButton.addEventListener('click', () => {
-        const email = document.querySelector('#emailHid')?.value
-        const password = document.querySelector(
-          '#password2-password-field'
-        )?.value
-        this.bridge.emit('workerEvent', 'loginSubmit', { email, password })
-      })
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+      const $finalSubmitButton = document.querySelector(
+        '#password2-next-button'
+      )
+      if ($finalSubmitButton) {
+        $finalSubmitButton.addEventListener('click', () => {
+          const email = document.querySelector('#emailHid')?.value
+          const password = document.querySelector(
+            '#password2-password-field'
+          )?.value
+          this.bridge.emit('workerEvent', {
+            event: 'loginSubmit',
+            payload: { email, password }
+          })
+        })
+      }
+    })
   }
   async checkAuthenticated() {
     const $contracts = document.querySelectorAll('.selected-contrat')
