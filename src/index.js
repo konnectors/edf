@@ -692,7 +692,7 @@ class EdfContentScript extends ContentScript {
     }
   }
 
-  async onWorkerEvent(event, payload) {
+  async onWorkerEvent({ event, payload }) {
     if (event === 'loginSubmit') {
       const { email, password } = payload || {}
       if (email && password) {
@@ -715,7 +715,10 @@ class EdfContentScript extends ContentScript {
         const password = document.querySelector(
           '#password2-password-field'
         )?.value
-        this.bridge.emit('workerEvent', 'loginSubmit', { email, password })
+        this.bridge.emit('workerEvent', {
+          event: 'loginSubmit',
+          payload: { email, password }
+        })
       })
     }
   }
