@@ -708,19 +708,23 @@ class EdfContentScript extends ContentScript {
   // WORKER//
   // ////////
   onWorkerReady() {
-    const $finalSubmitButton = document.querySelector('#password2-next-button')
-    if ($finalSubmitButton) {
-      $finalSubmitButton.addEventListener('click', () => {
-        const email = document.querySelector('#emailHid')?.value
-        const password = document.querySelector(
-          '#password2-password-field'
-        )?.value
-        this.bridge.emit('workerEvent', {
-          event: 'loginSubmit',
-          payload: { email, password }
+    window.addEventListener('DOMContentLoaded', () => {
+      const $finalSubmitButton = document.querySelector(
+        '#password2-next-button'
+      )
+      if ($finalSubmitButton) {
+        $finalSubmitButton.addEventListener('click', () => {
+          const email = document.querySelector('#emailHid')?.value
+          const password = document.querySelector(
+            '#password2-password-field'
+          )?.value
+          this.bridge.emit('workerEvent', {
+            event: 'loginSubmit',
+            payload: { email, password }
+          })
         })
-      })
-    }
+      }
+    })
   }
   async checkAuthenticated() {
     const $contracts = document.querySelectorAll('.selected-contrat')
