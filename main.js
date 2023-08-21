@@ -14091,7 +14091,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     ])
   }
   async ensureNotAuthenticated() {
-    this.log('info', 'ensureNotAuthenticated')
+    this.log('info', '🤖 starting ensureNotAuthenticated')
     await this.goToLoginForm()
     const authenticated = await this.runInWorker('checkAuthenticated')
     if (authenticated === false) {
@@ -14109,6 +14109,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async ensureAuthenticated({ account }) {
+    this.log('info', '🤖 starting ensureAuthenticated')
     this.bridge.addEventListener('workerEvent', this.onWorkerEvent.bind(this))
     if (!account) {
       await this.ensureNotAuthenticated()
@@ -14137,7 +14138,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async tryAutoLogin(credentials) {
-    this.log('info', 'autologin start')
+    this.log('info', '🤖 autologin start')
     await this.goto(DEFAULT_PAGE_URL)
     await Promise.all([
       this.autoLogin(credentials),
@@ -14178,22 +14179,22 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async waitForUserAuthentication() {
-    this.log('info', 'waitForUserAuthentication start')
+    this.log('info', '🤖 waitForUserAuthentication start')
     await this.setWorkerState({ visible: true, url: DEFAULT_PAGE_URL })
     await this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
     await this.setWorkerState({ visible: false })
   }
 
   async fetch(context) {
-    this.log('info', 'fetch start')
+    this.log('info', '🤖 fetch start')
     const { sourceAccountIdentifier, manifest, trigger } = context
 
     // force fetch all data (the long way) when last trigger execution is older than 30 days
     // or when the last job was an error
     const isLastJobError =
-      trigger.current_state.last_failure > trigger.current_state.last_success
+      trigger.current_state?.last_failure > trigger.current_state?.last_success
     const distanceInDays = getDateDistanceInDays(
-      trigger.current_state.last_execution
+      trigger.current_state?.last_execution
     )
     if (distanceInDays >= 30 || isLastJobError) {
       this.log('debug', `isLastJobError: ${isLastJobError}`)
@@ -14249,7 +14250,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async fetchHousing() {
-    this.log('info', 'fetchHousing starts')
+    this.log('info', '🤖 fetchHousing starts')
     const notConnectedSelector = 'div.session-expired-message button'
     await this.navigateToConsoPage(notConnectedSelector)
 
@@ -14278,7 +14279,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async navigateToConsoPage(notConnectedSelector) {
-    this.log('info', 'navigateToConsoPage starts')
+    this.log('info', '🤖 navigateToConsoPage starts')
     const consoLinkSelector =
       'a[href="/fr/accueil/economies-energie/comprendre-reduire-consommation-electrique-gaz.html"]'
     const continueLinkSelector = "a[href='https://equilibre.edf.fr/comprendre']"
@@ -14292,7 +14293,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async computeHousing(multiContractsIds) {
-    this.log('info', 'computeHousing starts')
+    this.log('info', '🤖 computeHousing starts')
     // Here if there is a single contract, we don't need the precise id of it
     // So no need to retrieve it, but the function is waiting for an array, so we give it with a single entry
     // To avoid unecessary steps in computeHousing
@@ -14721,6 +14722,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async getUserDataFromWebsite() {
+    this.log('info', '🤖 getUserDataFromWebsite start')
     const context = await this.runInWorker(
       'getKyJson',
       BASE_URL + '/services/rest/context/getCustomerContext'
