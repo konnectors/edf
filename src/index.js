@@ -149,9 +149,9 @@ class EdfContentScript extends ContentScript {
     // force fetch all data (the long way) when last trigger execution is older than 30 days
     // or when the last job was an error
     const isLastJobError =
-      trigger.current_state.last_failure > trigger.current_state.last_success
+      trigger.current_state?.last_failure > trigger.current_state?.last_success
     const distanceInDays = getDateDistanceInDays(
-      trigger.current_state.last_execution
+      trigger.current_state?.last_execution
     )
     if (distanceInDays >= 30 || isLastJobError) {
       this.log('debug', `isLastJobError: ${isLastJobError}`)
