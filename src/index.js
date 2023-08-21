@@ -48,7 +48,7 @@ class EdfContentScript extends ContentScript {
     ])
   }
   async ensureNotAuthenticated() {
-    this.log('info', 'ensureNotAuthenticated')
+    this.log('info', '🤖 starting ensureNotAuthenticated')
     await this.goToLoginForm()
     const authenticated = await this.runInWorker('checkAuthenticated')
     if (authenticated === false) {
@@ -66,6 +66,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async ensureAuthenticated({ account }) {
+    this.log('info', '🤖 starting ensureAuthenticated')
     this.bridge.addEventListener('workerEvent', this.onWorkerEvent.bind(this))
     if (!account) {
       await this.ensureNotAuthenticated()
@@ -94,7 +95,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async tryAutoLogin(credentials) {
-    this.log('info', 'autologin start')
+    this.log('info', '🤖 autologin start')
     await this.goto(DEFAULT_PAGE_URL)
     await Promise.all([
       this.autoLogin(credentials),
@@ -135,14 +136,14 @@ class EdfContentScript extends ContentScript {
   }
 
   async waitForUserAuthentication() {
-    this.log('info', 'waitForUserAuthentication start')
+    this.log('info', '🤖 waitForUserAuthentication start')
     await this.setWorkerState({ visible: true, url: DEFAULT_PAGE_URL })
     await this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
     await this.setWorkerState({ visible: false })
   }
 
   async fetch(context) {
-    this.log('info', 'fetch start')
+    this.log('info', '🤖 fetch start')
     const { sourceAccountIdentifier, manifest, trigger } = context
 
     // force fetch all data (the long way) when last trigger execution is older than 30 days
@@ -206,7 +207,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchHousing() {
-    this.log('info', 'fetchHousing starts')
+    this.log('info', '🤖 fetchHousing starts')
     const notConnectedSelector = 'div.session-expired-message button'
     await this.navigateToConsoPage(notConnectedSelector)
 
@@ -235,7 +236,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async navigateToConsoPage(notConnectedSelector) {
-    this.log('info', 'navigateToConsoPage starts')
+    this.log('info', '🤖 navigateToConsoPage starts')
     const consoLinkSelector =
       'a[href="/fr/accueil/economies-energie/comprendre-reduire-consommation-electrique-gaz.html"]'
     const continueLinkSelector = "a[href='https://equilibre.edf.fr/comprendre']"
@@ -249,7 +250,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async computeHousing(multiContractsIds) {
-    this.log('info', 'computeHousing starts')
+    this.log('info', '🤖 computeHousing starts')
     // Here if there is a single contract, we don't need the precise id of it
     // So no need to retrieve it, but the function is waiting for an array, so we give it with a single entry
     // To avoid unecessary steps in computeHousing
@@ -678,6 +679,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async getUserDataFromWebsite() {
+    this.log('info', '🤖 getUserDataFromWebsite start')
     const context = await this.runInWorker(
       'getKyJson',
       BASE_URL + '/services/rest/context/getCustomerContext'
