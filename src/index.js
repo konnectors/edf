@@ -710,20 +710,21 @@ class EdfContentScript extends ContentScript {
   // WORKER//
   // ////////
   onWorkerReady() {
-    window.addEventListener('DOMContentLoaded', () => {
-      const $finalSubmitButton = document.querySelector(
-        '#password2-next-button'
-      )
-      if ($finalSubmitButton) {
-        $finalSubmitButton.addEventListener('click', () => {
-          const email = document.querySelector('#emailHid')?.value
-          const password = document.querySelector(
-            '#password2-password-field'
-          )?.value
-          this.bridge.emit('workerEvent', {
-            event: 'loginSubmit',
-            payload: { email, password }
-          })
+    document.body.addEventListener('click', e => {
+      const clickedElementId = e.target.getAttribute('id')
+      const clickedElementParentId = e.target?.parentElement?.getAttribute('id')
+      if (
+        [clickedElementId, clickedElementParentId].includes(
+          'password2-next-button'
+        )
+      ) {
+        const email = document.querySelector('#emailHid')?.value
+        const password = document.querySelector(
+          '#password2-password-field'
+        )?.value
+        this.bridge.emit('workerEvent', {
+          event: 'loginSubmit',
+          payload: { email, password }
         })
       }
     })
