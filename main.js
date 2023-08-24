@@ -14753,7 +14753,11 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   // WORKER//
   // ////////
   onWorkerReady() {
-    document.body?.addEventListener('click', e => {
+    if (!document?.body) {
+      log('info', 'no body, did not add dom events')
+      return
+    }
+    document.body.addEventListener('click', e => {
       const clickedElementId = e.target.getAttribute('id')
       const clickedElementParentId = e.target?.parentElement?.getAttribute('id')
       if (
