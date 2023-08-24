@@ -710,7 +710,7 @@ class EdfContentScript extends ContentScript {
   // WORKER//
   // ////////
   onWorkerReady() {
-    document.body.addEventListener('click', e => {
+    document.body?.addEventListener('click', e => {
       const clickedElementId = e.target.getAttribute('id')
       const clickedElementParentId = e.target?.parentElement?.getAttribute('id')
       if (
