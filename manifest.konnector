@@ -1,6 +1,6 @@
 {
-  "version": "2.11.0",
-  "name": "EDF",
+  "version": "2.10.1",
+  "name": "Edf",
   "type": "konnector",
   "language": "node",
   "clientSide": true,
