@@ -36,6 +36,27 @@ class EdfContentScript extends ContentScript {
   // ///////
   // PILOT//
   // ///////
+  async retryGoToLoginForm() {
+    await this.goToLoginForm()
+    if (
+      await this.isElementInWorker('h1', {
+        includesText: `Une erreur s'est produite`
+      })
+    ) {
+      // try to reload the page once
+      this.log('warn', 'Found error page, retrying gotologinform')
+      await this.goToLoginForm()
+    }
+    if (
+      await this.isElementInWorker('h1', {
+        includesText: `Une erreur s'est produite`
+      })
+    ) {
+      throw new Error(
+        `Edf shows an error page: "Une erreur s'est produite" twice. Please try again later`
+      )
+    }
+  }
   async goToLoginForm() {
     await this.goto(DEFAULT_PAGE_URL)
     this.log(
@@ -43,6 +64,9 @@ class EdfContentScript extends ContentScript {
       'waiting for any authentication confirmation or login form...'
     )
     await Promise.race([
+      this.waitForElementInWorker('h1', {
+        includesText: `Une erreur s'est produite`
+      }),
       this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
       this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
     ])
