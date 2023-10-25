@@ -13713,6 +13713,27 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   // ///////
   // PILOT//
   // ///////
+  async retryGoToLoginForm() {
+    await this.goToLoginForm()
+    if (
+      await this.isElementInWorker('h1', {
+        includesText: `Une erreur s'est produite`
+      })
+    ) {
+      // try to reload the page once
+      this.log('warn', 'Found error page, retrying gotologinform')
+      await this.goToLoginForm()
+    }
+    if (
+      await this.isElementInWorker('h1', {
+        includesText: `Une erreur s'est produite`
+      })
+    ) {
+      throw new Error(
+        `Edf shows an error page: "Une erreur s'est produite" twice. Please try again later`
+      )
+    }
+  }
   async goToLoginForm() {
     await this.goto(DEFAULT_PAGE_URL)
     this.log(
@@ -13720,6 +13741,9 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       'waiting for any authentication confirmation or login form...'
     )
     await Promise.race([
+      this.waitForElementInWorker('h1', {
+        includesText: `Une erreur s'est produite`
+      }),
       this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
       this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
     ])
@@ -13869,12 +13893,17 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         'info',
         `Existing identity updated since more than 30 days or no identity. Updating it`
       )
-      const housing = (0,_utils__WEBPACK_IMPORTED_MODULE_3__.formatHousing)(
-        contracts,
-        echeancierResult,
-        await this.fetchHousing()
-      )
-      await this.saveIdentity({ contact, housing })
+      const identity = { contact }
+      const housingRawData = await this.fetchHousing()
+      if (housingRawData !== null) {
+        const housing = (0,_utils__WEBPACK_IMPORTED_MODULE_3__.formatHousing)(
+          contracts,
+          echeancierResult,
+          housingRawData
+        )
+        identity.housing = housing
+      }
+      await this.saveIdentity(identity)
     } else {
       this.log(
         'info',
@@ -13886,7 +13915,15 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   async fetchHousing() {
     this.log('info', '🤖 fetchHousing starts')
     const notConnectedSelector = 'div.session-expired-message button'
-    await this.navigateToConsoPage(notConnectedSelector)
+    try {
+      await this.navigateToConsoPage(notConnectedSelector)
+    } catch (err) {
+      if (err.message === 'NO_EQUILIBRE_ACCOUNT') {
+        return null
+      } else {
+        throw err
+      }
+    }
 
     // first step : if not connected, click on the connect button
     const isConnected = await this.runInWorker('checkConnected')
@@ -13920,10 +13957,24 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     await this.clickAndWait(consoLinkSelector, continueLinkSelector)
     await this.runInWorker('click', continueLinkSelector)
     await Promise.race([
+      this.waitForElementInWorker('.zero-site-message-large', {
+        includesText: 'Nous n’avons pas trouvé votre compte'
+      }),
       this.waitForElementInWorker(notConnectedSelector),
       this.waitForElementInWorker('.header-logo'),
       this.waitForElementInWorker('button.multi-site-button')
     ])
+    if (
+      await this.isElementInWorker('.zero-site-message-large', {
+        includesText: 'Nous n’avons pas trouvé votre compte'
+      })
+    ) {
+      this.log(
+        'warn',
+        'The user does not have any equilibre account. Cannot fetch consumption data'
+      )
+      throw new Error('NO_EQUILIBRE_ACCOUNT')
+    }
   }
 
   async computeHousing(multiContractsIds) {
