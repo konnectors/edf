@@ -14408,24 +14408,38 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
 
   async getUserDataFromWebsite() {
     this.log('info', '🤖 getUserDataFromWebsite start')
-    const context = await this.runInWorker(
-      'getKyJson',
-      BASE_URL + '/services/rest/context/getCustomerContext'
-    )
-    const mail = context?.bp?.mail
-    if (mail) {
+
+    const credentials = await this.getCredentials()
+    const credentialsEmail = credentials?.email
+    const storeEmail = this.store?.email
+    let email = credentialsEmail || storeEmail
+    if (!credentialsEmail && !storeEmail) {
+      this.log(
+        'info',
+        'No credentials email, trying to find email from edf api'
+      )
+      const context = await this.runInWorker(
+        'getKyJson',
+        BASE_URL + '/services/rest/context/getCustomerContext'
+      )
+      email = context?.bp?.mail
+    }
+
+    if (email) {
       return {
-        sourceAccountIdentifier: mail
+        sourceAccountIdentifier: email
       }
     } else {
-      throw new Error('No user data identifier. The connector should be fixed')
+      throw new Error(
+        'No user data identifier found. The connector should be fixed'
+      )
     }
   }
 
   async onWorkerEvent({ event, payload }) {
     if (event === 'loginSubmit') {
       const { email, password } = payload || {}
-      if (email && password) {
+      if (email) {
         // store the email and password in the pilot to send it
         // in the beginning of the fetch method when the launcher
         // is ready to receive it
@@ -14438,28 +14452,51 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   // WORKER//
   // ////////
   onWorkerReady() {
+    function addClickListener() {
+      document.body.addEventListener('click', e => {
+        const clickedElementId = e.target.getAttribute('id')
+        const clickedElementParentId =
+          e.target?.parentElement?.getAttribute('id')
+        if (
+          [clickedElementId, clickedElementParentId].includes(
+            'username-next-button'
+          )
+        ) {
+          const email = document.querySelector('#email')?.value
+          // will use this email in getUserDataFromWebsite
+          this.bridge.emit('workerEvent', {
+            event: 'loginSubmit',
+            payload: { email }
+          })
+        } else if (
+          [clickedElementId, clickedElementParentId].includes(
+            'password2-next-button'
+          )
+        ) {
+          const email = document.querySelector('#emailHid')?.value
+          const password = document.querySelector(
+            '#password2-password-field'
+          )?.value
+          this.bridge.emit('workerEvent', {
+            event: 'loginSubmit',
+            payload: { email, password }
+          })
+        }
+      })
+    }
     if (!document?.body) {
       log('info', 'no body, did not add dom events')
       return
     }
-    document.body.addEventListener('click', e => {
-      const clickedElementId = e.target.getAttribute('id')
-      const clickedElementParentId = e.target?.parentElement?.getAttribute('id')
-      if (
-        [clickedElementId, clickedElementParentId].includes(
-          'password2-next-button'
-        )
-      ) {
-        const email = document.querySelector('#emailHid')?.value
-        const password = document.querySelector(
-          '#password2-password-field'
-        )?.value
-        this.bridge.emit('workerEvent', {
-          event: 'loginSubmit',
-          payload: { email, password }
-        })
-      }
-    })
+
+    if (
+      document.readyState === 'complete' ||
+      document.readyState === 'loaded'
+    ) {
+      addClickListener.bind(this)()
+    } else {
+      document.addEventListener('DOMContentLoaded', addClickListener.bind(this))
+    }
   }
   async checkAuthenticated() {
     const $contracts = document.querySelectorAll('.selected-contrat')
