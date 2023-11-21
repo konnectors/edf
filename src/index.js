@@ -1002,7 +1002,7 @@ class EdfContentScript extends ContentScript {
     return pRetry(
       async () => {
         try {
-          await run()
+          return await run()
         } catch (err) {
           if (!(err instanceof Error)) {
             throw new Error(err.message)
