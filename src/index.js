@@ -3,6 +3,7 @@ import ky from 'ky'
 import Minilog from '@cozy/minilog'
 import { format } from 'date-fns'
 import waitFor from 'p-wait-for'
+import pRetry from 'p-retry'
 import { formatHousing } from './utils'
 import { wrapTimerFactory } from 'cozy-clisk/dist/libs/wrapTimer'
 import { Q } from 'cozy-client/dist/queries/dsl'
@@ -187,11 +188,31 @@ class EdfContentScript extends ContentScript {
       this.log('info', 'saving credentials')
       await this.saveCredentials(this.store)
     }
-    const contact = await this.fetchContact()
-    const contracts = await this.fetchContracts()
-    await this.fetchAttestations(contracts, context)
-    await this.fetchBillsForAllContracts(contracts, context)
-    const echeancierResult = await this.fetchEcheancierBills(contracts, context)
+    const contact = await this.withRetry({
+      label: 'fetchContact',
+      run: () => this.fetchContact(),
+      selectorToWait: "a.accessPage[href*='mes-documents.html']"
+    })
+    const contracts = await this.withRetry({
+      label: 'fetchContracts',
+      run: () => this.fetchContracts(),
+      selectorToWait: "a.accessPage[href*='mes-documents.html']"
+    })
+    await this.withRetry({
+      label: 'fetchAttestations',
+      run: () => this.fetchAttestations(contracts, context),
+      selectorToWait: '.contract-icon'
+    })
+    await this.withRetry({
+      label: 'fetchBillsForAllContracts',
+      run: () => this.fetchBillsForAllContracts(contracts, context),
+      selectorToWait: '#factureSelection'
+    })
+    const echeancierResult = await this.withRetry({
+      label: 'fetchEcheancierBills',
+      run: () => this.fetchEcheancierBills(contracts, context),
+      selectorToWait: '.timeline-header__download'
+    })
 
     // fetch the housing data only if we do not have an existing identity or if the existing
     // identity is older than 1 month
@@ -975,6 +996,39 @@ class EdfContentScript extends ContentScript {
         }
       })
       .json()
+  }
+
+  withRetry({ run, label, selectorToWait }) {
+    return pRetry(
+      async () => {
+        try {
+          await run()
+        } catch (err) {
+          if (!(err instanceof Error)) {
+            throw new Error(err.message)
+          } else {
+            throw err
+          }
+        }
+      },
+      {
+        retries: 1,
+        onFailedAttempt: async error => {
+          // sometimes, on some devices, this error is raised without any known reason. We try to
+          // reload the current page (to refresh any needed token) and retry the function
+          if (error.message === 'Failed to fetch') {
+            this.log(
+              'warn',
+              `Retrying ${label}, attempt ${error.attemptNumber} on Failed to fetch error`
+            )
+            await this.evaluateInWorker(() => window.location.reload())
+            await this.waitForElementInWorker(selectorToWait)
+          } else {
+            throw error
+          }
+        }
+      }
+    )
   }
 }
 
