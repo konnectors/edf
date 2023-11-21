@@ -14506,7 +14506,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     const contractNumber = parseFloat(
       result?.feSouscriptionResponse?.tradeNumber
     )
-    const subPath = contracts.folders[contractNumber]
+    const subPath = contracts?.folders?.[contractNumber]
     if (!subPath) {
       log.warn(
         `fetchEcheancierBills: could not create subPath for ${contractNumber}`
@@ -14630,7 +14630,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       const accList = bp.listOfBillsByAccDTO
       for (let acc of accList) {
         const contract = acc.accDTO
-        const subPath = contracts.folders[contract.numAcc]
+        const subPath = contracts?.folders?.[contract.numAcc]
         const cozyBills = []
         for (let bill of acc.listOfbills) {
           const cozyBill = {
@@ -14732,7 +14732,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         }
         const csrfToken = await this.getCsrfToken()
 
-        const subPath = contracts.folders[contract.accDTO.numAcc]
+        const subPath = contracts?.folders?.[contract.accDTO.numAcc]
 
         await this.saveFiles(
           [
