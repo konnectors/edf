@@ -406,7 +406,7 @@ class EdfContentScript extends ContentScript {
     const contractNumber = parseFloat(
       result?.feSouscriptionResponse?.tradeNumber
     )
-    const subPath = contracts.folders[contractNumber]
+    const subPath = contracts?.folders?.[contractNumber]
     if (!subPath) {
       log.warn(
         `fetchEcheancierBills: could not create subPath for ${contractNumber}`
@@ -530,7 +530,7 @@ class EdfContentScript extends ContentScript {
       const accList = bp.listOfBillsByAccDTO
       for (let acc of accList) {
         const contract = acc.accDTO
-        const subPath = contracts.folders[contract.numAcc]
+        const subPath = contracts?.folders?.[contract.numAcc]
         const cozyBills = []
         for (let bill of acc.listOfbills) {
           const cozyBill = {
@@ -632,7 +632,7 @@ class EdfContentScript extends ContentScript {
         }
         const csrfToken = await this.getCsrfToken()
 
-        const subPath = contracts.folders[contract.accDTO.numAcc]
+        const subPath = contracts?.folders?.[contract.accDTO.numAcc]
 
         await this.saveFiles(
           [
