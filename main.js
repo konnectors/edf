@@ -15121,6 +15121,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
               `Retrying ${label}, attempt ${error.attemptNumber} on Failed to fetch error`
             )
             await this.evaluateInWorker(() => window.location.reload())
+            await new Promise(resolve => window.setTimeout(resolve, 1000)) // wait for reload command to be given to worker
             await this.waitForElementInWorker(selectorToWait)
           } else {
             throw error
