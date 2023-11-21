@@ -15101,7 +15101,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     return (0,p_retry__WEBPACK_IMPORTED_MODULE_3__["default"])(
       async () => {
         try {
-          await run()
+          return await run()
         } catch (err) {
           if (!(err instanceof Error)) {
             throw new Error(err.message)
