@@ -14306,7 +14306,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     await this.withRetry({
       label: 'fetchBillsForAllContracts',
       run: () => this.fetchBillsForAllContracts(contracts, context),
-      selectorToWait: '#factureSelection'
+      selectorToWait: '#facture'
     })
     const echeancierResult = await this.withRetry({
       label: 'fetchEcheancierBills',
