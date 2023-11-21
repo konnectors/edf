@@ -206,7 +206,7 @@ class EdfContentScript extends ContentScript {
     await this.withRetry({
       label: 'fetchBillsForAllContracts',
       run: () => this.fetchBillsForAllContracts(contracts, context),
-      selectorToWait: '#factureSelection'
+      selectorToWait: '#facture'
     })
     const echeancierResult = await this.withRetry({
       label: 'fetchEcheancierBills',
