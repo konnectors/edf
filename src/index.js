@@ -366,7 +366,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchEcheancierBills(contracts, context) {
-    this.log('debug', 'fetching echeancier bills')
+    this.log('info', 'fetching echeancier bills')
 
     // files won't download if this page is not fully loaded before
     const fullpageLoadedSelector = '.timeline-header__download'
@@ -479,7 +479,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchBillsForAllContracts(contracts, context) {
-    this.log('debug', 'fetchBillsForAllContracts')
+    this.log('info', 'fetchBillsForAllContracts')
     // files won't download if this page is not fully loaded before
     const billButtonSelector = '#facture'
     const billListSelector = '#factureSelection'
@@ -576,6 +576,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchAttestations(contracts, context) {
+    this.log('info', 'fetching attestations')
     await this.goto(DEFAULT_PAGE_URL)
 
     const myDocumentsLinkSelector = "a.accessPage[href*='mes-documents.html']"
@@ -605,7 +606,7 @@ class EdfContentScript extends ContentScript {
           contract.listOfAttestationContract.length === 0
         ) {
           this.log('debug', 'Could not find an attestation for')
-          this.log('debug', bp)
+          this.log('debug', JSON.stringify(bp, null, 2))
           continue
         }
         const csrfToken = await this.getCsrfToken()
@@ -655,7 +656,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchContracts() {
-    this.log('debug', 'fetching contracts')
+    this.log('info', 'fetching contracts')
 
     const contracts = await this.runInWorker(
       'getKyJson',
@@ -674,7 +675,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchContact() {
-    this.log('debug', 'fetching identity')
+    this.log('info', 'fetching identity')
 
     const json = await this.runInWorker(
       'getKyJson',
@@ -945,7 +946,35 @@ class EdfContentScript extends ContentScript {
   }
 
   getKyJson(url) {
-    return ky.get(url).json()
+    return ky
+      .get(url, {
+        retry: {
+          limit: 5,
+          statusCodes: [404]
+        },
+        hooks: {
+          beforeRetry: [
+            ({ error, retryCount }) => {
+              this.log(
+                'warn',
+                `Retrying get ${url}, attempt ${retryCount} after error ${error?.message}`
+              )
+            }
+          ],
+          beforeError: [
+            error => {
+              const { response } = error
+              this.log(
+                'warn',
+                `request ${url} failed with status ${response.status} and message : ${response.message}`
+              )
+
+              return error
+            }
+          ]
+        }
+      })
+      .json()
   }
 }
 
