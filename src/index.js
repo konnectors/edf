@@ -206,12 +206,12 @@ class EdfContentScript extends ContentScript {
     await this.withRetry({
       label: 'fetchBillsForAllContracts',
       run: () => this.fetchBillsForAllContracts(contracts, context),
-      selectorToWait: '#factureSelection'
+      selectorToWait: '#facture, #factureSelection'
     })
     const echeancierResult = await this.withRetry({
       label: 'fetchEcheancierBills',
       run: () => this.fetchEcheancierBills(contracts, context),
-      selectorToWait: '.timeline-header__download'
+      selectorToWait: `.timeline-header__download, a.accessPage[href*='factures-et-paiements.html']`
     })
 
     // fetch the housing data only if we do not have an existing identity or if the existing
@@ -392,7 +392,13 @@ class EdfContentScript extends ContentScript {
     // files won't download if this page is not fully loaded before
     const fullpageLoadedSelector = '.timeline-header__download'
     const billLinkSelector = "a.accessPage[href*='factures-et-paiements.html']"
-    await this.clickAndWait(billLinkSelector, fullpageLoadedSelector)
+
+    if (await this.isElementInWorker(billLinkSelector)) {
+      await this.clickAndWait(billLinkSelector, fullpageLoadedSelector)
+    }
+    if (!(await this.isElementInWorker(fullpageLoadedSelector))) {
+      throw new Error(`Could not find the echeancier bills page`)
+    }
 
     const result = await this.runInWorker(
       'getKyJson',
@@ -406,7 +412,7 @@ class EdfContentScript extends ContentScript {
     const contractNumber = parseFloat(
       result?.feSouscriptionResponse?.tradeNumber
     )
-    const subPath = contracts.folders[contractNumber]
+    const subPath = contracts?.folders?.[contractNumber]
     if (!subPath) {
       log.warn(
         `fetchEcheancierBills: could not create subPath for ${contractNumber}`
@@ -504,7 +510,12 @@ class EdfContentScript extends ContentScript {
     // files won't download if this page is not fully loaded before
     const billButtonSelector = '#facture'
     const billListSelector = '#factureSelection'
-    await this.clickAndWait(billButtonSelector, billListSelector)
+    if (await this.isElementInWorker(billButtonSelector)) {
+      await this.clickAndWait(billButtonSelector, billListSelector)
+    }
+    if (!(await this.isElementInWorker(billListSelector))) {
+      throw new Error(`Could not find the selection of factures`)
+    }
 
     const billDocResp = await this.runInWorker(
       'getKyJson',
@@ -530,7 +541,7 @@ class EdfContentScript extends ContentScript {
       const accList = bp.listOfBillsByAccDTO
       for (let acc of accList) {
         const contract = acc.accDTO
-        const subPath = contracts.folders[contract.numAcc]
+        const subPath = contracts?.folders?.[contract.numAcc]
         const cozyBills = []
         for (let bill of acc.listOfbills) {
           const cozyBill = {
@@ -632,7 +643,7 @@ class EdfContentScript extends ContentScript {
         }
         const csrfToken = await this.getCsrfToken()
 
-        const subPath = contracts.folders[contract.accDTO.numAcc]
+        const subPath = contracts?.folders?.[contract.accDTO.numAcc]
 
         await this.saveFiles(
           [
@@ -1002,7 +1013,7 @@ class EdfContentScript extends ContentScript {
     return pRetry(
       async () => {
         try {
-          await run()
+          return await run()
         } catch (err) {
           if (!(err instanceof Error)) {
             throw new Error(err.message)
@@ -1022,6 +1033,7 @@ class EdfContentScript extends ContentScript {
               `Retrying ${label}, attempt ${error.attemptNumber} on Failed to fetch error`
             )
             await this.evaluateInWorker(() => window.location.reload())
+            await new Promise(resolve => window.setTimeout(resolve, 1000)) // wait for reload command to be given to worker
             await this.waitForElementInWorker(selectorToWait)
           } else {
             throw error
