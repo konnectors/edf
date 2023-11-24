@@ -14306,12 +14306,12 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     await this.withRetry({
       label: 'fetchBillsForAllContracts',
       run: () => this.fetchBillsForAllContracts(contracts, context),
-      selectorToWait: '#facture'
+      selectorToWait: '#facture, #factureSelection'
     })
     const echeancierResult = await this.withRetry({
       label: 'fetchEcheancierBills',
       run: () => this.fetchEcheancierBills(contracts, context),
-      selectorToWait: '.timeline-header__download'
+      selectorToWait: `.timeline-header__download, a.accessPage[href*='factures-et-paiements.html']`
     })
 
     // fetch the housing data only if we do not have an existing identity or if the existing
@@ -14492,7 +14492,13 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     // files won't download if this page is not fully loaded before
     const fullpageLoadedSelector = '.timeline-header__download'
     const billLinkSelector = "a.accessPage[href*='factures-et-paiements.html']"
-    await this.clickAndWait(billLinkSelector, fullpageLoadedSelector)
+
+    if (await this.isElementInWorker(billLinkSelector)) {
+      await this.clickAndWait(billLinkSelector, fullpageLoadedSelector)
+    }
+    if (!(await this.isElementInWorker(fullpageLoadedSelector))) {
+      throw new Error(`Could not find the echeancier bills page`)
+    }
 
     const result = await this.runInWorker(
       'getKyJson',
@@ -14604,7 +14610,12 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     // files won't download if this page is not fully loaded before
     const billButtonSelector = '#facture'
     const billListSelector = '#factureSelection'
-    await this.clickAndWait(billButtonSelector, billListSelector)
+    if (await this.isElementInWorker(billButtonSelector)) {
+      await this.clickAndWait(billButtonSelector, billListSelector)
+    }
+    if (!(await this.isElementInWorker(billListSelector))) {
+      throw new Error(`Could not find the selection of factures`)
+    }
 
     const billDocResp = await this.runInWorker(
       'getKyJson',
