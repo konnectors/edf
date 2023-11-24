@@ -15126,10 +15126,10 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         onFailedAttempt: async error => {
           // sometimes, on some devices, this error is raised without any known reason. We try to
           // reload the current page (to refresh any needed token) and retry the function
-          if (error.message === 'Failed to fetch') {
+          if (['Failed to fetch', 'Load failed'].includes(error.message)) {
             this.log(
               'warn',
-              `Retrying ${label}, attempt ${error.attemptNumber} on Failed to fetch error`
+              `Retrying ${label}, attempt ${error.attemptNumber} on ${error.message} error`
             )
             await this.evaluateInWorker(() => window.location.reload())
             await new Promise(resolve => window.setTimeout(resolve, 1000)) // wait for reload command to be given to worker
