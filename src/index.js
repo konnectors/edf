@@ -60,17 +60,16 @@ class EdfContentScript extends ContentScript {
   }
   async goToLoginForm() {
     await this.goto(DEFAULT_PAGE_URL)
-    this.log(
-      'info',
-      'waiting for any authentication confirmation or login form...'
+    await this.PromiseRaceWithError(
+      [
+        this.waitForElementInWorker('h1', {
+          includesText: `Une erreur s'est produite`
+        }),
+        this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
+        this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
+      ],
+      'goToLoginForm: waiting for any authentication confirmation or login form...'
     )
-    await Promise.race([
-      this.waitForElementInWorker('h1', {
-        includesText: `Une erreur s'est produite`
-      }),
-      this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
-      this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
-    ])
   }
   async ensureNotAuthenticated() {
     this.log('info', '🤖 starting ensureNotAuthenticated')
@@ -140,10 +139,13 @@ class EdfContentScript extends ContentScript {
     await this.runInWorker('click', emailNextButtonSelector)
 
     this.log('debug', 'wait for password field or otp')
-    await Promise.race([
-      this.waitForElementInWorker(passwordInputSelector),
-      this.waitForElementInWorker(otpNeededSelector)
-    ])
+    await this.PromiseRaceWithError(
+      [
+        this.waitForElementInWorker(passwordInputSelector),
+        this.waitForElementInWorker(otpNeededSelector)
+      ],
+      'autoLogin: wait for password field or otp'
+    )
 
     if (await this.runInWorker('checkOtpNeeded')) {
       log.warn('Found otp needed')
@@ -274,10 +276,13 @@ class EdfContentScript extends ContentScript {
     if (!isConnected) {
       await this.runInWorker('click', notConnectedSelector)
     }
-    await Promise.race([
-      this.waitForElementInWorker('button.multi-site-button'),
-      this.waitForElementInWorker('a[class="header-dashboard-button"]')
-    ])
+    await this.PromiseRaceWithError(
+      [
+        this.waitForElementInWorker('button.multi-site-button'),
+        this.waitForElementInWorker('a[class="header-dashboard-button"]')
+      ],
+      'fetchHousing: wait for housing page'
+    )
     // second step, if multiple contracts, select the first one
     const multipleContracts = await this.runInWorker('checkMultipleContracts')
     if (multipleContracts) {
@@ -300,14 +305,17 @@ class EdfContentScript extends ContentScript {
     const continueLinkSelector = "a[href='https://equilibre.edf.fr/comprendre']"
     await this.clickAndWait(consoLinkSelector, continueLinkSelector)
     await this.runInWorker('click', continueLinkSelector)
-    await Promise.race([
-      this.waitForElementInWorker('.zero-site-message-large', {
-        includesText: 'Nous n’avons pas trouvé votre compte'
-      }),
-      this.waitForElementInWorker(notConnectedSelector),
-      this.waitForElementInWorker('.header-logo'),
-      this.waitForElementInWorker('button.multi-site-button')
-    ])
+    await this.PromiseRaceWithError(
+      [
+        this.waitForElementInWorker('.zero-site-message-large', {
+          includesText: 'Nous n’avons pas trouvé votre compte'
+        }),
+        this.waitForElementInWorker(notConnectedSelector),
+        this.waitForElementInWorker('.header-logo'),
+        this.waitForElementInWorker('button.multi-site-button')
+      ],
+      'navigateToConsoPage: wait for conso page'
+    )
     if (
       await this.isElementInWorker('.zero-site-message-large', {
         includesText: 'Nous n’avons pas trouvé votre compte'
@@ -1041,6 +1049,16 @@ class EdfContentScript extends ContentScript {
         }
       }
     )
+  }
+
+  async PromiseRaceWithError(promises, msg) {
+    try {
+      this.log('debug', msg)
+      await Promise.race(promises)
+    } catch (err) {
+      this.log('warn', err.message)
+      throw new Error(`${msg} failed to meet conditions`)
+    }
   }
 }
 
