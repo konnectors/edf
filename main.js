@@ -147,11 +147,7 @@ var ContentScript = /*#__PURE__*/function () {
         return "".concat(args === null || args === void 0 ? void 0 : args[0], " ").concat(args === null || args === void 0 ? void 0 : args[1]);
       }
     });
-    this.saveFiles = wrapTimerDebug(this, 'saveFiles', {
-      suffixFn: function suffixFn(args) {
-        return "".concat(args === null || args === void 0 ? void 0 : args[0].length, " files");
-      }
-    });
+    this.saveFiles = wrapTimerDebug(this, 'saveFiles');
     this.saveBills = wrapTimerDebug(this, 'saveBills');
     this.getCredentials = wrapTimerDebug(this, 'getCredentials');
     this.saveCredentials = wrapTimerDebug(this, 'saveCredentials');
@@ -1029,7 +1025,9 @@ var ContentScript = /*#__PURE__*/function () {
             switch (_context18.prev = _context18.next) {
               case 0:
                 this.onlyIn(PILOT_TYPE, 'saveFiles');
-                this.log('debug', "saveFiles ".concat(entries.length, " input entries"));
+
+                _log.debug(entries, 'saveFiles input entries');
+
                 context = options.context;
 
                 _log.debug(context, 'saveFiles input context');
@@ -5464,7 +5462,7 @@ module.exports = _defineProperty, module.exports.__esModule = true, module.expor
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"cozy-clisk","version":"0.27.0","description":"All the libs needed to run a cozy client connector","repository":{"type":"git","url":"git+https://github.com/konnectors/libs.git"},"files":["dist"],"keywords":["konnector"],"main":"dist/index.js","author":"doubleface <christophe@cozycloud.cc>","license":"MIT","bugs":{"url":"https://github.com/konnectors/libs/issues"},"homepage":"https://github.com/konnectors/libs#readme","scripts":{"lint":"eslint \'src/**/*.js\'","prepublishOnly":"yarn run build","build":"babel --root-mode upward src/ -d dist/ --copy-files --verbose --ignore \'**/*.spec.js\',\'**/*.spec.jsx\'","test":"jest src"},"devDependencies":{"@babel/core":"7.20.12","babel-jest":"29.3.1","babel-preset-cozy-app":"2.0.4","jest":"29.3.1","jest-environment-jsdom":"29.3.1","typescript":"4.9.5"},"dependencies":{"@cozy/minilog":"^1.0.0","bluebird-retry":"^0.11.0","cozy-client":"^41.2.0","ky":"^0.25.1","lodash":"^4.17.21","p-wait-for":"^5.0.2","post-me":"^0.4.5"},"gitHead":"46daada8f34b81831924ce6fb55f1a9ae4a153e2"}');
+module.exports = JSON.parse('{"name":"cozy-clisk","version":"0.26.0","description":"All the libs needed to run a cozy client connector","repository":{"type":"git","url":"git+https://github.com/konnectors/libs.git"},"files":["dist"],"keywords":["konnector"],"main":"dist/index.js","author":"doubleface <christophe@cozycloud.cc>","license":"MIT","bugs":{"url":"https://github.com/konnectors/libs/issues"},"homepage":"https://github.com/konnectors/libs#readme","scripts":{"lint":"eslint \'src/**/*.js\'","prepublishOnly":"yarn run build","build":"babel --root-mode upward src/ -d dist/ --copy-files --verbose --ignore \'**/*.spec.js\',\'**/*.spec.jsx\'","test":"jest src"},"devDependencies":{"@babel/core":"7.20.12","babel-jest":"29.3.1","babel-preset-cozy-app":"2.0.4","jest":"29.3.1","jest-environment-jsdom":"29.3.1","typescript":"4.9.5"},"dependencies":{"@cozy/minilog":"^1.0.0","bluebird-retry":"^0.11.0","cozy-client":"^41.2.0","ky":"^0.25.1","lodash":"^4.17.21","p-wait-for":"^5.0.2","post-me":"^0.4.5"},"gitHead":"59a8bdc13e872f405241566b39d934858e38e80a"}');
 
 /***/ }),
 /* 46 */
@@ -15132,7 +15130,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         }
       },
       {
-        retries: 1,
+        retries: 5,
         onFailedAttempt: async error => {
           // sometimes, on some devices, this error is raised without any known reason. We try to
           // reload the current page (to refresh any needed token) and retry the function
