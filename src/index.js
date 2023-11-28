@@ -1031,7 +1031,7 @@ class EdfContentScript extends ContentScript {
         }
       },
       {
-        retries: 1,
+        retries: 5,
         onFailedAttempt: async error => {
           // sometimes, on some devices, this error is raised without any known reason. We try to
           // reload the current page (to refresh any needed token) and retry the function
