@@ -30,6 +30,7 @@ class EdfContentScript extends ContentScript {
       this,
       'fetchBillsForAllContracts'
     )
+    this.fetchAttestations  = wrapTimerInfo(this, 'fetchAttestations')
     this.fetchEcheancierBills = wrapTimerInfo(this, 'fetchEcheancierBills')
     this.fetchHousing = wrapTimerInfo(this, 'fetchHousing')
   }
