@@ -715,7 +715,7 @@ class EdfContentScript extends ContentScript {
   }
 
   async fetchContact() {
-    this.log('info', 'fetching identity')
+    this.log('info', 'fetching contact')
 
     const json = await this.runInWorker(
       'getKyJson',
