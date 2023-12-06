@@ -14132,6 +14132,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       this,
       'fetchBillsForAllContracts'
     )
+    this.fetchAttestations = wrapTimerInfo(this, 'fetchAttestations')
     this.fetchEcheancierBills = wrapTimerInfo(this, 'fetchEcheancierBills')
     this.fetchHousing = wrapTimerInfo(this, 'fetchHousing')
   }
@@ -14817,7 +14818,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async fetchContact() {
-    this.log('info', 'fetching identity')
+    this.log('info', 'fetching contact')
 
     const json = await this.runInWorker(
       'getKyJson',
@@ -15124,7 +15125,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         try {
           return await run()
         } catch (err) {
-          if (!(err instanceof Error)) {
+          if (err instanceof Error) {
             throw new Error(err.message)
           } else {
             throw err
