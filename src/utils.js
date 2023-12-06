@@ -114,7 +114,12 @@ export function getEnergyTypeFromContract(contract) {
     : 'gas'
 }
 
-export function formatHousing(contracts, echeancierResult, housingArray) {
+export function formatHousing(
+  contracts,
+  echeancierResult,
+  housingArray,
+  logFn
+) {
   const result = []
   for (const oneHousing of housingArray) {
     const consumptions = {
@@ -128,6 +133,13 @@ export function formatHousing(contracts, echeancierResult, housingArray) {
       )
     }
     const contractId = checkPdlNumber(contracts, oneHousing.pdlNumber)
+    if (!contractId) {
+      logFn(
+        'debug',
+        `Could not find the contract ${oneHousing.pdlNumber} in existing contracts. This may be an expired contract.`
+      )
+      continue
+    }
     const detail = contracts.details[contractId]
     const energyProviders = detail.contracts.map(c => {
       const energyType = getEnergyTypeFromContract(c)

@@ -267,7 +267,8 @@ class EdfContentScript extends ContentScript {
         const housing = formatHousing(
           contracts,
           echeancierResult,
-          housingRawData
+          housingRawData,
+          this.log.bind(this)
         )
         identity.housing = housing
       }
