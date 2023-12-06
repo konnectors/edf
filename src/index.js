@@ -7,6 +7,7 @@ import pRetry from 'p-retry'
 import { formatHousing } from './utils'
 import { wrapTimerFactory } from 'cozy-clisk/dist/libs/wrapTimer'
 import { Q } from 'cozy-client/dist/queries/dsl'
+import RequestInterceptor from './interceptor'
 
 // TODO use a flag to change this value
 let FORCE_FETCH_ALL = false
@@ -17,6 +18,16 @@ Minilog.enable()
 const BASE_URL = 'https://particulier.edf.fr'
 const DEFAULT_PAGE_URL =
   BASE_URL + '/fr/accueil/espace-client/tableau-de-bord.html'
+
+const interceptor = new RequestInterceptor([
+  {
+    label: 'initPage',
+    method: 'GET',
+    url: 'rest/init/initPage',
+    serialization: 'json'
+  }
+])
+interceptor.init()
 
 class EdfContentScript extends ContentScript {
   constructor() {
@@ -30,9 +41,19 @@ class EdfContentScript extends ContentScript {
       this,
       'fetchBillsForAllContracts'
     )
-    this.fetchAttestations  = wrapTimerInfo(this, 'fetchAttestations')
+    this.fetchAttestations = wrapTimerInfo(this, 'fetchAttestations')
     this.fetchEcheancierBills = wrapTimerInfo(this, 'fetchEcheancierBills')
     this.fetchHousing = wrapTimerInfo(this, 'fetchHousing')
+  }
+
+  async init(options) {
+    await super.init(options)
+    interceptor.on('response', response => {
+      this.bridge.emit('workerEvent', {
+        event: 'interceptedResponse',
+        payload: response
+      })
+    })
   }
 
   // ///////
@@ -609,11 +630,10 @@ class EdfContentScript extends ContentScript {
   }
 
   async getCsrfToken() {
-    const dataCsrfToken = await this.runInWorker(
-      'getKyJson',
-      BASE_URL + `/services/rest/init/initPage?_=${Date.now()}`
-    )
-    return dataCsrfToken.data
+    if (this.csrfToken) {
+      return this.csrfToken
+    }
+    throw new Error('No csrf token intercepted on page')
   }
 
   async fetchAttestations(contracts, context) {
@@ -809,6 +829,13 @@ class EdfContentScript extends ContentScript {
         // in the beginning of the fetch method when the launcher
         // is ready to receive it
         this.store = { email, password }
+      }
+    } else if (event === 'interceptedResponse') {
+      // store edf token token, intercepted in xhr response to use it when calling edf api
+      this.log('debug', 'intercepted new edf token')
+      this.csrfToken = payload?.response?.data
+      if (!this.csrfToken) {
+        this.log('error', 'Wrong edf token intercepted: ', this.csrfToken)
       }
     }
   }
