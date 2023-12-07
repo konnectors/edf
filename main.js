@@ -15358,8 +15358,8 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         try {
           return await run()
         } catch (err) {
-          if (err instanceof Error) {
-            throw new Error(err.message)
+          if (!(err instanceof Error)) {
+            throw new Error(err?.message || err)
           } else {
             throw err
           }
