@@ -1052,8 +1052,8 @@ class EdfContentScript extends ContentScript {
         try {
           return await run()
         } catch (err) {
-          if (err instanceof Error) {
-            throw new Error(err.message)
+          if (!(err instanceof Error)) {
+            throw new Error(err?.message || err)
           } else {
             throw err
           }
