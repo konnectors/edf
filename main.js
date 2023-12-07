@@ -14317,7 +14317,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 // TODO use a flag to change this value
-let FORCE_FETCH_ALL = false
+let FORCE_FETCH_ALL = true
 
 const log = _cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default()('ContentScript')
 _cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default().enable()
