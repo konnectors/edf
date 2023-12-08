@@ -14317,7 +14317,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 // TODO use a flag to change this value
-let FORCE_FETCH_ALL = true
+let FORCE_FETCH_ALL = false
 
 const log = _cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default()('ContentScript')
 _cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default().enable()
@@ -14563,8 +14563,6 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         : Infinity
     }
 
-    interceptor.restore()
-
     if (FORCE_FETCH_ALL || lastIdentityUpdatedSinceDays >= 30) {
       this.log(
         'info',
@@ -14610,12 +14608,8 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     }
     await this.PromiseRaceWithError(
       [
-        this.waitForElementInWorker('button.multi-site-button', {
-          timeout: 60000
-        }),
-        this.waitForElementInWorker('a[class="header-dashboard-button"]', {
-          timeout: 60000
-        })
+        this.waitForElementInWorker('button.multi-site-button'),
+        this.waitForElementInWorker('a[class="header-dashboard-button"]')
       ],
       'fetchHousing: wait for housing page'
     )
@@ -14686,13 +14680,9 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
 
       const contractElec = await this.runInWorker('getContractElec')
 
-      this.log('debug', '🐛🐛🐛 before getConsumptions ')
       const rawConsumptions = await this.runInWorker('getConsumptions')
-      this.log('debug', '🐛🐛🐛 after getConsumptions ')
 
-      this.log('debug', '🐛🐛🐛 after getContractPdlNumber ')
       const pdlNumber = await this.runInWorker('getContractPdlNumber')
-      this.log('debug', '🐛🐛🐛 after getContractPdlNumber ')
 
       const houseConsumption = {
         pdlNumber,
@@ -14706,17 +14696,13 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         contractElec,
         rawConsumptions
       }
-      this.log('debug', '🐛🐛🐛 1')
       computedHousings.push(houseConsumption)
-      this.log('debug', '🐛🐛🐛 2')
 
       if (i === contractsIds.length - 1) {
         this.log('info', 'no more contracts after this one')
         break
       }
-      this.log('debug', '🐛🐛🐛 3')
       await this.runInWorker('changeContract', contractsIds[i + 1])
-      this.log('debug', '🐛🐛🐛 4')
       await this.waitForElementInWorker('button')
       await this.clickAndWait('button', 'button.multi-site-button')
       await this.clickAndWait(
@@ -14967,14 +14953,9 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     await this.waitForElementInWorker(myDocumentsLinkSelector)
     await this.clickAndWait(myDocumentsLinkSelector, contractDisplayedSelector)
 
-    this.log('debug', '🐛🐛🐛 before : getAttestationsContract')
     const attestationData = await this.runInWorker(
       'getKyJson',
       BASE_URL + `/services/rest/edoc/getAttestationsContract?_=${Date.now()}`
-    )
-    this.log(
-      'debug',
-      '🐛🐛🐛 got attestationData : ' + JSON.stringify(attestationData, null, 2)
     )
 
     if (attestationData.length === 0) {
@@ -14982,19 +14963,13 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       return
     }
 
-    this.log('debug', '🐛🐛🐛 before const bp of attestationData')
     for (const bp of attestationData) {
       if (!bp.listOfAttestationsContractByAccDTO) {
         this.log('debug', 'Could not find an attestation')
         continue
       }
-      this.log('debug', '🐛🐛🐛 found an attestation')
 
       for (const contract of bp.listOfAttestationsContractByAccDTO) {
-        this.log(
-          'debug',
-          '🐛🐛🐛 contract: ' + JSON.stringify(contract, null, 2)
-        )
         if (
           !contract.listOfAttestationContract ||
           contract.listOfAttestationContract.length === 0
@@ -15004,7 +14979,6 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
           continue
         }
         const csrfToken = await this.getCsrfToken()
-        this.log('debug', '🐛🐛🐛 got csrfToken : ' + csrfToken)
 
         const subPath = contracts?.folders?.[contract.accDTO.numAcc]
 
@@ -15169,11 +15143,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       this.log('debug', 'intercepted new edf token')
       this.csrfToken = payload?.response?.data
       if (!this.csrfToken) {
-        this.log(
-          'error',
-          'Wrong edf token intercepted: ',
-          JSON.stringify(payload, null, 2)
-        )
+        this.log('error', 'Wrong edf token intercepted: ', this.csrfToken)
       }
     }
   }
