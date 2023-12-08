@@ -59,27 +59,6 @@ class EdfContentScript extends ContentScript {
   // ///////
   // PILOT//
   // ///////
-  async retryGoToLoginForm() {
-    await this.goToLoginForm()
-    if (
-      await this.isElementInWorker('h1', {
-        includesText: `Une erreur s'est produite`
-      })
-    ) {
-      // try to reload the page once
-      this.log('warn', 'Found error page, retrying gotologinform')
-      await this.goToLoginForm()
-    }
-    if (
-      await this.isElementInWorker('h1', {
-        includesText: `Une erreur s'est produite`
-      })
-    ) {
-      throw new Error(
-        `Edf shows an error page: "Une erreur s'est produite" twice. Please try again later`
-      )
-    }
-  }
   async goToLoginForm() {
     await this.goto(DEFAULT_PAGE_URL)
     await this.PromiseRaceWithError(
@@ -145,7 +124,7 @@ class EdfContentScript extends ContentScript {
     await this.goto(DEFAULT_PAGE_URL)
     await Promise.all([
       this.autoLogin(credentials),
-      this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
+      this.waitForAuthenticatedWithRetry()
     ])
   }
 
@@ -187,8 +166,30 @@ class EdfContentScript extends ContentScript {
   async waitForUserAuthentication() {
     this.log('info', '🤖 waitForUserAuthentication start')
     await this.setWorkerState({ visible: true, url: DEFAULT_PAGE_URL })
-    await this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' })
+    await this.waitForAuthenticatedWithRetry()
     await this.setWorkerState({ visible: false })
+  }
+
+  async waitForAuthenticatedWithRetry() {
+    await pRetry(
+      () =>
+        Promise.race([
+          this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
+          this.runInWorkerUntilTrue({ method: 'waitForVendorErrorMessage' })
+        ]),
+      {
+        retries: 1,
+        onFailedAttempt: async error => {
+          if (error.message === 'VENDOR_DOWN') {
+            this.log('warning', 'Got VENDOR_DOWN message, trying again')
+            // sometimes the vendor down message on edf is fixable with a reload of the login form
+            await this.goToLoginForm()
+          } else {
+            throw error
+          }
+        }
+      }
+    )
   }
 
   async fetch(context) {
@@ -907,7 +908,7 @@ class EdfContentScript extends ContentScript {
     )?.innerText
 
     if (vendorErrorMsg) {
-      this.log('error', vendorErrorMsg)
+      this.log('warn', vendorErrorMsg)
       throw new Error('VENDOR_DOWN')
     }
 
@@ -929,6 +930,28 @@ class EdfContentScript extends ContentScript {
       timeout: 30 * 1000
     })
     return true
+  }
+
+  findVendorErrorMessage() {
+    return document.querySelector('.auth__title--error')?.innerText
+  }
+
+  async waitForVendorErrorMessage() {
+    let vendorErrorMsg
+    await waitFor(
+      () => {
+        vendorErrorMsg = this.findVendorErrorMessage()
+        return vendorErrorMsg ? true : false
+      },
+      {
+        interval: 1000,
+        timeout: 60 * 1000
+      }
+    )
+    if (vendorErrorMsg) {
+      this.log('warning', `Got vendor error message: ${vendorErrorMsg}`)
+      throw new Error('VENDOR_DOWN')
+    }
   }
 
   checkConnected() {
@@ -1117,7 +1140,8 @@ connector
       'getMultiContractsIds',
       'selectContract',
       'changeContract',
-      'getContractPdlNumber'
+      'getContractPdlNumber',
+      'waitForVendorErrorMessage'
     ]
   })
   .catch(err => {
