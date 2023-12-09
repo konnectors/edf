@@ -301,8 +301,12 @@ class EdfContentScript extends ContentScript {
     }
     await this.PromiseRaceWithError(
       [
-        this.waitForElementInWorker('button.multi-site-button'),
-        this.waitForElementInWorker('a[class="header-dashboard-button"]')
+        this.waitForElementInWorker('button.multi-site-button', {
+          timeout: 60000
+        }),
+        this.waitForElementInWorker('a[class="header-dashboard-button"]', {
+          timeout: 60000
+        })
       ],
       'fetchHousing: wait for housing page'
     )
@@ -836,7 +840,11 @@ class EdfContentScript extends ContentScript {
       this.log('debug', 'intercepted new edf token')
       this.csrfToken = payload?.response?.data
       if (!this.csrfToken) {
-        this.log('error', 'Wrong edf token intercepted: ', this.csrfToken)
+        this.log(
+          'error',
+          'Wrong edf token intercepted: ',
+          JSON.stringify(payload, null, 2)
+        )
       }
     }
   }

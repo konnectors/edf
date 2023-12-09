@@ -127,7 +127,6 @@ export default class RequestInterceptor {
     if (!interception) return
 
     resp.label = interception.label
-    console.log('👅👅👅 resp url intercepted', resp.url)
 
     // response serialization, to be able to transfer to the pilot
     if (interception.serialization === 'json') {
