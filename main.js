@@ -6250,7 +6250,6 @@ class RequestInterceptor {
     if (!interception) return
 
     resp.label = interception.label
-    console.log('👅👅👅 resp url intercepted', resp.url)
 
     // response serialization, to be able to transfer to the pilot
     if (interception.serialization === 'json') {
@@ -14608,8 +14607,12 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     }
     await this.PromiseRaceWithError(
       [
-        this.waitForElementInWorker('button.multi-site-button'),
-        this.waitForElementInWorker('a[class="header-dashboard-button"]')
+        this.waitForElementInWorker('button.multi-site-button', {
+          timeout: 60000
+        }),
+        this.waitForElementInWorker('a[class="header-dashboard-button"]', {
+          timeout: 60000
+        })
       ],
       'fetchHousing: wait for housing page'
     )
@@ -15143,7 +15146,11 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       this.log('debug', 'intercepted new edf token')
       this.csrfToken = payload?.response?.data
       if (!this.csrfToken) {
-        this.log('error', 'Wrong edf token intercepted: ', this.csrfToken)
+        this.log(
+          'error',
+          'Wrong edf token intercepted: ',
+          JSON.stringify(payload, null, 2)
+        )
       }
     }
   }
