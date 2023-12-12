@@ -14297,16 +14297,18 @@ var __webpack_exports__ = {};
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
-/* harmony import */ var ky__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(210);
+/* harmony import */ var ky__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(210);
 /* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(20);
 /* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_cozy_minilog__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(174);
+/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(174);
 /* harmony import */ var p_wait_for__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(18);
 /* harmony import */ var p_retry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(46);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(51);
-/* harmony import */ var cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(42);
-/* harmony import */ var cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(53);
-/* harmony import */ var _interceptor__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(52);
+/* harmony import */ var p_timeout__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(19);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(51);
+/* harmony import */ var cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(42);
+/* harmony import */ var cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(53);
+/* harmony import */ var _interceptor__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(52);
+
 
 
 
@@ -14328,11 +14330,23 @@ const BASE_URL = 'https://particulier.edf.fr'
 const DEFAULT_PAGE_URL =
   BASE_URL + '/fr/accueil/espace-client/tableau-de-bord.html'
 
-const interceptor = new _interceptor__WEBPACK_IMPORTED_MODULE_6__["default"]([
+const interceptor = new _interceptor__WEBPACK_IMPORTED_MODULE_7__["default"]([
   {
     label: 'initPage',
     method: 'GET',
     url: 'rest/init/initPage',
+    serialization: 'json'
+  },
+  {
+    label: 'getBillsDocuments',
+    method: 'GET',
+    url: 'rest/edoc/getBillsDocuments',
+    serialization: 'json'
+  },
+  {
+    label: 'billConsult',
+    method: 'GET',
+    url: 'rest/bill/consult',
     serialization: 'json'
   }
 ])
@@ -14342,7 +14356,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   constructor() {
     super()
     const logInfo = message => this.log('info', message)
-    const wrapTimerInfo = (0,cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_5__.wrapTimerFactory)({ logFn: logInfo })
+    const wrapTimerInfo = (0,cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_6__.wrapTimerFactory)({ logFn: logInfo })
 
     this.fetchContact = wrapTimerInfo(this, 'fetchContact')
     this.fetchContracts = wrapTimerInfo(this, 'fetchContracts')
@@ -14362,6 +14376,24 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         event: 'interceptedResponse',
         payload: response
       })
+    })
+  }
+
+  waitForInterception(label, options = {}) {
+    const timeout = options?.timeout ?? 60000
+    const interceptionPromise = new Promise(resolve => {
+      const listener = ({ event, payload }) => {
+        if (event === 'interceptedResponse' && payload.label === label) {
+          this.bridge.removeEventListener('workerEvent', listener)
+          resolve(payload)
+        }
+      }
+      this.bridge.addEventListener('workerEvent', listener)
+    })
+
+    return (0,p_timeout__WEBPACK_IMPORTED_MODULE_4__["default"])(interceptionPromise, {
+      milliseconds: timeout,
+      message: `Timed out after waiting ${timeout}ms for interception of ${label}`
     })
   }
 
@@ -14553,7 +14585,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     let lastIdentityUpdatedSinceDays = Infinity
     if (!FORCE_FETCH_ALL) {
       const existingIdentities = await this.queryAll(
-        (0,cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_7__.Q)('io.cozy.identities')
+        (0,cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_8__.Q)('io.cozy.identities')
           .where({
             identifier: sourceAccountIdentifier,
             'cozyMetadata.createdByApp': manifest.slug
@@ -14574,7 +14606,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       const identity = { contact }
       const housingRawData = await this.fetchHousing()
       if (housingRawData !== null) {
-        const housing = (0,_utils__WEBPACK_IMPORTED_MODULE_4__.formatHousing)(
+        const housing = (0,_utils__WEBPACK_IMPORTED_MODULE_5__.formatHousing)(
           contracts,
           echeancierResult,
           housingRawData,
@@ -14586,7 +14618,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     } else {
       this.log(
         'info',
-        `Existing identity last updated ${lastIdentityUpdatedSinceDays} ago. No need to update it`
+        `Existing identity last updated ${lastIdentityUpdatedSinceDays} days ago. No need to update it`
       )
     }
   }
@@ -14735,20 +14767,11 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     this.log('info', 'fetching echeancier bills')
 
     // files won't download if this page is not fully loaded before
-    const fullpageLoadedSelector = '.timeline-header__download'
     const billLinkSelector = "a.accessPage[href*='factures-et-paiements.html']"
 
-    if (await this.isElementInWorker(billLinkSelector)) {
-      await this.clickAndWait(billLinkSelector, fullpageLoadedSelector)
-    }
-    if (!(await this.isElementInWorker(fullpageLoadedSelector))) {
-      throw new Error(`Could not find the echeancier bills page`)
-    }
+    await this.runInWorker('click', billLinkSelector)
+    const { response: result } = await this.waitForInterception('billConsult')
 
-    const result = await this.runInWorker(
-      'getKyJson',
-      `${BASE_URL}/services/rest/bill/consult?_=${Date.now()}`
-    )
     if (!result || !result.feSouscriptionResponse) {
       log.warn('fetchEcheancierBills: could not find contract')
       return
@@ -14812,39 +14835,41 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
           bn: paymentDocuments[0].bpDto.bpNumberCrypt,
           an: paymentDocuments[0].listOfPaymentsByAccDTO[0].accDTO.numAccCrypt
         })
-      const filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_8__["default"])(
+      const filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_9__["default"])(
         new Date(
           paymentDocuments[0]?.listOfPaymentsByAccDTO?.[0]?.lastPaymentDocument?.creationDate
         ),
         'yyyy'
       )}_EDF_echancier.pdf`
 
-      await this.saveBills(
-        bills.map(bill => ({
-          ...bill,
-          filename,
-          fileurl,
-          recurrence: 'monthly',
-          fileAttributes: {
-            metadata: {
-              invoiceNumber: bill.vendorRef,
-              contentAuthor: 'edf',
-              datetime: bill.date,
-              datetimeLabel: 'startDate',
-              isSubscription: true,
-              startDate: bill.date,
-              carbonCopy: true
+      if (bills.length > 0) {
+        await this.saveBills(
+          bills.map(bill => ({
+            ...bill,
+            filename,
+            fileurl,
+            recurrence: 'monthly',
+            fileAttributes: {
+              metadata: {
+                invoiceNumber: bill.vendorRef,
+                contentAuthor: 'edf',
+                datetime: bill.date,
+                datetimeLabel: 'startDate',
+                isSubscription: true,
+                startDate: bill.date,
+                carbonCopy: true
+              }
             }
+          })),
+          {
+            context,
+            subPath,
+            fileIdAttributes: ['vendorRef', 'startDate'],
+            contentType: 'application/pdf',
+            qualificationLabel: 'energy_invoice'
           }
-        })),
-        {
-          context,
-          subPath,
-          fileIdAttributes: ['vendorRef', 'startDate'],
-          contentType: 'application/pdf',
-          qualificationLabel: 'energy_invoice'
-        }
-      )
+        )
+      }
     }
 
     return { isMonthly }
@@ -14854,17 +14879,12 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     this.log('info', 'fetchBillsForAllContracts')
     // files won't download if this page is not fully loaded before
     const billButtonSelector = '#facture'
-    const billListSelector = '#factureSelection'
     if (await this.isElementInWorker(billButtonSelector)) {
-      await this.clickAndWait(billButtonSelector, billListSelector)
-    }
-    if (!(await this.isElementInWorker(billListSelector))) {
-      throw new Error(`Could not find the selection of factures`)
+      await this.runInWorker('click', billButtonSelector)
     }
 
-    const billDocResp = await this.runInWorker(
-      'getKyJson',
-      BASE_URL + '/services/rest/edoc/getBillsDocuments'
+    const { response: billDocResp } = await this.waitForInterception(
+      'getBillsDocuments'
     )
 
     if (billDocResp.length === 0) {
@@ -14903,7 +14923,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
             cozyBill.isRefund = true
           }
 
-          cozyBill.filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_8__["default"])(
+          cozyBill.filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_9__["default"])(
             cozyBill.date,
             'yyyy-MM-dd'
           )}_EDF_${cozyBill.amount.toFixed(2)}€.pdf`
@@ -14933,13 +14953,15 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
           }
           cozyBills.push(cozyBill)
         }
-        await this.saveBills(cozyBills, {
-          context,
-          subPath,
-          fileIdAttributes: ['vendorRef'],
-          contentType: 'application/pdf',
-          qualificationLabel: 'energy_invoice'
-        })
+        if (cozyBills.length > 0) {
+          await this.saveBills(cozyBills, {
+            context,
+            subPath,
+            fileIdAttributes: ['vendorRef'],
+            contentType: 'application/pdf',
+            qualificationLabel: 'energy_invoice'
+          })
+        }
       }
     }
   }
@@ -15145,7 +15167,10 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         // is ready to receive it
         this.store = { email, password }
       }
-    } else if (event === 'interceptedResponse') {
+    } else if (
+      event === 'interceptedResponse' &&
+      payload.label === 'initPage'
+    ) {
       // store edf token token, intercepted in xhr response to use it when calling edf api
       this.log('debug', 'intercepted new edf token')
       this.csrfToken = payload?.response?.data
@@ -15355,7 +15380,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   getKyJson(url) {
-    return ky__WEBPACK_IMPORTED_MODULE_9__["default"].get(url, {
+    return ky__WEBPACK_IMPORTED_MODULE_10__["default"].get(url, {
         retry: {
           limit: 5,
           statusCodes: [404]
