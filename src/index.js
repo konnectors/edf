@@ -4,6 +4,7 @@ import Minilog from '@cozy/minilog'
 import { format } from 'date-fns'
 import waitFor from 'p-wait-for'
 import pRetry from 'p-retry'
+import pTimeout from 'p-timeout'
 import { formatHousing } from './utils'
 import { wrapTimerFactory } from 'cozy-clisk/dist/libs/wrapTimer'
 import { Q } from 'cozy-client/dist/queries/dsl'
@@ -24,6 +25,18 @@ const interceptor = new RequestInterceptor([
     label: 'initPage',
     method: 'GET',
     url: 'rest/init/initPage',
+    serialization: 'json'
+  },
+  {
+    label: 'getBillsDocuments',
+    method: 'GET',
+    url: 'rest/edoc/getBillsDocuments',
+    serialization: 'json'
+  },
+  {
+    label: 'billConsult',
+    method: 'GET',
+    url: 'rest/bill/consult',
     serialization: 'json'
   }
 ])
@@ -53,6 +66,24 @@ class EdfContentScript extends ContentScript {
         event: 'interceptedResponse',
         payload: response
       })
+    })
+  }
+
+  waitForInterception(label, options = {}) {
+    const timeout = options?.timeout ?? 60000
+    const interceptionPromise = new Promise(resolve => {
+      const listener = ({ event, payload }) => {
+        if (event === 'interceptedResponse' && payload.label === label) {
+          this.bridge.removeEventListener('workerEvent', listener)
+          resolve(payload)
+        }
+      }
+      this.bridge.addEventListener('workerEvent', listener)
+    })
+
+    return pTimeout(interceptionPromise, {
+      milliseconds: timeout,
+      message: `Timed out after waiting ${timeout}ms for interception of ${label}`
     })
   }
 
@@ -277,7 +308,7 @@ class EdfContentScript extends ContentScript {
     } else {
       this.log(
         'info',
-        `Existing identity last updated ${lastIdentityUpdatedSinceDays} ago. No need to update it`
+        `Existing identity last updated ${lastIdentityUpdatedSinceDays} days ago. No need to update it`
       )
     }
   }
@@ -426,20 +457,11 @@ class EdfContentScript extends ContentScript {
     this.log('info', 'fetching echeancier bills')
 
     // files won't download if this page is not fully loaded before
-    const fullpageLoadedSelector = '.timeline-header__download'
     const billLinkSelector = "a.accessPage[href*='factures-et-paiements.html']"
 
-    if (await this.isElementInWorker(billLinkSelector)) {
-      await this.clickAndWait(billLinkSelector, fullpageLoadedSelector)
-    }
-    if (!(await this.isElementInWorker(fullpageLoadedSelector))) {
-      throw new Error(`Could not find the echeancier bills page`)
-    }
+    await this.runInWorker('click', billLinkSelector)
+    const { response: result } = await this.waitForInterception('billConsult')
 
-    const result = await this.runInWorker(
-      'getKyJson',
-      `${BASE_URL}/services/rest/bill/consult?_=${Date.now()}`
-    )
     if (!result || !result.feSouscriptionResponse) {
       log.warn('fetchEcheancierBills: could not find contract')
       return
@@ -510,32 +532,34 @@ class EdfContentScript extends ContentScript {
         'yyyy'
       )}_EDF_echancier.pdf`
 
-      await this.saveBills(
-        bills.map(bill => ({
-          ...bill,
-          filename,
-          fileurl,
-          recurrence: 'monthly',
-          fileAttributes: {
-            metadata: {
-              invoiceNumber: bill.vendorRef,
-              contentAuthor: 'edf',
-              datetime: bill.date,
-              datetimeLabel: 'startDate',
-              isSubscription: true,
-              startDate: bill.date,
-              carbonCopy: true
+      if (bills.length > 0) {
+        await this.saveBills(
+          bills.map(bill => ({
+            ...bill,
+            filename,
+            fileurl,
+            recurrence: 'monthly',
+            fileAttributes: {
+              metadata: {
+                invoiceNumber: bill.vendorRef,
+                contentAuthor: 'edf',
+                datetime: bill.date,
+                datetimeLabel: 'startDate',
+                isSubscription: true,
+                startDate: bill.date,
+                carbonCopy: true
+              }
             }
+          })),
+          {
+            context,
+            subPath,
+            fileIdAttributes: ['vendorRef', 'startDate'],
+            contentType: 'application/pdf',
+            qualificationLabel: 'energy_invoice'
           }
-        })),
-        {
-          context,
-          subPath,
-          fileIdAttributes: ['vendorRef', 'startDate'],
-          contentType: 'application/pdf',
-          qualificationLabel: 'energy_invoice'
-        }
-      )
+        )
+      }
     }
 
     return { isMonthly }
@@ -545,17 +569,12 @@ class EdfContentScript extends ContentScript {
     this.log('info', 'fetchBillsForAllContracts')
     // files won't download if this page is not fully loaded before
     const billButtonSelector = '#facture'
-    const billListSelector = '#factureSelection'
     if (await this.isElementInWorker(billButtonSelector)) {
-      await this.clickAndWait(billButtonSelector, billListSelector)
-    }
-    if (!(await this.isElementInWorker(billListSelector))) {
-      throw new Error(`Could not find the selection of factures`)
+      await this.runInWorker('click', billButtonSelector)
     }
 
-    const billDocResp = await this.runInWorker(
-      'getKyJson',
-      BASE_URL + '/services/rest/edoc/getBillsDocuments'
+    const { response: billDocResp } = await this.waitForInterception(
+      'getBillsDocuments'
     )
 
     if (billDocResp.length === 0) {
@@ -624,13 +643,15 @@ class EdfContentScript extends ContentScript {
           }
           cozyBills.push(cozyBill)
         }
-        await this.saveBills(cozyBills, {
-          context,
-          subPath,
-          fileIdAttributes: ['vendorRef'],
-          contentType: 'application/pdf',
-          qualificationLabel: 'energy_invoice'
-        })
+        if (cozyBills.length > 0) {
+          await this.saveBills(cozyBills, {
+            context,
+            subPath,
+            fileIdAttributes: ['vendorRef'],
+            contentType: 'application/pdf',
+            qualificationLabel: 'energy_invoice'
+          })
+        }
       }
     }
   }
@@ -836,7 +857,10 @@ class EdfContentScript extends ContentScript {
         // is ready to receive it
         this.store = { email, password }
       }
-    } else if (event === 'interceptedResponse') {
+    } else if (
+      event === 'interceptedResponse' &&
+      payload.label === 'initPage'
+    ) {
       // store edf token token, intercepted in xhr response to use it when calling edf api
       this.log('debug', 'intercepted new edf token')
       this.csrfToken = payload?.response?.data
