@@ -212,7 +212,7 @@ class EdfContentScript extends ContentScript {
         retries: 1,
         onFailedAttempt: async error => {
           if (error.message === 'VENDOR_DOWN') {
-            this.log('warning', 'Got VENDOR_DOWN message, trying again')
+            this.log('warn', 'Got VENDOR_DOWN message, trying again')
             // sometimes the vendor down message on edf is fixable with a reload of the login form
             await this.goToLoginForm()
           } else {
@@ -958,7 +958,7 @@ class EdfContentScript extends ContentScript {
       }
     )
     if (vendorErrorMsg) {
-      this.log('warning', `Got vendor error message: ${vendorErrorMsg}`)
+      this.log('warn', `Got vendor error message: ${vendorErrorMsg}`)
       throw new Error('VENDOR_DOWN')
     }
   }
