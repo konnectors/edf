@@ -877,52 +877,37 @@ class EdfContentScript extends ContentScript {
   // ////////
   // WORKER//
   // ////////
-  onWorkerReady() {
-    function addClickListener() {
-      document.body.addEventListener('click', e => {
-        const clickedElementId = e.target.getAttribute('id')
-        const clickedElementParentId =
-          e.target?.parentElement?.getAttribute('id')
-        if (
-          [clickedElementId, clickedElementParentId].includes(
-            'username-next-button'
-          )
-        ) {
-          const email = document.querySelector('#email')?.value
-          // will use this email in getUserDataFromWebsite
-          this.bridge.emit('workerEvent', {
-            event: 'loginSubmit',
-            payload: { email }
-          })
-        } else if (
-          [clickedElementId, clickedElementParentId].includes(
-            'password2-next-button'
-          )
-        ) {
-          const email = document.querySelector('#emailHid')?.value
-          const password = document.querySelector(
-            '#password2-password-field'
-          )?.value
-          this.bridge.emit('workerEvent', {
-            event: 'loginSubmit',
-            payload: { email, password }
-          })
-        }
-      })
-    }
-    if (!document?.body) {
-      log('info', 'no body, did not add dom events')
-      return
-    }
-
-    if (
-      document.readyState === 'complete' ||
-      document.readyState === 'loaded'
-    ) {
-      addClickListener.bind(this)()
-    } else {
-      document.addEventListener('DOMContentLoaded', addClickListener.bind(this))
-    }
+  async onWorkerReady() {
+    await this.waitForDomReady()
+    document.body.addEventListener('click', e => {
+      const clickedElementId = e.target.getAttribute('id')
+      const clickedElementParentId = e.target?.parentElement?.getAttribute('id')
+      if (
+        [clickedElementId, clickedElementParentId].includes(
+          'username-next-button'
+        )
+      ) {
+        const email = document.querySelector('#email')?.value
+        // will use this email in getUserDataFromWebsite
+        this.bridge.emit('workerEvent', {
+          event: 'loginSubmit',
+          payload: { email }
+        })
+      } else if (
+        [clickedElementId, clickedElementParentId].includes(
+          'password2-next-button'
+        )
+      ) {
+        const email = document.querySelector('#emailHid')?.value
+        const password = document.querySelector(
+          '#password2-password-field'
+        )?.value
+        this.bridge.emit('workerEvent', {
+          event: 'loginSubmit',
+          payload: { email, password }
+        })
+      }
+    })
   }
   async checkAuthenticated() {
     const $contracts = document.querySelectorAll('.selected-contrat')
