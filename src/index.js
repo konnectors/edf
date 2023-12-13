@@ -203,11 +203,14 @@ class EdfContentScript extends ContentScript {
 
   async waitForAuthenticatedWithRetry() {
     await pRetry(
-      () =>
-        Promise.race([
-          this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
-          this.runInWorkerUntilTrue({ method: 'waitForVendorErrorMessage' })
-        ]),
+      async () =>
+        await this.PromiseRaceWithError(
+          [
+            this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
+            this.runInWorkerUntilTrue({ method: 'waitForVendorErrorMessage' })
+          ],
+          'waitForAuthenticatedWithRetry'
+        ),
       {
         retries: 1,
         onFailedAttempt: async error => {
@@ -1092,10 +1095,16 @@ class EdfContentScript extends ContentScript {
         try {
           return await run()
         } catch (err) {
-          if (!(err instanceof Error)) {
-            throw new Error(err?.message || err)
-          } else {
+          if (err instanceof Error) {
             throw err
+          } else {
+            this.log(
+              'warn',
+              `caught an Error which is not instance of Error: ${
+                err?.message || JSON.stringify(err)
+              }`
+            )
+            throw new Error(err?.message || err)
           }
         }
       },
@@ -1125,7 +1134,16 @@ class EdfContentScript extends ContentScript {
       this.log('debug', msg)
       await Promise.race(promises)
     } catch (err) {
-      this.log('warn', err.message)
+      if (err instanceof Error) {
+        this.log('warn', err?.message || err)
+      } else {
+        this.log(
+          'warn',
+          `caught an Error which is not instance of Error: ${
+            err?.message || JSON.stringify(err)
+          }`
+        )
+      }
       throw new Error(`${msg} failed to meet conditions`)
     }
   }
