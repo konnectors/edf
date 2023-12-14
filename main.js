@@ -14562,11 +14562,14 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
 
   async waitForAuthenticatedWithRetry() {
     await (0,p_retry__WEBPACK_IMPORTED_MODULE_3__["default"])(
-      () =>
-        Promise.race([
-          this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
-          this.runInWorkerUntilTrue({ method: 'waitForVendorErrorMessage' })
-        ]),
+      async () =>
+        await this.PromiseRaceWithError(
+          [
+            this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
+            this.runInWorkerUntilTrue({ method: 'waitForVendorErrorMessage' })
+          ],
+          'waitForAuthenticatedWithRetry'
+        ),
       {
         retries: 1,
         onFailedAttempt: async error => {
@@ -15450,10 +15453,16 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         try {
           return await run()
         } catch (err) {
-          if (!(err instanceof Error)) {
-            throw new Error(err?.message || err)
-          } else {
+          if (err instanceof Error) {
             throw err
+          } else {
+            this.log(
+              'warn',
+              `caught an Error which is not instance of Error: ${
+                err?.message || JSON.stringify(err)
+              }`
+            )
+            throw new Error(err?.message || err)
           }
         }
       },
@@ -15483,7 +15492,16 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       this.log('debug', msg)
       await Promise.race(promises)
     } catch (err) {
-      this.log('warn', err.message)
+      if (err instanceof Error) {
+        this.log('warn', err?.message || err)
+      } else {
+        this.log(
+          'warn',
+          `caught an Error which is not instance of Error: ${
+            err?.message || JSON.stringify(err)
+          }`
+        )
+      }
       throw new Error(`${msg} failed to meet conditions`)
     }
   }
