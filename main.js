@@ -15066,7 +15066,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         await this.saveFiles(
           [
             {
-              shouldReplaceFile: () => true,
+              forceReplaceFile: true,
               filename: 'attestation de contrat edf.pdf',
               vendorRef:
                 contracts.details[contract.accDTO.numAcc].contracts[0]
