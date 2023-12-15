@@ -707,7 +707,7 @@ class EdfContentScript extends ContentScript {
         await this.saveFiles(
           [
             {
-              shouldReplaceFile: () => true,
+              forceReplaceFile: true,
               filename: 'attestation de contrat edf.pdf',
               vendorRef:
                 contracts.details[contract.accDTO.numAcc].contracts[0]
