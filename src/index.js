@@ -118,7 +118,11 @@ class EdfContentScript extends ContentScript {
   }
 
   async logout() {
-    window.deconnexion()
+    if (window.deconnexion) {
+      window.deconnexion()
+    } else {
+      throw new Error('Could not logout from the current page. No window.deconnexion function found')
+    }
   }
 
   async ensureAuthenticated({ account }) {
