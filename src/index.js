@@ -156,7 +156,6 @@ class EdfContentScript extends ContentScript {
 
   async tryAutoLogin(credentials) {
     this.log('info', '🤖 autologin start')
-    await this.goto(DEFAULT_PAGE_URL)
     await Promise.all([
       this.autoLogin(credentials),
       this.waitForAuthenticatedWithRetry()
