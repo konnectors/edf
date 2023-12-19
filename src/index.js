@@ -91,6 +91,35 @@ class EdfContentScript extends ContentScript {
   // PILOT//
   // ///////
   async goToLoginForm() {
+    await pRetry(
+      async () => {
+        await this.goto(DEFAULT_PAGE_URL)
+        await this.PromiseRaceWithError(
+          [
+            this.runInWorkerUntilTrue({ method: 'waitForVendorErrorMessage' }),
+            this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
+            this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
+          ],
+          'goToLoginForm: waiting for any authentication confirmation or login form...'
+        )
+        if (await this.runInWorker('findVendorErrorMessage')) {
+          throw new Error('VENDOR_DOWN')
+        }
+      },
+      {
+        retries: 1,
+        onFailedAttempt: async error => {
+          if (error.message === 'VENDOR_DOWN') {
+            this.log(
+              'warn',
+              'goToLoginForm: Got VENDOR_DOWN message, trying again'
+            )
+          } else {
+            throw error
+          }
+        }
+      }
+    )
     await this.goto(DEFAULT_PAGE_URL)
     await this.PromiseRaceWithError(
       [
@@ -218,7 +247,10 @@ class EdfContentScript extends ContentScript {
         retries: 1,
         onFailedAttempt: async error => {
           if (error.message === 'VENDOR_DOWN') {
-            this.log('warn', 'Got VENDOR_DOWN message, trying again')
+            this.log(
+              'warn',
+              'waitForAuthenticatedWithRetry: Got VENDOR_DOWN message, trying again'
+            )
             // sometimes the vendor down message on edf is fixable with a reload of the login form
             await this.goToLoginForm()
           } else {
