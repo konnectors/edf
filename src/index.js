@@ -150,7 +150,9 @@ class EdfContentScript extends ContentScript {
     if (window.deconnexion) {
       window.deconnexion()
     } else {
-      throw new Error('Could not logout from the current page. No window.deconnexion function found')
+      throw new Error(
+        'Could not logout from the current page. No window.deconnexion function found'
+      )
     }
   }
 
@@ -171,7 +173,7 @@ class EdfContentScript extends ContentScript {
     if (credentials && credentials.email && credentials.password) {
       try {
         this.log('debug', 'Got credentials, trying autologin')
-        await this.tryAutoLogin(credentials)
+        await this.autologin(credentials)
       } catch (err) {
         log.warn('autoLogin error' + err.message)
         await this.waitForUserAuthentication()
@@ -183,15 +185,8 @@ class EdfContentScript extends ContentScript {
     return true
   }
 
-  async tryAutoLogin(credentials) {
-    this.log('info', '🤖 autologin start')
-    await Promise.all([
-      this.autoLogin(credentials),
-      this.waitForAuthenticatedWithRetry()
-    ])
-  }
-
   async autoLogin(credentials) {
+    this.log('info', '🤖 autologin start')
     this.log('debug', 'fill email field')
     const emailInputSelector = '#email'
     const passwordInputSelector = '#password2-password-field'
@@ -224,6 +219,18 @@ class EdfContentScript extends ContentScript {
       credentials.password
     )
     await this.runInWorker('click', passwordNextButtonSelector)
+
+    await this.PromiseRaceWithError(
+      [
+        this.waitForElementInWorker('.field-container--error'), // do not wait for .msg__error because allways present but invisible
+        this.waitForAuthenticatedWithRetry()
+      ],
+      'waiting end of autologin'
+    )
+
+    if (await this.isElementInWorker('.field-container--error')) {
+      throw new Error('Wrong credentials')
+    }
   }
 
   async waitForUserAuthentication() {
