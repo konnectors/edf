@@ -14535,17 +14535,19 @@ var __webpack_exports__ = {};
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
-/* harmony import */ var ky__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(215);
-/* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(20);
-/* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_cozy_minilog__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(179);
-/* harmony import */ var p_wait_for__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(18);
-/* harmony import */ var p_retry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(51);
-/* harmony import */ var p_timeout__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(19);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(56);
-/* harmony import */ var cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(42);
-/* harmony import */ var cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(58);
-/* harmony import */ var _interceptor__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(57);
+/* harmony import */ var cozy_clisk_dist_contentscript_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(41);
+/* harmony import */ var ky__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(215);
+/* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(20);
+/* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_cozy_minilog__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(179);
+/* harmony import */ var p_wait_for__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(18);
+/* harmony import */ var p_retry__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(51);
+/* harmony import */ var p_timeout__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(19);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(56);
+/* harmony import */ var cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(42);
+/* harmony import */ var cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(58);
+/* harmony import */ var _interceptor__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(57);
+
 
 
 
@@ -14561,14 +14563,14 @@ __webpack_require__.r(__webpack_exports__);
 // TODO use a flag to change this value
 let FORCE_FETCH_ALL = false
 
-const log = _cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default()('ContentScript')
-_cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default().enable()
+const log = _cozy_minilog__WEBPACK_IMPORTED_MODULE_2___default()('ContentScript')
+_cozy_minilog__WEBPACK_IMPORTED_MODULE_2___default().enable()
 
 const BASE_URL = 'https://particulier.edf.fr'
 const DEFAULT_PAGE_URL =
   BASE_URL + '/fr/accueil/espace-client/tableau-de-bord.html'
 
-const interceptor = new _interceptor__WEBPACK_IMPORTED_MODULE_7__["default"]([
+const interceptor = new _interceptor__WEBPACK_IMPORTED_MODULE_8__["default"]([
   {
     label: 'initPage',
     method: 'GET',
@@ -14594,7 +14596,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   constructor() {
     super()
     const logInfo = message => this.log('info', message)
-    const wrapTimerInfo = (0,cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_6__.wrapTimerFactory)({ logFn: logInfo })
+    const wrapTimerInfo = (0,cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_7__.wrapTimerFactory)({ logFn: logInfo })
 
     this.fetchContact = wrapTimerInfo(this, 'fetchContact')
     this.fetchContracts = wrapTimerInfo(this, 'fetchContracts')
@@ -14605,6 +14607,16 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     this.fetchAttestations = wrapTimerInfo(this, 'fetchAttestations')
     this.fetchEcheancierBills = wrapTimerInfo(this, 'fetchEcheancierBills')
     this.fetchHousing = wrapTimerInfo(this, 'fetchHousing')
+  }
+
+  async downloadFileInWorker(entry) {
+    this.log('debug', 'downloading file in worker with fetch')
+    if (entry.fileurl) {
+      const response = await fetch(entry.fileurl)
+      entry.blob = await response.blob()
+      entry.dataUri = await (0,cozy_clisk_dist_contentscript_utils__WEBPACK_IMPORTED_MODULE_1__.blobToBase64)(entry.blob)
+    }
+    return entry.dataUri
   }
 
   async init(options) {
@@ -14629,7 +14641,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       this.bridge.addEventListener('workerEvent', listener)
     })
 
-    return (0,p_timeout__WEBPACK_IMPORTED_MODULE_4__["default"])(interceptionPromise, {
+    return (0,p_timeout__WEBPACK_IMPORTED_MODULE_5__["default"])(interceptionPromise, {
       milliseconds: timeout,
       message: `Timed out after waiting ${timeout}ms for interception of ${label}`
     })
@@ -14639,7 +14651,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   // PILOT//
   // ///////
   async goToLoginForm() {
-    await (0,p_retry__WEBPACK_IMPORTED_MODULE_3__["default"])(
+    await (0,p_retry__WEBPACK_IMPORTED_MODULE_4__["default"])(
       async () => {
         await this.goto(DEFAULT_PAGE_URL)
         await this.PromiseRaceWithError(
@@ -14789,7 +14801,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async waitForAuthenticatedWithRetry() {
-    await (0,p_retry__WEBPACK_IMPORTED_MODULE_3__["default"])(
+    await (0,p_retry__WEBPACK_IMPORTED_MODULE_4__["default"])(
       async () =>
         await this.PromiseRaceWithError(
           [
@@ -14868,7 +14880,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     let lastIdentityUpdatedSinceDays = Infinity
     if (!FORCE_FETCH_ALL) {
       const existingIdentities = await this.queryAll(
-        (0,cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_8__.Q)('io.cozy.identities')
+        (0,cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_9__.Q)('io.cozy.identities')
           .where({
             identifier: sourceAccountIdentifier,
             'cozyMetadata.createdByApp': manifest.slug
@@ -14889,7 +14901,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       const identity = { contact }
       const housingRawData = await this.fetchHousing()
       if (housingRawData !== null) {
-        const housing = (0,_utils__WEBPACK_IMPORTED_MODULE_5__.formatHousing)(
+        const housing = (0,_utils__WEBPACK_IMPORTED_MODULE_6__.formatHousing)(
           contracts,
           echeancierResult,
           housingRawData,
@@ -15118,7 +15130,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
           bn: paymentDocuments[0].bpDto.bpNumberCrypt,
           an: paymentDocuments[0].listOfPaymentsByAccDTO[0].accDTO.numAccCrypt
         })
-      const filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_9__["default"])(
+      const filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_10__["default"])(
         new Date(
           paymentDocuments[0]?.listOfPaymentsByAccDTO?.[0]?.lastPaymentDocument?.creationDate
         ),
@@ -15206,7 +15218,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
             cozyBill.isRefund = true
           }
 
-          cozyBill.filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_9__["default"])(
+          cozyBill.filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_10__["default"])(
             cozyBill.date,
             'yyyy-MM-dd'
           )}_EDF_${cozyBill.amount.toFixed(2)}€.pdf`
@@ -15527,7 +15539,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async waitForLoginForm() {
-    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_2__["default"])(this.checkLoginForm, {
+    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_3__["default"])(this.checkLoginForm, {
       interval: 1000,
       timeout: 30 * 1000
     })
@@ -15540,7 +15552,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
 
   async waitForVendorErrorMessage() {
     let vendorErrorMsg
-    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_2__["default"])(
+    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_3__["default"])(
       () => {
         vendorErrorMsg = this.findVendorErrorMessage()
         return vendorErrorMsg ? true : false
@@ -15566,7 +15578,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async waitForHomeProfile() {
-    return await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_2__["default"])(
+    return await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_3__["default"])(
       () => Boolean(window.sessionStorage.getItem('datacache:profil')),
       {
         interval: 1000,
@@ -15576,7 +15588,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async waitForSessionStorage() {
-    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_2__["default"])(
+    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_3__["default"])(
       () => {
         const result = Boolean(
           window.sessionStorage.getItem('datacache:profil')
@@ -15648,7 +15660,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   getKyJson(url) {
-    return ky__WEBPACK_IMPORTED_MODULE_10__["default"].get(url, {
+    return ky__WEBPACK_IMPORTED_MODULE_11__["default"].get(url, {
         retry: {
           limit: 5,
           statusCodes: [404]
@@ -15679,7 +15691,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   withRetry({ run, label, selectorToWait }) {
-    return (0,p_retry__WEBPACK_IMPORTED_MODULE_3__["default"])(
+    return (0,p_retry__WEBPACK_IMPORTED_MODULE_4__["default"])(
       async () => {
         try {
           return await run()
