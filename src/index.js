@@ -1,4 +1,5 @@
 import { ContentScript } from 'cozy-clisk/dist/contentscript'
+import { blobToBase64 } from 'cozy-clisk/dist/contentscript/utils'
 import ky from 'ky'
 import Minilog from '@cozy/minilog'
 import { format } from 'date-fns'
@@ -57,6 +58,16 @@ class EdfContentScript extends ContentScript {
     this.fetchAttestations = wrapTimerInfo(this, 'fetchAttestations')
     this.fetchEcheancierBills = wrapTimerInfo(this, 'fetchEcheancierBills')
     this.fetchHousing = wrapTimerInfo(this, 'fetchHousing')
+  }
+
+  async downloadFileInWorker(entry) {
+    this.log('debug', 'downloading file in worker with fetch')
+    if (entry.fileurl) {
+      const response = await fetch(entry.fileurl)
+      entry.blob = await response.blob()
+      entry.dataUri = await blobToBase64(entry.blob)
+    }
+    return entry.dataUri
   }
 
   async init(options) {
