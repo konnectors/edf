@@ -416,8 +416,10 @@ var ContentScript = /*#__PURE__*/function () {
               case 0:
                 self = this;
                 domReadyPromise = new Promise(function (resolve) {
+                  var _document, _document2, _document3;
+
                   // first check if the DOMContentLoad has already been called
-                  if (document.readyState === 'complete' || document.readyState === 'loaded') {
+                  if (((_document = document) === null || _document === void 0 ? void 0 : _document.readyState) === 'complete' || ((_document2 = document) === null || _document2 === void 0 ? void 0 : _document2.readyState) === 'loaded' || ((_document3 = document) === null || _document3 === void 0 ? void 0 : _document3.readyState) === 'interactive') {
                     resolve();
                   } else {
                     window.addEventListener('DOMContentLoaded', function () {
@@ -5569,7 +5571,7 @@ module.exports = _defineProperty, module.exports.__esModule = true, module.expor
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"cozy-clisk","version":"0.32.0","description":"All the libs needed to run a cozy client connector","repository":{"type":"git","url":"git+https://github.com/konnectors/libs.git"},"files":["dist"],"keywords":["konnector"],"main":"dist/index.js","author":"doubleface <christophe@cozycloud.cc>","license":"MIT","bugs":{"url":"https://github.com/konnectors/libs/issues"},"homepage":"https://github.com/konnectors/libs#readme","scripts":{"lint":"eslint \'src/**/*.js\'","prepublishOnly":"yarn run build","build":"babel --root-mode upward src/ -d dist/ --copy-files --verbose --ignore \'**/*.spec.js\',\'**/*.spec.jsx\'","test":"jest src"},"devDependencies":{"@babel/core":"7.20.12","babel-jest":"29.3.1","babel-preset-cozy-app":"2.0.4","jest":"29.3.1","jest-environment-jsdom":"29.3.1","typescript":"4.9.5"},"dependencies":{"@cozy/minilog":"^1.0.0","bluebird-retry":"^0.11.0","cozy-client":"^41.2.0","ky":"^0.25.1","lodash":"^4.17.21","p-timeout":"^6.0.0","p-wait-for":"^5.0.2","post-me":"^0.4.5"},"gitHead":"4d0f3ab7484b8bf42d50f95b2b2137aca5e41582"}');
+module.exports = JSON.parse('{"name":"cozy-clisk","version":"0.32.1","description":"All the libs needed to run a cozy client connector","repository":{"type":"git","url":"git+https://github.com/konnectors/libs.git"},"files":["dist"],"keywords":["konnector"],"main":"dist/index.js","author":"doubleface <christophe@cozycloud.cc>","license":"MIT","bugs":{"url":"https://github.com/konnectors/libs/issues"},"homepage":"https://github.com/konnectors/libs#readme","scripts":{"lint":"eslint \'src/**/*.js\'","prepublishOnly":"yarn run build","build":"babel --root-mode upward src/ -d dist/ --copy-files --verbose --ignore \'**/*.spec.js\',\'**/*.spec.jsx\'","test":"jest src"},"devDependencies":{"@babel/core":"7.20.12","babel-jest":"29.3.1","babel-preset-cozy-app":"2.0.4","jest":"29.3.1","jest-environment-jsdom":"29.3.1","typescript":"4.9.5"},"dependencies":{"@cozy/minilog":"^1.0.0","bluebird-retry":"^0.11.0","cozy-client":"^41.2.0","ky":"^0.25.1","lodash":"^4.17.21","p-timeout":"^6.0.0","p-wait-for":"^5.0.2","post-me":"^0.4.5"},"gitHead":"f7aab40048ac95009b7f50fc8d663626dbe5c8f8"}');
 
 /***/ }),
 /* 46 */
@@ -14535,19 +14537,17 @@ var __webpack_exports__ = {};
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
-/* harmony import */ var cozy_clisk_dist_contentscript_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(41);
-/* harmony import */ var ky__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(215);
-/* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(20);
-/* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_cozy_minilog__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(179);
-/* harmony import */ var p_wait_for__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(18);
-/* harmony import */ var p_retry__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(51);
-/* harmony import */ var p_timeout__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(19);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(56);
-/* harmony import */ var cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(42);
-/* harmony import */ var cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(58);
-/* harmony import */ var _interceptor__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(57);
-
+/* harmony import */ var ky__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(215);
+/* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(20);
+/* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_cozy_minilog__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(179);
+/* harmony import */ var p_wait_for__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(18);
+/* harmony import */ var p_retry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(51);
+/* harmony import */ var p_timeout__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(19);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(56);
+/* harmony import */ var cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(42);
+/* harmony import */ var cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(58);
+/* harmony import */ var _interceptor__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(57);
 
 
 
@@ -14563,14 +14563,14 @@ __webpack_require__.r(__webpack_exports__);
 // TODO use a flag to change this value
 let FORCE_FETCH_ALL = false
 
-const log = _cozy_minilog__WEBPACK_IMPORTED_MODULE_2___default()('ContentScript')
-_cozy_minilog__WEBPACK_IMPORTED_MODULE_2___default().enable()
+const log = _cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default()('ContentScript')
+_cozy_minilog__WEBPACK_IMPORTED_MODULE_1___default().enable()
 
 const BASE_URL = 'https://particulier.edf.fr'
 const DEFAULT_PAGE_URL =
   BASE_URL + '/fr/accueil/espace-client/tableau-de-bord.html'
 
-const interceptor = new _interceptor__WEBPACK_IMPORTED_MODULE_8__["default"]([
+const interceptor = new _interceptor__WEBPACK_IMPORTED_MODULE_7__["default"]([
   {
     label: 'initPage',
     method: 'GET',
@@ -14596,7 +14596,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   constructor() {
     super()
     const logInfo = message => this.log('info', message)
-    const wrapTimerInfo = (0,cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_7__.wrapTimerFactory)({ logFn: logInfo })
+    const wrapTimerInfo = (0,cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_6__.wrapTimerFactory)({ logFn: logInfo })
 
     this.fetchContact = wrapTimerInfo(this, 'fetchContact')
     this.fetchContracts = wrapTimerInfo(this, 'fetchContracts')
@@ -14607,16 +14607,6 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     this.fetchAttestations = wrapTimerInfo(this, 'fetchAttestations')
     this.fetchEcheancierBills = wrapTimerInfo(this, 'fetchEcheancierBills')
     this.fetchHousing = wrapTimerInfo(this, 'fetchHousing')
-  }
-
-  async downloadFileInWorker(entry) {
-    this.log('debug', 'downloading file in worker with fetch')
-    if (entry.fileurl) {
-      const response = await fetch(entry.fileurl)
-      entry.blob = await response.blob()
-      entry.dataUri = await (0,cozy_clisk_dist_contentscript_utils__WEBPACK_IMPORTED_MODULE_1__.blobToBase64)(entry.blob)
-    }
-    return entry.dataUri
   }
 
   async init(options) {
@@ -14641,7 +14631,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       this.bridge.addEventListener('workerEvent', listener)
     })
 
-    return (0,p_timeout__WEBPACK_IMPORTED_MODULE_5__["default"])(interceptionPromise, {
+    return (0,p_timeout__WEBPACK_IMPORTED_MODULE_4__["default"])(interceptionPromise, {
       milliseconds: timeout,
       message: `Timed out after waiting ${timeout}ms for interception of ${label}`
     })
@@ -14651,7 +14641,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   // PILOT//
   // ///////
   async goToLoginForm() {
-    await (0,p_retry__WEBPACK_IMPORTED_MODULE_4__["default"])(
+    await (0,p_retry__WEBPACK_IMPORTED_MODULE_3__["default"])(
       async () => {
         await this.goto(DEFAULT_PAGE_URL)
         await this.PromiseRaceWithError(
@@ -14801,7 +14791,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async waitForAuthenticatedWithRetry() {
-    await (0,p_retry__WEBPACK_IMPORTED_MODULE_4__["default"])(
+    await (0,p_retry__WEBPACK_IMPORTED_MODULE_3__["default"])(
       async () =>
         await this.PromiseRaceWithError(
           [
@@ -14880,7 +14870,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     let lastIdentityUpdatedSinceDays = Infinity
     if (!FORCE_FETCH_ALL) {
       const existingIdentities = await this.queryAll(
-        (0,cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_9__.Q)('io.cozy.identities')
+        (0,cozy_client_dist_queries_dsl__WEBPACK_IMPORTED_MODULE_8__.Q)('io.cozy.identities')
           .where({
             identifier: sourceAccountIdentifier,
             'cozyMetadata.createdByApp': manifest.slug
@@ -14901,7 +14891,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       const identity = { contact }
       const housingRawData = await this.fetchHousing()
       if (housingRawData !== null) {
-        const housing = (0,_utils__WEBPACK_IMPORTED_MODULE_6__.formatHousing)(
+        const housing = (0,_utils__WEBPACK_IMPORTED_MODULE_5__.formatHousing)(
           contracts,
           echeancierResult,
           housingRawData,
@@ -15130,7 +15120,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
           bn: paymentDocuments[0].bpDto.bpNumberCrypt,
           an: paymentDocuments[0].listOfPaymentsByAccDTO[0].accDTO.numAccCrypt
         })
-      const filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_10__["default"])(
+      const filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_9__["default"])(
         new Date(
           paymentDocuments[0]?.listOfPaymentsByAccDTO?.[0]?.lastPaymentDocument?.creationDate
         ),
@@ -15218,7 +15208,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
             cozyBill.isRefund = true
           }
 
-          cozyBill.filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_10__["default"])(
+          cozyBill.filename = `${(0,date_fns__WEBPACK_IMPORTED_MODULE_9__["default"])(
             cozyBill.date,
             'yyyy-MM-dd'
           )}_EDF_${cozyBill.amount.toFixed(2)}€.pdf`
@@ -15539,7 +15529,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async waitForLoginForm() {
-    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_3__["default"])(this.checkLoginForm, {
+    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_2__["default"])(this.checkLoginForm, {
       interval: 1000,
       timeout: 30 * 1000
     })
@@ -15552,7 +15542,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
 
   async waitForVendorErrorMessage() {
     let vendorErrorMsg
-    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_3__["default"])(
+    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_2__["default"])(
       () => {
         vendorErrorMsg = this.findVendorErrorMessage()
         return vendorErrorMsg ? true : false
@@ -15578,7 +15568,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async waitForHomeProfile() {
-    return await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_3__["default"])(
+    return await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_2__["default"])(
       () => Boolean(window.sessionStorage.getItem('datacache:profil')),
       {
         interval: 1000,
@@ -15588,7 +15578,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   async waitForSessionStorage() {
-    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_3__["default"])(
+    await (0,p_wait_for__WEBPACK_IMPORTED_MODULE_2__["default"])(
       () => {
         const result = Boolean(
           window.sessionStorage.getItem('datacache:profil')
@@ -15660,7 +15650,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   getKyJson(url) {
-    return ky__WEBPACK_IMPORTED_MODULE_11__["default"].get(url, {
+    return ky__WEBPACK_IMPORTED_MODULE_10__["default"].get(url, {
         retry: {
           limit: 5,
           statusCodes: [404]
@@ -15691,7 +15681,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
 
   withRetry({ run, label, selectorToWait }) {
-    return (0,p_retry__WEBPACK_IMPORTED_MODULE_4__["default"])(
+    return (0,p_retry__WEBPACK_IMPORTED_MODULE_3__["default"])(
       async () => {
         try {
           return await run()
