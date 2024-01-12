@@ -184,7 +184,7 @@ class EdfContentScript extends ContentScript {
     if (credentials && credentials.email && credentials.password) {
       try {
         this.log('debug', 'Got credentials, trying autologin')
-        await this.autologin(credentials)
+        await this.autoLogin(credentials)
       } catch (err) {
         log.warn('autoLogin error' + err.message)
         await this.waitForUserAuthentication()
