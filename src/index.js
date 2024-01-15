@@ -387,16 +387,9 @@ class EdfContentScript extends ContentScript {
     if (!isConnected) {
       await this.runInWorker('click', notConnectedSelector)
     }
-    await this.PromiseRaceWithError(
-      [
-        this.waitForElementInWorker('button.multi-site-button', {
-          timeout: 60000
-        }),
-        this.waitForElementInWorker('a[class="header-dashboard-button"]', {
-          timeout: 60000
-        })
-      ],
-      'fetchHousing: wait for housing page'
+    await this.waitForElementInWorker(
+      'button.multi-site-button, a[class="header-dashboard-button"]',
+      { timeout: 60 * 1000 }
     )
     // second step, if multiple contracts, select the first one
     const multipleContracts = await this.runInWorker('checkMultipleContracts')
