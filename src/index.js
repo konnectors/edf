@@ -371,9 +371,8 @@ class EdfContentScript extends ContentScript {
 
   async fetchHousing() {
     this.log('info', '🤖 fetchHousing starts')
-    const notConnectedSelector = 'div.session-expired-message button'
     try {
-      await this.navigateToConsoPage(notConnectedSelector)
+      await this.navigateToConsoPage()
     } catch (err) {
       if (err.message === 'NO_EQUILIBRE_ACCOUNT') {
         return null
@@ -382,11 +381,6 @@ class EdfContentScript extends ContentScript {
       }
     }
 
-    // first step : if not connected, click on the connect button
-    const isConnected = await this.runInWorker('checkConnected')
-    if (!isConnected) {
-      await this.runInWorker('click', notConnectedSelector)
-    }
     await this.waitForElementInWorker(
       'button.multi-site-button, a[class="header-dashboard-button"]',
       { timeout: 60 * 1000 }
@@ -406,7 +400,8 @@ class EdfContentScript extends ContentScript {
     }
   }
 
-  async navigateToConsoPage(notConnectedSelector) {
+  async navigateToConsoPage() {
+    const notConnectedSelector = 'div.session-expired-message button'
     this.log('info', '🤖 navigateToConsoPage starts')
     const consoLinkSelector =
       'a[href="/fr/accueil/economies-energie/comprendre-reduire-consommation-electrique-gaz.html"]'
@@ -434,6 +429,12 @@ class EdfContentScript extends ContentScript {
         'The user does not have any equilibre account. Cannot fetch consumption data'
       )
       throw new Error('NO_EQUILIBRE_ACCOUNT')
+    }
+
+    // handle session expired
+    const isConnected = !(await this.isElementInWorker(notConnectedSelector))
+    if (!isConnected) {
+      await this.runInWorker('click', notConnectedSelector)
     }
   }
 
@@ -1012,11 +1013,6 @@ class EdfContentScript extends ContentScript {
     }
   }
 
-  checkConnected() {
-    const notConnectedSelector = 'div.session-expired-message button'
-    return !document.querySelector(notConnectedSelector)
-  }
-
   checkMultipleContracts() {
     return document.querySelector('button.multi-site-button')
   }
@@ -1202,7 +1198,6 @@ connector
       'getKyJson',
       'waitForLoginForm',
       'checkOtpNeeded',
-      'checkConnected',
       'checkMultipleContracts',
       'waitForHomeProfile',
       'getHomeProfile',
