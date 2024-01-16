@@ -3,7 +3,7 @@ import { blobToBase64 } from 'cozy-clisk/dist/contentscript/utils'
 import ky from 'ky'
 import Minilog from '@cozy/minilog'
 import { format } from 'date-fns'
-import waitFor from 'p-wait-for'
+import waitFor, { TimeoutError } from 'p-wait-for'
 import pRetry from 'p-retry'
 import pTimeout from 'p-timeout'
 import { formatHousing } from './utils'
@@ -38,6 +38,12 @@ const interceptor = new RequestInterceptor([
     label: 'billConsult',
     method: 'GET',
     url: 'rest/bill/consult',
+    serialization: 'json'
+  },
+  {
+    label: 'consoContracts',
+    method: 'GET',
+    url: 'api/v1/client/sites',
     serialization: 'json'
   }
 ])
@@ -392,8 +398,16 @@ class EdfContentScript extends ContentScript {
 
   async fetchHousing() {
     this.log('info', '🤖 fetchHousing starts')
+    let contracts = null
     try {
-      await this.navigateToConsoPage()
+      const consoLinkSelector =
+        'a[href="/fr/accueil/economies-energie/comprendre-reduire-consommation-electrique-gaz.html"]'
+      await this.runInWorker('click', consoLinkSelector)
+      const [{ response: contractList }] = await Promise.all([
+        this.waitForInterception('consoContracts'),
+        this.navigateToConsoPage()
+      ])
+      contracts = contractList
     } catch (err) {
       if (err.message === 'NO_EQUILIBRE_ACCOUNT') {
         return null
@@ -402,126 +416,160 @@ class EdfContentScript extends ContentScript {
       }
     }
 
-    await this.waitForElementInWorker(
-      'button.multi-site-button, a[class="header-dashboard-button"]',
-      { timeout: 60 * 1000 }
-    )
-    // second step, if multiple contracts, select the first one
-    const multipleContracts = await this.runInWorker('checkMultipleContracts')
-    if (multipleContracts) {
-      const multiContractsIds = await this.runInWorker('getMultiContractsIds')
-      await this.runInWorker('selectContract', multiContractsIds[0])
-      const multipleHousing = await this.computeHousing(multiContractsIds)
-      this.log('info', 'fetchMutlipleHousing done')
-      return multipleHousing
-    } else {
-      const singleHousing = await this.computeHousing()
-      this.log('info', 'fetchSingleHousing done')
-      return singleHousing
+    const housingData = []
+    const isMulti = await this.isElementInWorker('button.multi-site-button')
+    for (const contract of contracts) {
+      // select contract when needed
+      if (isMulti) {
+        await this.runInWorker(
+          'selectContract',
+          `${contract.personExternalId}-${contract.siteExternalId}`
+        )
+        await this.runInWorkerUntilTrue({
+          method: 'waitForSessionStorage',
+          timeout: 30 * 1000
+        })
+      }
+
+      housingData.push(await this.computeHousing())
+      if (isMulti) {
+        await this.runInWorker('resetCurrentContract', contract.siteExternalId)
+        await this.navigateToConsoPage()
+      }
     }
+    return housingData
+  }
+
+  getCurrentState() {
+    if (document.querySelector('div.session-expired-message button')) {
+      return 'sessionExpired'
+    } else if (
+      document.querySelector("a[href='https://equilibre.edf.fr/comprendre']")
+    ) {
+      return 'continue'
+    } else if (document.querySelector('.zero-site-message-large')) {
+      return 'noAccount'
+    } else if (
+      document.querySelector('.header-logo, button.multi-site-button')
+    ) {
+      return 'consoPage'
+    } else {
+      return false
+    }
+  }
+
+  async triggerNextState(currentState) {
+    if (currentState === 'sessionExpired') {
+      await this.runInWorker('click', 'div.session-expired-message button')
+    } else if (currentState === 'continue') {
+      await this.runInWorker(
+        'click',
+        "a[href='https://equilibre.edf.fr/comprendre']"
+      )
+    }
+  }
+
+  async waitForNextState(previousState) {
+    let currentState
+    await waitFor(
+      () => {
+        currentState = this.getCurrentState()
+        this.log('info', 'waitForNextState: currentState ' + currentState)
+        if (currentState === false) return false
+        const result = previousState !== currentState
+        return result
+      },
+      {
+        interval: 1000,
+        timeout: {
+          milliseconds: 30 * 1000,
+          message: new TimeoutError(
+            `waitForNextState timed out after ${
+              30 * 1000
+            }ms waiting for a state different from ${previousState}`
+          )
+        }
+      }
+    )
+    return currentState
   }
 
   async navigateToConsoPage() {
-    const notConnectedSelector = 'div.session-expired-message button'
     this.log('info', '🤖 navigateToConsoPage starts')
-    const consoLinkSelector =
-      'a[href="/fr/accueil/economies-energie/comprendre-reduire-consommation-electrique-gaz.html"]'
-    const continueLinkSelector = "a[href='https://equilibre.edf.fr/comprendre']"
-    await this.clickAndWait(consoLinkSelector, continueLinkSelector)
-    await this.runInWorker('click', continueLinkSelector)
-    await this.PromiseRaceWithError(
-      [
-        this.waitForElementInWorker('.zero-site-message-large', {
-          includesText: 'Nous n’avons pas trouvé votre compte'
-        }),
-        this.waitForElementInWorker(notConnectedSelector),
-        this.waitForElementInWorker('.header-logo'),
-        this.waitForElementInWorker('button.multi-site-button')
-      ],
-      'navigateToConsoPage: wait for conso page'
-    )
-    if (
-      await this.isElementInWorker('.zero-site-message-large', {
-        includesText: 'Nous n’avons pas trouvé votre compte'
+
+    const start = Date.now()
+    let state = await this.getCurrentState()
+    while (state !== 'consoPage') {
+      this.log('debug', `current state: ${state}`)
+      if (state === 'noAccount') {
+        this.log(
+          'warn',
+          'The user does not have any equilibre account. Cannot fetch consumption data'
+        )
+        throw new Error('NO_EQUILIBRE_ACCOUNT')
+      }
+      if (Date.now() - start > 60 * 1000) {
+        throw new Error('navigateToConsoPage took more than 60s')
+      }
+      await this.triggerNextState(state)
+      state = await this.runInWorkerUntilTrue({
+        method: 'waitForNextState',
+        args: [state],
+        timeout: 30 * 1000
       })
-    ) {
-      this.log(
-        'warn',
-        'The user does not have any equilibre account. Cannot fetch consumption data'
-      )
-      throw new Error('NO_EQUILIBRE_ACCOUNT')
-    }
-
-    // handle session expired
-    const isConnected = !(await this.isElementInWorker(notConnectedSelector))
-    if (!isConnected) {
-      await this.runInWorker('click', notConnectedSelector)
     }
   }
 
-  async computeHousing(multiContractsIds) {
+  async computeHousing() {
     this.log('info', '🤖 computeHousing starts')
-    // Here if there is a single contract, we don't need the precise id of it
-    // So no need to retrieve it, but the function is waiting for an array, so we give it with a single entry
-    // To avoid unecessary steps in computeHousing
-    const contractsIds = multiContractsIds ? multiContractsIds : ['1']
-    let computedHousings = []
-    for (let i = 0; i < contractsIds.length; i++) {
-      await this.runInWorker('waitForSessionStorage')
-      const {
-        constructionDate = {},
-        equipment = {},
-        heatingSystem = {},
-        housingType = {},
-        lifeStyle = {},
-        surfaceInSqMeter = {},
-        residenceType = {}
-      } = await this.runInWorker('getHomeProfile')
+    const {
+      constructionDate = {},
+      equipment = {},
+      heatingSystem = {},
+      housingType = {},
+      lifeStyle = {},
+      surfaceInSqMeter = {},
+      residenceType = {}
+    } = await this.runInWorker('getHomeProfile')
 
-      const contractElec = await this.runInWorker('getContractElec')
+    const contractElec = await this.runInWorker('getContractElec')
 
-      const rawConsumptions = await this.runInWorker('getConsumptions')
+    const rawConsumptions = await this.runInWorker('getConsumptions')
 
-      const pdlNumber = await this.runInWorker('getContractPdlNumber')
+    const pdlNumber = await this.runInWorker('getContractPdlNumber')
 
-      const houseConsumption = {
-        pdlNumber,
-        constructionDate,
-        equipment,
-        heatingSystem,
-        housingType,
-        lifeStyle,
-        surfaceInSqMeter,
-        residenceType,
-        contractElec,
-        rawConsumptions
-      }
-      computedHousings.push(houseConsumption)
-
-      if (i === contractsIds.length - 1) {
-        this.log('info', 'no more contracts after this one')
-        break
-      }
-      await this.runInWorker('changeContract', contractsIds[i + 1])
-      await this.waitForElementInWorker('button')
-      await this.clickAndWait('button', 'button.multi-site-button')
-      await this.clickAndWait(
-        `button[id="${contractsIds[i + 1]}"]`,
-        'a[class="header-dashboard-button"]'
-      )
+    const houseConsumption = {
+      pdlNumber,
+      constructionDate,
+      equipment,
+      heatingSystem,
+      housingType,
+      lifeStyle,
+      surfaceInSqMeter,
+      residenceType,
+      contractElec,
+      rawConsumptions
     }
-    return computedHousings
+    return houseConsumption
   }
 
-  async changeContract(id) {
-    this.log('info', 'changeContract starts')
-    window.localStorage.setItem('site-ext-id', `${id}`)
+  async resetCurrentContract() {
+    this.log('info', 'resetCurrentContract starts')
+    window.localStorage.removeItem('site-ext-id')
+    window.localStorage.removeItem('person-ext-id')
+    window.localStorage.removeItem('access_token')
     window.location.reload()
   }
 
   selectContract(id) {
     this.log('info', 'selectContract starts')
-    document.querySelector(`button[id="${id}"]`).click()
+    const elem = document.querySelector(`button[id="${id}"]`)
+    if (!elem) {
+      throw new Error(
+        `selectContract: could not find element with id: button[id="${id}"]`
+      )
+    }
+    elem.click()
   }
 
   async fetchEcheancierBills(contracts, context) {
@@ -1034,20 +1082,6 @@ class EdfContentScript extends ContentScript {
     }
   }
 
-  checkMultipleContracts() {
-    return document.querySelector('button.multi-site-button')
-  }
-
-  async waitForHomeProfile() {
-    return await waitFor(
-      () => Boolean(window.sessionStorage.getItem('datacache:profil')),
-      {
-        interval: 1000,
-        timeout: 30 * 1000
-      }
-    )
-  }
-
   async waitForSessionStorage() {
     await waitFor(
       () => {
@@ -1061,6 +1095,7 @@ class EdfContentScript extends ContentScript {
         timeout: 30 * 1000
       }
     )
+    return true
   }
 
   getHomeProfile() {
@@ -1102,15 +1137,6 @@ class EdfContentScript extends ContentScript {
       ).value.data
     }
     return result
-  }
-
-  getMultiContractsIds() {
-    let contractsIds = []
-    const foundContracts = document.querySelectorAll('button.multi-site-button')
-    for (const contract of foundContracts) {
-      contractsIds.push(contract.getAttribute('id'))
-    }
-    return contractsIds
   }
 
   getContractPdlNumber() {
@@ -1219,18 +1245,17 @@ connector
       'getKyJson',
       'waitForLoginForm',
       'checkOtpNeeded',
-      'checkMultipleContracts',
-      'waitForHomeProfile',
       'getHomeProfile',
       'getContractElec',
       'getConsumptions',
       'waitForSessionStorage',
       'logout',
-      'getMultiContractsIds',
       'selectContract',
-      'changeContract',
+      'resetCurrentContract',
       'getContractPdlNumber',
-      'waitForVendorErrorMessage'
+      'waitForVendorErrorMessage',
+      'waitForNextState',
+      'getCurrentState'
     ]
   })
   .catch(err => {
