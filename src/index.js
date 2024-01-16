@@ -107,9 +107,18 @@ class EdfContentScript extends ContentScript {
         await this.goto(DEFAULT_PAGE_URL)
         await this.PromiseRaceWithError(
           [
-            this.runInWorkerUntilTrue({ method: 'waitForVendorErrorMessage' }),
-            this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
-            this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
+            this.runInWorkerUntilTrue({
+              method: 'waitForVendorErrorMessage',
+              timeout: 30 * 1000
+            }),
+            this.runInWorkerUntilTrue({
+              method: 'waitForAuthenticated',
+              timeout: 30 * 1000
+            }),
+            this.runInWorkerUntilTrue({
+              method: 'waitForLoginForm',
+              timeout: 30 * 1000
+            })
           ],
           'goToLoginForm: waiting for any authentication confirmation or login form...'
         )
@@ -137,8 +146,14 @@ class EdfContentScript extends ContentScript {
         this.waitForElementInWorker('h1', {
           includesText: `Une erreur s'est produite`
         }),
-        this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
-        this.runInWorkerUntilTrue({ method: 'waitForLoginForm' })
+        this.runInWorkerUntilTrue({
+          method: 'waitForAuthenticated',
+          timeout: 30 * 1000
+        }),
+        this.runInWorkerUntilTrue({
+          method: 'waitForLoginForm',
+          timeout: 30 * 1000
+        })
       ],
       'goToLoginForm: waiting for any authentication confirmation or login form...'
     )
@@ -256,8 +271,14 @@ class EdfContentScript extends ContentScript {
       async () =>
         await this.PromiseRaceWithError(
           [
-            this.runInWorkerUntilTrue({ method: 'waitForAuthenticated' }),
-            this.runInWorkerUntilTrue({ method: 'waitForVendorErrorMessage' })
+            this.runInWorkerUntilTrue({
+              method: 'waitForAuthenticated',
+              timeout: 300 * 1000
+            }),
+            this.runInWorkerUntilTrue({
+              method: 'waitForVendorErrorMessage',
+              timeout: 300 * 1000
+            })
           ],
           'waitForAuthenticatedWithRetry'
         ),
