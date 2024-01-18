@@ -167,26 +167,13 @@ class EdfContentScript extends ContentScript {
   }
   async ensureNotAuthenticated() {
     this.log('info', '🤖 starting ensureNotAuthenticated')
-    await this.goToLoginForm()
-    const authenticated = await this.runInWorker('checkAuthenticated')
-    if (authenticated === false) {
-      this.log('info', 'Already not authenticated')
-      return true
-    }
-    this.log('info', 'authenticated, triggering the deconnection')
-    await this.runInWorker('logout')
-    await this.waitForElementInWorker(`[data-label='Je me reconnecte']`)
+    await this.goto(
+      'https://particulier.edf.fr/fr/accueil/espace-client/moduleopenidc.html?logout='
+    )
+    await this.waitForElementInWorker(
+      `[data-label='Je me reconnecte'], .auth #email`
+    )
     return true
-  }
-
-  async logout() {
-    if (window.deconnexion) {
-      window.deconnexion()
-    } else {
-      throw new Error(
-        'Could not logout from the current page. No window.deconnexion function found'
-      )
-    }
   }
 
   async ensureAuthenticated({ account }) {
@@ -1252,7 +1239,6 @@ connector
       'getContractElec',
       'getConsumptions',
       'waitForSessionStorage',
-      'logout',
       'selectContract',
       'resetCurrentContract',
       'getContractPdlNumber',
