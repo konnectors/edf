@@ -55,6 +55,7 @@ class EdfContentScript extends ContentScript {
     const logInfo = message => this.log('info', message)
     const wrapTimerInfo = wrapTimerFactory({ logFn: logInfo })
 
+    this.goToLoginForm = wrapTimerInfo(this, 'goToLoginForm')
     this.fetchContact = wrapTimerInfo(this, 'fetchContact')
     this.fetchContracts = wrapTimerInfo(this, 'fetchContracts')
     this.fetchBillsForAllContracts = wrapTimerInfo(
@@ -194,7 +195,9 @@ class EdfContentScript extends ContentScript {
     if (!account) {
       await this.ensureNotAuthenticated()
     }
-    await this.goToLoginForm()
+    if (!(await this.isElementInWorker('.auth #email'))) {
+      await this.goToLoginForm()
+    }
     if (await this.runInWorker('checkAuthenticated')) {
       this.log('info', 'Authenticated')
       return true
