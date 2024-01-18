@@ -15451,6 +15451,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     const logInfo = message => this.log('info', message)
     const wrapTimerInfo = (0,cozy_clisk_dist_libs_wrapTimer__WEBPACK_IMPORTED_MODULE_6__.wrapTimerFactory)({ logFn: logInfo })
 
+    this.goToLoginForm = wrapTimerInfo(this, 'goToLoginForm')
     this.fetchContact = wrapTimerInfo(this, 'fetchContact')
     this.fetchContracts = wrapTimerInfo(this, 'fetchContracts')
     this.fetchBillsForAllContracts = wrapTimerInfo(
@@ -15562,26 +15563,13 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
   }
   async ensureNotAuthenticated() {
     this.log('info', '🤖 starting ensureNotAuthenticated')
-    await this.goToLoginForm()
-    const authenticated = await this.runInWorker('checkAuthenticated')
-    if (authenticated === false) {
-      this.log('info', 'Already not authenticated')
-      return true
-    }
-    this.log('info', 'authenticated, triggering the deconnection')
-    await this.runInWorker('logout')
-    await this.waitForElementInWorker(`[data-label='Je me reconnecte']`)
+    await this.goto(
+      'https://particulier.edf.fr/fr/accueil/espace-client/moduleopenidc.html?logout='
+    )
+    await this.waitForElementInWorker(
+      `[data-label='Je me reconnecte'], .auth #email`
+    )
     return true
-  }
-
-  async logout() {
-    if (window.deconnexion) {
-      window.deconnexion()
-    } else {
-      throw new Error(
-        'Could not logout from the current page. No window.deconnexion function found'
-      )
-    }
   }
 
   async ensureAuthenticated({ account }) {
@@ -15590,7 +15578,9 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
     if (!account) {
       await this.ensureNotAuthenticated()
     }
-    await this.goToLoginForm()
+    if (!(await this.isElementInWorker('.auth #email'))) {
+      await this.goToLoginForm()
+    }
     if (await this.runInWorker('checkAuthenticated')) {
       this.log('info', 'Authenticated')
       return true
@@ -16644,7 +16634,6 @@ connector
       'getContractElec',
       'getConsumptions',
       'waitForSessionStorage',
-      'logout',
       'selectContract',
       'resetCurrentContract',
       'getContractPdlNumber',
