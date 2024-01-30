@@ -79,5 +79,6 @@
     "METADATA_DEDUP",
     "CARBON_COPY",
     "DOC_QUALIFICATION_V2"
-  ]
+  ],
+  "banksTransactionRegExp": "\\bedf\\b"
 }
