@@ -1,5 +1,5 @@
 {
-  "version": "2.17.0",
+  "version": "2.18.0",
   "name": "EDF",
   "type": "konnector",
   "language": "node",
@@ -79,5 +79,6 @@
     "METADATA_DEDUP",
     "CARBON_COPY",
     "DOC_QUALIFICATION_V2"
-  ]
+  ],
+  "banksTransactionRegExp": "\\bedf\\b"
 }
