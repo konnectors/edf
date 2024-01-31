@@ -15763,17 +15763,22 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         `Existing identity updated since more than 30 days or no identity. Updating it`
       )
       const identity = { contact }
-      const housingRawData = await this.fetchHousing()
-      if (housingRawData !== null) {
-        const housing = (0,_utils__WEBPACK_IMPORTED_MODULE_5__.formatHousing)(
-          contracts,
-          echeancierResult,
-          housingRawData,
-          this.log.bind(this)
-        )
-        identity.housing = housing
+      try {
+        const housingRawData = await this.fetchHousing()
+        if (housingRawData !== null) {
+          const housing = (0,_utils__WEBPACK_IMPORTED_MODULE_5__.formatHousing)(
+            contracts,
+            echeancierResult,
+            housingRawData,
+            this.log.bind(this)
+          )
+          identity.housing = housing
+        }
+        await this.saveIdentity(identity)
+      } catch (err) {
+        this.log('error', `Got an error while fetching housing data`)
+        throw new Error('UNKNOWN_ERROR.PARTIAL_SYNC')
       }
-      await this.saveIdentity(identity)
     } else {
       this.log(
         'info',
