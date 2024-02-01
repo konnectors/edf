@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "@cozy/minilog": "1.0.0",
-    "cozy-clisk": "^0.32.1",
+    "cozy-client": "45.8.0",
+    "cozy-clisk": "0.33.2",
     "date-fns": "3.3.1",
     "ky": "0.33.3",
     "p-retry": "6.2.0"
