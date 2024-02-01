@@ -1,0 +1,215 @@
+{
+  "_id": "038fdbed0713eaf6a26691a9f3f0d56c",
+  "amount": 22.99,
+  "cozyMetadata": {
+    "createdAt": "2023-12-14T10:45:52.114Z",
+    "createdByApp": "red",
+    "createdByAppVersion": "2.11.0",
+    "metadataVersion": 1,
+    "sourceAccount": "b9a0ecc7b2696a45898b30bd0d9a7606",
+    "updatedAt": "2024-01-04T21:37:24.861Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-04T21:37:24.861Z",
+        "slug": "red",
+        "version": "2.12.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-10-16T22:00:00.000Z",
+  "filename": "2023-10-17_red_22.99€.pdf",
+  "fileurl": "https://espace-client-red.sfr.fr/facture-fixe/telecharger/facture/2024010422371252600000000003/2?type=detail",
+  "invoice": "io.cozy.files:018c67ee-8c60-71d7-9487-70bc913e7340",
+  "paymentDate": "2023-10-24T22:00:00.000Z",
+  "sourceAccountIdentifier": "red.spinal970@passinbox.com",
+  "vendor": "sfr"
+}
+{
+  "_id": "40bcb80c47a03a33097ec067205a58d1",
+  "amount": 22.99,
+  "cozyMetadata": {
+    "createdAt": "2023-12-14T10:45:52.311Z",
+    "createdByApp": "red",
+    "createdByAppVersion": "2.11.0",
+    "metadataVersion": 1,
+    "sourceAccount": "b9a0ecc7b2696a45898b30bd0d9a7606",
+    "updatedAt": "2024-01-04T21:37:25.079Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-04T21:37:25.079Z",
+        "slug": "red",
+        "version": "2.12.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-09-16T22:00:00.000Z",
+  "filename": "2023-09-17_red_22.99€.pdf",
+  "fileurl": "https://espace-client-red.sfr.fr/facture-fixe/telecharger/facture/2024010422371252600000000003/3?type=detail",
+  "invoice": "io.cozy.files:018c67ee-96f0-70ac-a337-4b5a9455ad57",
+  "paymentDate": "2023-09-24T22:00:00.000Z",
+  "sourceAccountIdentifier": "red.spinal970@passinbox.com",
+  "vendor": "sfr"
+}
+{
+  "_id": "b9a0ecc7b2696a45898b30bd0d9b2ae7",
+  "amount": 22.99,
+  "cozyMetadata": {
+    "createdAt": "2023-12-14T10:45:52.002Z",
+    "createdByApp": "red",
+    "createdByAppVersion": "2.11.0",
+    "metadataVersion": 1,
+    "sourceAccount": "b9a0ecc7b2696a45898b30bd0d9a7606",
+    "updatedAt": "2024-01-04T21:37:24.607Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-04T21:37:24.607Z",
+        "slug": "red",
+        "version": "2.12.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-11-16T23:00:00.000Z",
+  "filename": "2023-11-17_red_22.99€.pdf",
+  "fileurl": "https://espace-client-red.sfr.fr/facture-fixe/telecharger/facture/2024010422371252600000000003/1?type=detail",
+  "invoice": "io.cozy.files:018c67ee-809c-78c4-9c75-175b0c4492d3",
+  "paymentDate": "2023-11-26T23:00:00.000Z",
+  "sourceAccountIdentifier": "red.spinal970@passinbox.com",
+  "vendor": "sfr"
+}
+{
+  "_id": "b9a0ecc7b2696a45898b30bd0d9b3724",
+  "amount": 22.99,
+  "cozyMetadata": {
+    "createdAt": "2023-12-14T10:45:52.429Z",
+    "createdByApp": "red",
+    "createdByAppVersion": "2.11.0",
+    "metadataVersion": 1,
+    "sourceAccount": "b9a0ecc7b2696a45898b30bd0d9a7606",
+    "updatedAt": "2024-01-04T21:37:25.346Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-04T21:37:25.346Z",
+        "slug": "red",
+        "version": "2.12.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-08-16T22:00:00.000Z",
+  "filename": "2023-08-17_red_22.99€.pdf",
+  "fileurl": "https://espace-client-red.sfr.fr/facture-fixe/telecharger/facture/2024010422371252600000000003/4?type=detail",
+  "invoice": "io.cozy.files:018c67ee-a27b-78c4-8e42-f243265d0732",
+  "paymentDate": "2023-08-24T22:00:00.000Z",
+  "sourceAccountIdentifier": "red.spinal970@passinbox.com",
+  "vendor": "sfr"
+}
+{
+  "_id": "b9a0ecc7b2696a45898b30bd0d9b3ed1",
+  "amount": 22.99,
+  "cozyMetadata": {
+    "createdAt": "2023-12-14T10:45:52.595Z",
+    "createdByApp": "red",
+    "createdByAppVersion": "2.11.0",
+    "metadataVersion": 1,
+    "sourceAccount": "b9a0ecc7b2696a45898b30bd0d9a7606",
+    "updatedAt": "2024-01-04T21:37:25.623Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-04T21:37:25.623Z",
+        "slug": "red",
+        "version": "2.12.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-07-16T22:00:00.000Z",
+  "filename": "2023-07-17_red_22.99€.pdf",
+  "fileurl": "https://espace-client-red.sfr.fr/facture-fixe/telecharger/facture/2024010422371252600000000003/5",
+  "invoice": "io.cozy.files:018c67ee-ae00-78c4-b2a2-d168cc7eccb9",
+  "paymentDate": "2023-07-24T22:00:00.000Z",
+  "sourceAccountIdentifier": "red.spinal970@passinbox.com",
+  "vendor": "sfr"
+}
+{
+  "_id": "b9a0ecc7b2696a45898b30bd0d9b4ead",
+  "amount": 22.99,
+  "cozyMetadata": {
+    "createdAt": "2023-12-14T10:45:52.731Z",
+    "createdByApp": "red",
+    "createdByAppVersion": "2.11.0",
+    "metadataVersion": 1,
+    "sourceAccount": "b9a0ecc7b2696a45898b30bd0d9a7606",
+    "updatedAt": "2024-01-04T21:37:25.905Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-04T21:37:25.905Z",
+        "slug": "red",
+        "version": "2.12.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-06-16T22:00:00.000Z",
+  "filename": "2023-06-17_red_22.99€.pdf",
+  "fileurl": "https://espace-client-red.sfr.fr/facture-fixe/telecharger/facture/2024010422371252600000000003/6?type=detail",
+  "invoice": "io.cozy.files:018c67ee-b7d8-78c4-9ac4-b0733c02e45a",
+  "paymentDate": "2023-06-25T22:00:00.000Z",
+  "sourceAccountIdentifier": "red.spinal970@passinbox.com",
+  "vendor": "sfr"
+}
+{
+  "_id": "b9a0ecc7b2696a45898b30bd0d9b5c85",
+  "amount": 22.99,
+  "cozyMetadata": {
+    "createdAt": "2023-12-14T10:45:52.855Z",
+    "createdByApp": "red",
+    "createdByAppVersion": "2.11.0",
+    "metadataVersion": 1,
+    "sourceAccount": "b9a0ecc7b2696a45898b30bd0d9a7606",
+    "updatedAt": "2024-01-04T21:37:26.164Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-04T21:37:26.164Z",
+        "slug": "red",
+        "version": "2.12.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-05-21T22:00:00.000Z",
+  "filename": "2023-05-22_red_22.99€.pdf",
+  "fileurl": "https://espace-client-red.sfr.fr/facture-fixe/telecharger/facture/2024010422371252600000000003/7",
+  "invoice": "io.cozy.files:018c67ee-c22d-7e65-bd33-cfbe70e36183",
+  "paymentDate": "2023-05-29T22:00:00.000Z",
+  "sourceAccountIdentifier": "red.spinal970@passinbox.com",
+  "vendor": "sfr"
+}
+{
+  "_id": "f64bb4cc36d1802a336846d63d9fc4a4",
+  "amount": 22.99,
+  "cozyMetadata": {
+    "createdAt": "2024-01-04T21:37:26.384Z",
+    "createdByApp": "red",
+    "createdByAppVersion": "2.12.0",
+    "metadataVersion": 1,
+    "sourceAccount": "b9a0ecc7b2696a45898b30bd0d9a7606",
+    "updatedAt": "2024-01-04T21:37:26.384Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-04T21:37:26.384Z",
+        "slug": "red",
+        "version": "2.12.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-12-16T23:00:00.000Z",
+  "filename": "2023-12-17_red_22.99€.pdf",
+  "invoice": "io.cozy.files:018cd668-ce67-7118-aeb6-924d915aa6ef",
+  "paymentDate": "2023-12-26T23:00:00.000Z",
+  "sourceAccountIdentifier": "red.spinal970@passinbox.com",
+  "vendor": "sfr"
+}

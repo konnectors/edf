@@ -1,0 +1,650 @@
+{
+  "_id": "016ab7b9b393c1239686e671bf6c2db8",
+  "amount": 24.99,
+  "cozyMetadata": {
+    "createdAt": "2023-11-03T16:24:31.673Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-11-09T15:52:18.001Z",
+    "updatedByApps": [
+      {
+        "date": "2023-11-09T15:52:18.001Z",
+        "slug": "sosh",
+        "version": "2.8.0-dev.e2814261699070892515"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2021-12-08T00:00:00.000Z",
+  "filename": "2021-12-08_sosh_24.99€_44557.pdf",
+  "fileurl": "https://espace-client.orange.fr/ecd_wp/facture/historicPDF?entityName=GEN_fact_gp_1&partitionKeyName=PRO_DATE&partitionKeyValue=2021-12-08T00:00:00&tecId=67dc875d-5a10-4c3d-b1b1-f5040faa0626&cid=9056126686",
+  "invoice": "io.cozy.files:018b9600-17a3-7462-a55a-32691e11481f",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "67dc875d-5a10-4c3d-b1b1-f5040faa0626"
+}
+{
+  "_id": "59c1efde049cbcf536d4d6d05329313a",
+  "amount": 17.39,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:19.176Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:19.176Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:19.176Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-06-08T00:00:00.000Z",
+  "filename": "2023-06-08_sosh_17.39€_79633.pdf",
+  "invoice": "io.cozy.files:018b80e6-dcd8-7746-999e-d16d71e9a0d7",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5046235943"
+}
+{
+  "_id": "59c1efde049cbcf536d4d6d053293edb",
+  "amount": 20.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:19.384Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:19.384Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:19.384Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-05-10T00:00:00.000Z",
+  "filename": "2023-05-10_sosh_20.99€_e8fe7.pdf",
+  "invoice": "io.cozy.files:018b80e6-e144-7746-98ce-87a18a862549",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5039368534"
+}
+{
+  "_id": "59c1efde049cbcf536d4d6d053294c0c",
+  "amount": 19.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:19.546Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:19.546Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:19.546Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-04-11T00:00:00.000Z",
+  "filename": "2023-04-11_sosh_19.99€_66a6f.pdf",
+  "invoice": "io.cozy.files:018b80e6-e4e7-743b-819c-9d9a626d2f2e",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5032484657"
+}
+{
+  "_id": "59c1efde049cbcf536d4d6d053296bb1",
+  "amount": 19.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:20.194Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-11-09T15:52:17.885Z",
+    "updatedByApps": [
+      {
+        "date": "2023-11-09T15:52:17.885Z",
+        "slug": "sosh",
+        "version": "2.8.0-dev.e2814261699070892515"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-11-08T00:00:00.000Z",
+  "filename": "2022-11-08_sosh_19.99€_c3d14.pdf",
+  "fileurl": "https://espace-client.orange.fr/ecd_wp/facture/historicPDF?entityName=GEN_fact_gp_1&partitionKeyName=PRO_DATE&partitionKeyValue=2022-11-08T00:00:00&tecId=cbfb821d-3088-4a13-9329-8b689e0536a0&cid=9056126686",
+  "invoice": "io.cozy.files:018b95ff-3e9c-7e40-81ce-c0391bbde0c8",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "cbfb821d-3088-4a13-9329-8b689e0536a0"
+}
+{
+  "_id": "59c1efde049cbcf536d4d6d053297f23",
+  "amount": 25.22,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:20.771Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:20.771Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:20.771Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-07-08T00:00:00.000Z",
+  "filename": "2022-07-08_sosh_25.22€_57d6f.pdf",
+  "invoice": "io.cozy.files:018b80e7-1daa-7b97-9835-9ac60bcc89bd",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "8c38d943-2f54-41fe-841b-99ce9337e8b5"
+}
+{
+  "_id": "59c1efde049cbcf536d4d6d053298f97",
+  "amount": 24.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:21.001Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:21.001Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:21.001Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-06-10T00:00:00.000Z",
+  "filename": "2022-06-10_sosh_24.99€_cc755.pdf",
+  "invoice": "io.cozy.files:018b80e7-21bd-7e14-b89b-354f14fc19b7",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "7578f2c3-0399-4225-b6d9-3804876c6d74"
+}
+{
+  "_id": "59c1efde049cbcf536d4d6d05329ac4f",
+  "amount": 24.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:21.613Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:21.613Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:21.613Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-03-08T00:00:00.000Z",
+  "filename": "2022-03-08_sosh_24.99€_bf88c.pdf",
+  "invoice": "io.cozy.files:018b80e7-2bc0-7e14-af19-91ef42106ce9",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "f88e80b4-ff10-4abf-a3f2-2d4e12fd82fd"
+}
+{
+  "_id": "85c344475807adfb0441c9e42176956e",
+  "amount": 14.39,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:18.650Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:18.650Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:18.650Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-10-09T00:00:00.000Z",
+  "filename": "2023-10-09_sosh_14.39€_cc482.pdf",
+  "invoice": "io.cozy.files:018b80e6-cdc6-743b-878b-1ff94846c940",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5073940447"
+}
+{
+  "_id": "85c344475807adfb0441c9e42176a230",
+  "amount": 23.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:18.859Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:18.859Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:18.859Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-09-08T00:00:00.000Z",
+  "filename": "2023-09-08_sosh_23.99€_085f6.pdf",
+  "invoice": "io.cozy.files:018b80e6-d132-7b97-a0f9-5526ca139735",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5066982937"
+}
+{
+  "_id": "85c344475807adfb0441c9e42176a2c5",
+  "amount": 18.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:19.067Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:19.067Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:19.067Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-07-10T00:00:00.000Z",
+  "filename": "2023-07-10_sosh_18.99€_31f73.pdf",
+  "invoice": "io.cozy.files:018b80e6-d8cf-7e14-8127-fc4a3016c324",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5053103809"
+}
+{
+  "_id": "85c344475807adfb0441c9e42176dfab",
+  "amount": 24.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:21.416Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:21.416Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:21.416Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-04-11T00:00:00.000Z",
+  "filename": "2022-04-11_sosh_24.99€_40966.pdf",
+  "invoice": "io.cozy.files:018b80e7-28cf-7e14-8bcd-0fa7d2fd9db7",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "f6e54c27-6c16-4cf6-a90a-ef54ed058efd"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8c1b61",
+  "amount": 23.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:18.449Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:18.449Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:18.449Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-10-26T00:00:00.000Z",
+  "filename": "2023-10-26_sosh_23.99€_25943.pdf",
+  "invoice": "io.cozy.files:018b80e6-c91d-7b97-925a-8ac59cf2ecbd",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5078155572"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8c2619",
+  "amount": 26.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:18.962Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:18.962Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:18.962Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-08-08T00:00:00.000Z",
+  "filename": "2023-08-08_sosh_26.99€_09d13.pdf",
+  "invoice": "io.cozy.files:018b80e6-d4f1-7b97-8b18-f2ce4c8048ec",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5060029095"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8c4169",
+  "amount": 19.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:19.667Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:19.667Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:19.667Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-03-09T00:00:00.000Z",
+  "filename": "2023-03-09_sosh_19.99€_b2199.pdf",
+  "invoice": "io.cozy.files:018b80e6-e8f5-7746-b25e-5e02c5dd7e39",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5025589140"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8c4cd7",
+  "amount": 19.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:19.777Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:19.777Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:19.777Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-02-08T00:00:00.000Z",
+  "filename": "2023-02-08_sosh_19.99€_5b9a3.pdf",
+  "invoice": "io.cozy.files:018b80e6-ed14-7746-bff3-5389dd844ccd",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5018691999"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8c5acc",
+  "amount": 19.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:19.955Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:19.955Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:19.955Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-01-09T00:00:00.000Z",
+  "filename": "2023-01-09_sosh_19.99€_9c4d8.pdf",
+  "invoice": "io.cozy.files:018b80e6-f2ca-743b-8f16-392e09e7be33",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5011776384"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8c662e",
+  "amount": 19.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:20.077Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:20.077Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:20.077Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-12-08T00:00:00.000Z",
+  "filename": "2022-12-08_sosh_19.99€_bbcb2.pdf",
+  "invoice": "io.cozy.files:018b80e6-f77f-7b97-a53b-db2466fbcfb8",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "5004865854"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8c78e1",
+  "amount": 19.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:20.428Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:20.428Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:20.428Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-10-10T00:00:00.000Z",
+  "filename": "2022-10-10_sosh_19.99€_e6e0c.pdf",
+  "invoice": "io.cozy.files:018b80e7-1161-7e14-95a3-027419548394",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "4a7706f7-cc88-42b5-9398-b5e40f491931"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8c87bc",
+  "amount": 24.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:20.554Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:20.554Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:20.554Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-09-08T00:00:00.000Z",
+  "filename": "2022-09-08_sosh_24.99€_8e250.pdf",
+  "invoice": "io.cozy.files:018b80e7-1545-7746-8286-6ab92518d19f",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "bc8d4304-771e-4a3d-8c75-db284e634f76"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8c925e",
+  "amount": 26.08,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:20.664Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:20.664Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:20.664Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-08-09T00:00:00.000Z",
+  "filename": "2022-08-09_sosh_26.08€_648ff.pdf",
+  "invoice": "io.cozy.files:018b80e7-1a5e-7e14-be7e-da727934d6a8",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "08c9a366-0b9b-4421-a86a-ca577c65b94d"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8c9d26",
+  "amount": 24.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:21.206Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:21.206Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:21.206Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-05-09T00:00:00.000Z",
+  "filename": "2022-05-09_sosh_24.99€_5685a.pdf",
+  "invoice": "io.cozy.files:018b80e7-2554-7b97-892b-512f68d164d1",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "36e38356-0694-4e37-ac6b-fb4da73af38b"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8cb161",
+  "amount": 24.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:21.715Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:21.715Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:21.715Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-02-08T00:00:00.000Z",
+  "filename": "2022-02-08_sosh_24.99€_c0c8b.pdf",
+  "invoice": "io.cozy.files:018b80e7-2ebb-743b-86ec-dcc61a751fd8",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "ef13d94a-2bd6-44b8-9d2f-ed216b6ce059"
+}
+{
+  "_id": "92f76751300240e6f597126f9f8cbb17",
+  "amount": 24.99,
+  "cozyMetadata": {
+    "createdAt": "2023-10-30T14:05:21.915Z",
+    "createdByApp": "sosh",
+    "createdByAppVersion": "2.6.0",
+    "metadataVersion": 1,
+    "sourceAccount": "368934d3f720732c4536f234a81c40a0",
+    "updatedAt": "2023-10-30T14:05:21.915Z",
+    "updatedByApps": [
+      {
+        "date": "2023-10-30T14:05:21.915Z",
+        "slug": "sosh",
+        "version": "2.6.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-01-10T00:00:00.000Z",
+  "filename": "2022-01-10_sosh_24.99€_5f900.pdf",
+  "invoice": "io.cozy.files:018b80e7-3311-7b97-80ac-cb914694dc11",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "0665570100@orange.fr",
+  "vendor": "sosh.fr",
+  "vendorRef": "68adba08-962a-4a38-a9e4-68988454b5e2"
+}

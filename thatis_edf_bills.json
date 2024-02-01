@@ -1,0 +1,424 @@
+{
+  "_id": "67de3acd3e2998a0b1510614f5a31d47",
+  "amount": 139,
+  "contractNumber": 4045166801,
+  "cozyMetadata": {
+    "createdAt": "2023-12-11T11:30:31.856Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.14.2",
+    "metadataVersion": 1,
+    "sourceAccount": "26ceefe44fea9c1cb19ca4b12d4b34a1",
+    "updatedAt": "2024-01-30T15:45:07.679Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-30T15:45:07.679Z",
+        "slug": "edf",
+        "version": "2.17.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-07-10T22:00:00.000Z",
+  "filename": "2023_EDF_echancier.pdf",
+  "invoice": "io.cozy.files:018d5b0a-c6b6-70b7-84f9-7418fa34b963",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "startDate": "2023-06-14T22:00:00.000Z",
+  "vendor": "EDF"
+}
+{
+  "_id": "772ac07e94ebd5080e21df96a4e38eab",
+  "amount": 18.25,
+  "contractNumber": "4045166801",
+  "cozyMetadata": {
+    "createdAt": "2023-10-19T15:43:54.385Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.10.1",
+    "metadataVersion": 1,
+    "sourceAccount": "772ac07e94ebd5080e21df96a4e30370",
+    "updatedAt": "2024-01-30T15:43:54.470Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-30T15:43:54.470Z",
+        "slug": "edf",
+        "version": "2.17.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-05-20T22:00:00.000Z",
+  "filename": "2023-05-21_EDF_18.25€.pdf",
+  "invoice": "io.cozy.files:018d5b0a-6630-70b7-af2f-b0e4cd11097c",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "vendor": "EDF",
+  "vendorRef": "[1002398159]FP.SIM.1004232928$$FP.SIM.1052123210396033800172174.pdf"
+}
+{
+  "_id": "772ac07e94ebd5080e21df96a4e39a66",
+  "amount": 26.33,
+  "contractNumber": "4045166801",
+  "cozyMetadata": {
+    "createdAt": "2023-10-19T15:43:54.499Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.10.1",
+    "metadataVersion": 1,
+    "sourceAccount": "772ac07e94ebd5080e21df96a4e30370",
+    "updatedAt": "2024-01-30T15:43:54.672Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-30T15:43:54.672Z",
+        "slug": "edf",
+        "version": "2.17.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-05-27T22:00:00.000Z",
+  "filename": "2023-05-28_EDF_26.33€.pdf",
+  "invoice": "io.cozy.files:018d5b0a-7306-751d-bfff-62744174250f",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "vendor": "EDF",
+  "vendorRef": "[1002400641]FP.SIM.1004241678$$FP.SIM.1052823205569632100042455.pdf"
+}
+{
+  "_id": "772ac07e94ebd5080e21df96a4e44f29",
+  "amount": 51.37,
+  "contractNumber": "4042112256",
+  "cozyMetadata": {
+    "createdAt": "2023-10-19T15:44:11.033Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.10.1",
+    "metadataVersion": 1,
+    "sourceAccount": "772ac07e94ebd5080e21df96a4e30370",
+    "updatedAt": "2023-12-02T17:04:42.645Z",
+    "updatedByApps": [
+      {
+        "date": "2023-12-02T17:04:42.645Z",
+        "slug": "edf",
+        "version": "2.14.1"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-09-07T22:00:00.000Z",
+  "filename": "2022-09-08_EDF_51.37€.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=c0aa9e88-8496-4100-a61f-482d5b7ecc5f&dn=FACTURE&pn=PAR911&di=%5B1002299944%5DFP.SIM.1003925701%24%24FP.SIM.1090900330262666600015144.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=zM9JBdygv6c3RTWyGiYHug%3D%3D",
+  "invoice": "io.cozy.files:018c15a9-66f4-7139-a812-7066c5484bf8",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "vendor": "EDF",
+  "vendorRef": "[1002299944]FP.SIM.1003925701$$FP.SIM.1090900330262666600015144.pdf"
+}
+{
+  "_id": "772ac07e94ebd5080e21df96a4e45b94",
+  "amount": 42.13,
+  "contractNumber": "4042112256",
+  "cozyMetadata": {
+    "createdAt": "2023-10-19T15:44:11.211Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.10.1",
+    "metadataVersion": 1,
+    "sourceAccount": "772ac07e94ebd5080e21df96a4e30370",
+    "updatedAt": "2023-12-02T17:04:42.824Z",
+    "updatedByApps": [
+      {
+        "date": "2023-12-02T17:04:42.824Z",
+        "slug": "edf",
+        "version": "2.14.1"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-09-10T22:00:00.000Z",
+  "filename": "2022-09-11_EDF_42.13€.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=ee7cd326-e772-42a1-a8b3-e6de54370f66&dn=FACTURE&pn=PAR911&di=%5B1002300521%5DFP.SIM.1003927496%24%24FP.SIM.1091200314889063000000332.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=zM9JBdygv6c3RTWyGiYHug%3D%3D",
+  "invoice": "io.cozy.files:018c15a9-6eb2-7139-9098-9df1f94217b9",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "vendor": "EDF",
+  "vendorRef": "[1002300521]FP.SIM.1003927496$$FP.SIM.1091200314889063000000332.pdf"
+}
+{
+  "_id": "800415843f5a19a4e1fac47bcb3ae674",
+  "amount": 61.14,
+  "contractNumber": "4045166801",
+  "cozyMetadata": {
+    "createdAt": "2023-10-19T15:43:54.593Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.10.1",
+    "metadataVersion": 1,
+    "sourceAccount": "772ac07e94ebd5080e21df96a4e30370",
+    "updatedAt": "2024-01-30T15:43:54.767Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-30T15:43:54.767Z",
+        "slug": "edf",
+        "version": "2.17.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-05-31T22:00:00.000Z",
+  "filename": "2023-06-01_EDF_61.14€.pdf",
+  "invoice": "io.cozy.files:018d5b0a-850f-751d-a2f3-9e43c763bd73",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "vendor": "EDF",
+  "vendorRef": "[1002402197]FP.SIM.1004247290$$FP.SIM.1060123184795290700005129.pdf"
+}
+{
+  "_id": "800415843f5a19a4e1fac47bcb3b91d1",
+  "amount": 7.77,
+  "contractNumber": "4042112256",
+  "cozyMetadata": {
+    "createdAt": "2023-10-19T15:44:11.318Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.10.1",
+    "metadataVersion": 1,
+    "sourceAccount": "772ac07e94ebd5080e21df96a4e30370",
+    "updatedAt": "2023-12-02T17:04:43.006Z",
+    "updatedByApps": [
+      {
+        "date": "2023-12-02T17:04:43.006Z",
+        "slug": "edf",
+        "version": "2.14.1"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2022-12-22T23:00:00.000Z",
+  "filename": "2022-12-23_EDF_7.77€.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=a3982cb8-afa9-4f72-8643-308b2a386534&dn=FACTURE&pn=PAR711&di=%5B1002340518%5DFP.SIM.1004050620%24%24FP.SIM.1122400312398369500092541.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=zM9JBdygv6c3RTWyGiYHug%3D%3D",
+  "invoice": "io.cozy.files:018c15a9-7adb-704e-90c2-efe28dfc202f",
+  "isRefund": true,
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "vendor": "EDF",
+  "vendorRef": "[1002340518]FP.SIM.1004050620$$FP.SIM.1122400312398369500092541.pdf"
+}
+{
+  "_id": "ad02b03eabf812dd55eae0742e2c414d",
+  "amount": 139,
+  "contractNumber": 4045166801,
+  "cozyMetadata": {
+    "createdAt": "2023-12-18T14:38:16.122Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.14.2",
+    "metadataVersion": 1,
+    "sourceAccount": "26ceefe44fea9c1cb19ca4b12d4b34a1",
+    "updatedAt": "2024-01-30T15:40:57.717Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-30T15:40:57.717Z",
+        "slug": "edf",
+        "version": "2.17.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-11-09T23:00:00.000Z",
+  "filename": "2023_EDF_echancier.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=b26c54b1-4630-4244-9af9-7e9cf02c8f23&dn=CalendrierPaiement&pn=PAR712&di=%5B1002402746%5DEP.SIM.1004249157%24%24EP.SIM.1060303042055548600053866.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=1l9TIpcAk7j%2BvKi5lm2Oow%3D%3D",
+  "invoice": "io.cozy.files:018c58a4-1666-717e-80ed-3c7fd83695f1",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "startDate": "2023-06-14T22:00:00.000Z",
+  "vendor": "EDF"
+}
+{
+  "_id": "b9cdfb1dfd95eccc9bc36b589e92a2cb",
+  "amount": 139,
+  "contractNumber": 4045166801,
+  "cozyMetadata": {
+    "createdAt": "2024-01-04T12:59:32.332Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.16.0",
+    "metadataVersion": 1,
+    "sourceAccount": "26ceefe44fea9c1cb19ca4b12d4b34a1",
+    "updatedAt": "2024-01-30T15:40:58.105Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-30T15:40:58.105Z",
+        "slug": "edf",
+        "version": "2.17.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2024-01-09T23:00:00.000Z",
+  "filename": "2023_EDF_echancier.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=b26c54b1-4630-4244-9af9-7e9cf02c8f23&dn=CalendrierPaiement&pn=PAR712&di=%5B1002402746%5DEP.SIM.1004249157%24%24EP.SIM.1060303042055548600053866.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=1l9TIpcAk7j%2BvKi5lm2Oow%3D%3D",
+  "invoice": "io.cozy.files:018c58a4-1666-717e-80ed-3c7fd83695f1",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "startDate": "2023-06-14T22:00:00.000Z",
+  "vendor": "EDF"
+}
+{
+  "_id": "d52a3bb1f8c36612373f2ea461b7290f",
+  "amount": 24.87,
+  "contractNumber": "4042112256",
+  "cozyMetadata": {
+    "createdAt": "2023-10-19T15:44:11.410Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.10.1",
+    "metadataVersion": 1,
+    "sourceAccount": "772ac07e94ebd5080e21df96a4e30370",
+    "updatedAt": "2023-12-02T17:04:43.073Z",
+    "updatedByApps": [
+      {
+        "date": "2023-12-02T17:04:43.073Z",
+        "slug": "edf",
+        "version": "2.14.1"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-06-08T22:00:00.000Z",
+  "filename": "2023-06-09_EDF_24.87€.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=409945d0-5322-48a9-bda0-f273bd09bb3e&dn=FACTURE&pn=PAR711&di=%5B1002405632%5DFP.SIM.1004259117%24%24FP.SIM.1061000310991166700089291.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=zM9JBdygv6c3RTWyGiYHug%3D%3D",
+  "invoice": "io.cozy.files:018c15a9-88a1-7fdc-aebf-5326d3ab35ff",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "vendor": "EDF",
+  "vendorRef": "[1002405632]FP.SIM.1004259117$$FP.SIM.1061000310991166700089291.pdf"
+}
+{
+  "_id": "d52a3bb1f8c36612373f2ea461b72d0b",
+  "amount": 745.22,
+  "contractNumber": "4042112256",
+  "cozyMetadata": {
+    "createdAt": "2023-10-19T15:44:11.530Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.10.1",
+    "metadataVersion": 1,
+    "sourceAccount": "772ac07e94ebd5080e21df96a4e30370",
+    "updatedAt": "2023-12-02T17:04:43.142Z",
+    "updatedByApps": [
+      {
+        "date": "2023-12-02T17:04:43.142Z",
+        "slug": "edf",
+        "version": "2.14.1"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-06-11T22:00:00.000Z",
+  "filename": "2023-06-12_EDF_745.22€.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=dedd7c9b-ad47-4edf-ba94-53cc75bd5bea&dn=FACTURE&pn=PAR711&di=%5B1002406735%5DFP.SIM.1004262826%24%24FP.SIM.1061300330428536300018027.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=zM9JBdygv6c3RTWyGiYHug%3D%3D",
+  "invoice": "io.cozy.files:018c15a9-94a5-704e-994f-a8cff1614deb",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "vendor": "EDF",
+  "vendorRef": "[1002406735]FP.SIM.1004262826$$FP.SIM.1061300330428536300018027.pdf"
+}
+{
+  "_id": "db9081e19dfd2ac949bb6f6197a86efb",
+  "amount": 139,
+  "contractNumber": 4045166801,
+  "cozyMetadata": {
+    "createdAt": "2023-12-18T14:38:16.195Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.14.2",
+    "metadataVersion": 1,
+    "sourceAccount": "26ceefe44fea9c1cb19ca4b12d4b34a1",
+    "updatedAt": "2024-01-30T15:40:57.929Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-30T15:40:57.929Z",
+        "slug": "edf",
+        "version": "2.17.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-12-10T23:00:00.000Z",
+  "filename": "2023_EDF_echancier.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=b26c54b1-4630-4244-9af9-7e9cf02c8f23&dn=CalendrierPaiement&pn=PAR712&di=%5B1002402746%5DEP.SIM.1004249157%24%24EP.SIM.1060303042055548600053866.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=1l9TIpcAk7j%2BvKi5lm2Oow%3D%3D",
+  "invoice": "io.cozy.files:018c58a4-1666-717e-80ed-3c7fd83695f1",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "startDate": "2023-06-14T22:00:00.000Z",
+  "vendor": "EDF"
+}
+{
+  "_id": "e8fed562204de018450358d862630ef7",
+  "amount": 139,
+  "contractNumber": 4045166801,
+  "cozyMetadata": {
+    "createdAt": "2023-12-18T14:38:15.752Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.14.2",
+    "metadataVersion": 1,
+    "sourceAccount": "26ceefe44fea9c1cb19ca4b12d4b34a1",
+    "updatedAt": "2024-01-30T15:40:57.153Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-30T15:40:57.153Z",
+        "slug": "edf",
+        "version": "2.17.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-08-09T22:00:00.000Z",
+  "filename": "2023_EDF_echancier.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=b26c54b1-4630-4244-9af9-7e9cf02c8f23&dn=CalendrierPaiement&pn=PAR712&di=%5B1002402746%5DEP.SIM.1004249157%24%24EP.SIM.1060303042055548600053866.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=1l9TIpcAk7j%2BvKi5lm2Oow%3D%3D",
+  "invoice": "io.cozy.files:018c58a4-1666-717e-80ed-3c7fd83695f1",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "startDate": "2023-06-14T22:00:00.000Z",
+  "vendor": "EDF"
+}
+{
+  "_id": "e8fed562204de018450358d86263235b",
+  "amount": 139,
+  "contractNumber": 4045166801,
+  "cozyMetadata": {
+    "createdAt": "2023-12-18T14:38:15.866Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.14.2",
+    "metadataVersion": 1,
+    "sourceAccount": "26ceefe44fea9c1cb19ca4b12d4b34a1",
+    "updatedAt": "2024-01-30T15:40:57.492Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-30T15:40:57.492Z",
+        "slug": "edf",
+        "version": "2.17.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-09-10T22:00:00.000Z",
+  "filename": "2023_EDF_echancier.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=b26c54b1-4630-4244-9af9-7e9cf02c8f23&dn=CalendrierPaiement&pn=PAR712&di=%5B1002402746%5DEP.SIM.1004249157%24%24EP.SIM.1060303042055548600053866.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=1l9TIpcAk7j%2BvKi5lm2Oow%3D%3D",
+  "invoice": "io.cozy.files:018c58a4-1666-717e-80ed-3c7fd83695f1",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "startDate": "2023-06-14T22:00:00.000Z",
+  "vendor": "EDF"
+}
+{
+  "_id": "e8fed562204de018450358d862633354",
+  "amount": 139,
+  "contractNumber": 4045166801,
+  "cozyMetadata": {
+    "createdAt": "2023-12-18T14:38:16.027Z",
+    "createdByApp": "edf",
+    "createdByAppVersion": "2.14.2",
+    "metadataVersion": 1,
+    "sourceAccount": "26ceefe44fea9c1cb19ca4b12d4b34a1",
+    "updatedAt": "2024-01-30T15:40:57.623Z",
+    "updatedByApps": [
+      {
+        "date": "2024-01-30T15:40:57.623Z",
+        "slug": "edf",
+        "version": "2.17.0"
+      }
+    ]
+  },
+  "currency": "EUR",
+  "date": "2023-10-10T22:00:00.000Z",
+  "filename": "2023_EDF_echancier.pdf",
+  "fileurl": "https://particulier.edf.fr/services/rest/document/getDocumentGetXByData?csrfToken=b26c54b1-4630-4244-9af9-7e9cf02c8f23&dn=CalendrierPaiement&pn=PAR712&di=%5B1002402746%5DEP.SIM.1004249157%24%24EP.SIM.1060303042055548600053866.pdf&bn=PLe0cEzydwV2lujECZAXQQ%3D%3D&an=1l9TIpcAk7j%2BvKi5lm2Oow%3D%3D",
+  "invoice": "io.cozy.files:018c58a4-1666-717e-80ed-3c7fd83695f1",
+  "recurrence": "monthly",
+  "sourceAccountIdentifier": "edf.python588@passinbox.com",
+  "startDate": "2023-06-14T22:00:00.000Z",
+  "vendor": "EDF"
+}
