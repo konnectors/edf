@@ -16238,10 +16238,7 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         }
         await this.saveIdentity(identity)
       } catch (err) {
-        this.log(
-          'error',
-          `Got an error while fetching housing data: ${err.message}`
-        )
+        this.log('error', `Got an error while fetching housing data`)
         throw new Error('UNKNOWN_ERROR.PARTIAL_SYNC')
       }
     } else {
