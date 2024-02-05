@@ -380,7 +380,10 @@ class EdfContentScript extends ContentScript {
         }
         await this.saveIdentity(identity)
       } catch (err) {
-        this.log('error', `Got an error while fetching housing data`)
+        this.log(
+          'error',
+          `Got an error while fetching housing data: ${err.message}`
+        )
         throw new Error('UNKNOWN_ERROR.PARTIAL_SYNC')
       }
     } else {
