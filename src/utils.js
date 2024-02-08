@@ -153,7 +153,7 @@ export function formatHousing(
           10
         ),
         [energyType + '_consumptions']: consumptions[energyType],
-        charging_type: echeancierResult.isMonthly ? 'monthly' : 'yearly'
+        charging_type: echeancierResult?.isMonthly ? 'monthly' : 'yearly'
       }
 
       // even if the api does not show it, real pdl number for gas is pce_number

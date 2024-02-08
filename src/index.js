@@ -337,11 +337,19 @@ class EdfContentScript extends ContentScript {
       run: () => this.fetchBillsForAllContracts(contracts, context),
       selectorToWait: '#facture, #factureSelection'
     })
-    const echeancierResult = await this.withRetry({
-      label: 'fetchEcheancierBills',
-      run: () => this.fetchEcheancierBills(contracts, context),
-      selectorToWait: `.timeline-header__download, a.accessPage[href*='factures-et-paiements.html']`
-    })
+    let echeancierResult
+    try {
+      echeancierResult = await this.withRetry({
+        label: 'fetchEcheancierBills',
+        run: () => this.fetchEcheancierBills(contracts, context),
+        selectorToWait: `.timeline-header__download, a.accessPage[href*='factures-et-paiements.html']`
+      })
+    } catch (err) {
+      this.log(
+        'warn',
+        `Got an error while fetching housing data: ${err.message}`
+      )
+    }
 
     // fetch the housing data only if we do not have an existing identity or if the existing
     // identity is older than 1 month
@@ -381,10 +389,9 @@ class EdfContentScript extends ContentScript {
         await this.saveIdentity(identity)
       } catch (err) {
         this.log(
-          'error',
+          'warn',
           `Got an error while fetching housing data: ${err.message}`
         )
-        throw new Error('UNKNOWN_ERROR.PARTIAL_SYNC')
       }
     } else {
       this.log(
