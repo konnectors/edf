@@ -6343,7 +6343,7 @@ function formatHousing(
           10
         ),
         [energyType + '_consumptions']: consumptions[energyType],
-        charging_type: echeancierResult.isMonthly ? 'monthly' : 'yearly'
+        charging_type: echeancierResult?.isMonthly ? 'monthly' : 'yearly'
       }
 
       // even if the api does not show it, real pdl number for gas is pce_number
@@ -16195,11 +16195,19 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
       run: () => this.fetchBillsForAllContracts(contracts, context),
       selectorToWait: '#facture, #factureSelection'
     })
-    const echeancierResult = await this.withRetry({
-      label: 'fetchEcheancierBills',
-      run: () => this.fetchEcheancierBills(contracts, context),
-      selectorToWait: `.timeline-header__download, a.accessPage[href*='factures-et-paiements.html']`
-    })
+    let echeancierResult
+    try {
+      echeancierResult = await this.withRetry({
+        label: 'fetchEcheancierBills',
+        run: () => this.fetchEcheancierBills(contracts, context),
+        selectorToWait: `.timeline-header__download, a.accessPage[href*='factures-et-paiements.html']`
+      })
+    } catch (err) {
+      this.log(
+        'warn',
+        `Got an error while fetching housing data: ${err.message}`
+      )
+    }
 
     // fetch the housing data only if we do not have an existing identity or if the existing
     // identity is older than 1 month
@@ -16239,10 +16247,9 @@ class EdfContentScript extends cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_M
         await this.saveIdentity(identity)
       } catch (err) {
         this.log(
-          'error',
+          'warn',
           `Got an error while fetching housing data: ${err.message}`
         )
-        throw new Error('UNKNOWN_ERROR.PARTIAL_SYNC')
       }
     } else {
       this.log(
