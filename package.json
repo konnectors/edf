@@ -11,7 +11,7 @@
     "cozy-client": "45.8.1",
     "cozy-clisk": "0.36.1",
     "date-fns": "3.3.1",
-    "ky": "0.33.3",
+    "ky": "1.2.3",
     "p-retry": "6.2.0"
   },
   "eslintConfig": {
