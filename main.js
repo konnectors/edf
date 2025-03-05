@@ -6673,6 +6673,15 @@ var QueryDefinition = /*#__PURE__*/function () {
       if (hasNe) {
         _logger.default.info("The use of the $ne operator is more efficient with a partial index.\n\n        Selector: ".concat(JSON.stringify(selector)));
       }
+
+      var nestedArrayKey = (0, _findKey.default)(selector, function (value) {
+        return Array.isArray(value);
+      });
+      var hasNestedArrayWithoutOperator = nestedArrayKey && !nestedArrayKey.startsWith('$');
+
+      if (hasNestedArrayWithoutOperator) {
+        throw new Error("You pass ".concat(JSON.stringify(selector), ", this is a valid mango operation, \n\n        but sift doesn't support it so CozyClient can not evaluate \n\n        the request in memory. You must use a MongoDB operator \n\n        like $in or $or operator instead, preferably in a partial index, \n\n        to avoid costly full-scan"));
+      }
     }
     /**
      * Check if the selected fields are all included in the selectors
@@ -6861,7 +6870,7 @@ var QueryDefinition = /*#__PURE__*/function () {
     /**
      * Maximum number of documents returned, useful for pagination. Default is 100.
      *
-     * @param {number} limit The document's limit.
+     * @param {number|null} limit The document's limit.
      * @returns {QueryDefinition}  The QueryDefinition object.
      */
 
