@@ -11063,16 +11063,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "format": () => (/* binding */ format),
 /* harmony export */   "formatDate": () => (/* binding */ format),
-/* harmony export */   "formatters": () => (/* reexport safe */ _lib_format_formatters_mjs__WEBPACK_IMPORTED_MODULE_0__.formatters),
-/* harmony export */   "longFormatters": () => (/* reexport safe */ _lib_format_longFormatters_mjs__WEBPACK_IMPORTED_MODULE_1__.longFormatters)
+/* harmony export */   "formatters": () => (/* reexport safe */ _lib_format_formatters_js__WEBPACK_IMPORTED_MODULE_0__.formatters),
+/* harmony export */   "longFormatters": () => (/* reexport safe */ _lib_format_longFormatters_js__WEBPACK_IMPORTED_MODULE_1__.longFormatters)
 /* harmony export */ });
-/* harmony import */ var _lib_defaultLocale_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(202);
-/* harmony import */ var _lib_defaultOptions_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(186);
-/* harmony import */ var _lib_format_formatters_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(181);
-/* harmony import */ var _lib_format_longFormatters_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(201);
-/* harmony import */ var _lib_protectedTokens_mjs__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(214);
-/* harmony import */ var _isValid_mjs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(212);
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(185);
+/* harmony import */ var _lib_defaultLocale_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(203);
+/* harmony import */ var _lib_defaultOptions_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(188);
+/* harmony import */ var _lib_format_formatters_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(181);
+/* harmony import */ var _lib_format_longFormatters_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(202);
+/* harmony import */ var _lib_protectedTokens_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(215);
+/* harmony import */ var _isValid_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(213);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(185);
 
 
 
@@ -11364,8 +11364,6 @@ const unescapedLatinCharacterRegExp = /[a-zA-Z]/;
  * 9. `D` and `DD` tokens represent days of the year but they are often confused with days of the month.
  *    You should enable `options.useAdditionalDayOfYearTokens` to use them. See: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
  *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
  * @param date - The original date
  * @param format - The string of tokens
  * @param options - An object with options
@@ -11400,8 +11398,8 @@ const unescapedLatinCharacterRegExp = /[a-zA-Z]/;
  * //=> "3 o'clock"
  */
 function format(date, formatStr, options) {
-  const defaultOptions = (0,_lib_defaultOptions_mjs__WEBPACK_IMPORTED_MODULE_2__.getDefaultOptions)();
-  const locale = options?.locale ?? defaultOptions.locale ?? _lib_defaultLocale_mjs__WEBPACK_IMPORTED_MODULE_3__.enUS;
+  const defaultOptions = (0,_lib_defaultOptions_js__WEBPACK_IMPORTED_MODULE_2__.getDefaultOptions)();
+  const locale = options?.locale ?? defaultOptions.locale ?? _lib_defaultLocale_js__WEBPACK_IMPORTED_MODULE_3__.enUS;
 
   const firstWeekContainsDate =
     options?.firstWeekContainsDate ??
@@ -11417,9 +11415,9 @@ function format(date, formatStr, options) {
     defaultOptions.locale?.options?.weekStartsOn ??
     0;
 
-  const originalDate = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_4__.toDate)(date);
+  const originalDate = (0,_toDate_js__WEBPACK_IMPORTED_MODULE_4__.toDate)(date, options?.in);
 
-  if (!(0,_isValid_mjs__WEBPACK_IMPORTED_MODULE_5__.isValid)(originalDate)) {
+  if (!(0,_isValid_js__WEBPACK_IMPORTED_MODULE_5__.isValid)(originalDate)) {
     throw new RangeError("Invalid time value");
   }
 
@@ -11428,7 +11426,7 @@ function format(date, formatStr, options) {
     .map((substring) => {
       const firstCharacter = substring[0];
       if (firstCharacter === "p" || firstCharacter === "P") {
-        const longFormatter = _lib_format_longFormatters_mjs__WEBPACK_IMPORTED_MODULE_1__.longFormatters[firstCharacter];
+        const longFormatter = _lib_format_longFormatters_js__WEBPACK_IMPORTED_MODULE_1__.longFormatters[firstCharacter];
         return longFormatter(substring, locale.formatLong);
       }
       return substring;
@@ -11446,7 +11444,7 @@ function format(date, formatStr, options) {
         return { isToken: false, value: cleanEscapedString(substring) };
       }
 
-      if (_lib_format_formatters_mjs__WEBPACK_IMPORTED_MODULE_0__.formatters[firstCharacter]) {
+      if (_lib_format_formatters_js__WEBPACK_IMPORTED_MODULE_0__.formatters[firstCharacter]) {
         return { isToken: true, value: substring };
       }
 
@@ -11480,14 +11478,14 @@ function format(date, formatStr, options) {
 
       if (
         (!options?.useAdditionalWeekYearTokens &&
-          (0,_lib_protectedTokens_mjs__WEBPACK_IMPORTED_MODULE_6__.isProtectedWeekYearToken)(token)) ||
+          (0,_lib_protectedTokens_js__WEBPACK_IMPORTED_MODULE_6__.isProtectedWeekYearToken)(token)) ||
         (!options?.useAdditionalDayOfYearTokens &&
-          (0,_lib_protectedTokens_mjs__WEBPACK_IMPORTED_MODULE_6__.isProtectedDayOfYearToken)(token))
+          (0,_lib_protectedTokens_js__WEBPACK_IMPORTED_MODULE_6__.isProtectedDayOfYearToken)(token))
       ) {
-        (0,_lib_protectedTokens_mjs__WEBPACK_IMPORTED_MODULE_6__.warnOrThrowProtectedError)(token, formatStr, String(date));
+        (0,_lib_protectedTokens_js__WEBPACK_IMPORTED_MODULE_6__.warnOrThrowProtectedError)(token, formatStr, String(date));
       }
 
-      const formatter = _lib_format_formatters_mjs__WEBPACK_IMPORTED_MODULE_0__.formatters[token[0]];
+      const formatter = _lib_format_formatters_js__WEBPACK_IMPORTED_MODULE_0__.formatters[token[0]];
       return formatter(originalDate, token, locale.localize, formatterOptions);
     })
     .join("");
@@ -11516,13 +11514,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "formatters": () => (/* binding */ formatters)
 /* harmony export */ });
-/* harmony import */ var _getDayOfYear_mjs__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(196);
-/* harmony import */ var _getISOWeek_mjs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(194);
-/* harmony import */ var _getISOWeekYear_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(189);
-/* harmony import */ var _getWeek_mjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(191);
-/* harmony import */ var _getWeekYear_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(184);
-/* harmony import */ var _addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(183);
-/* harmony import */ var _lightFormatters_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(182);
+/* harmony import */ var _getDayOfYear_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(196);
+/* harmony import */ var _getISOWeek_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(194);
+/* harmony import */ var _getISOWeekYear_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(190);
+/* harmony import */ var _getWeek_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(192);
+/* harmony import */ var _getWeekYear_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(184);
+/* harmony import */ var _addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(183);
+/* harmony import */ var _lightFormatters_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(182);
+
 
 
 
@@ -11618,19 +11617,19 @@ const formatters = {
       return localize.ordinalNumber(year, { unit: "year" });
     }
 
-    return _lightFormatters_mjs__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.y(date, token);
+    return _lightFormatters_js__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.y(date, token);
   },
 
   // Local week-numbering year
   Y: function (date, token, localize, options) {
-    const signedWeekYear = (0,_getWeekYear_mjs__WEBPACK_IMPORTED_MODULE_1__.getWeekYear)(date, options);
+    const signedWeekYear = (0,_getWeekYear_js__WEBPACK_IMPORTED_MODULE_1__.getWeekYear)(date, options);
     // Returns 1 for 1 BC (which is year 0 in JavaScript)
     const weekYear = signedWeekYear > 0 ? signedWeekYear : 1 - signedWeekYear;
 
     // Two digit year
     if (token === "YY") {
       const twoDigitYear = weekYear % 100;
-      return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(twoDigitYear, 2);
+      return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(twoDigitYear, 2);
     }
 
     // Ordinal number
@@ -11639,15 +11638,15 @@ const formatters = {
     }
 
     // Padding
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(weekYear, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(weekYear, token.length);
   },
 
   // ISO week-numbering year
   R: function (date, token) {
-    const isoWeekYear = (0,_getISOWeekYear_mjs__WEBPACK_IMPORTED_MODULE_3__.getISOWeekYear)(date);
+    const isoWeekYear = (0,_getISOWeekYear_js__WEBPACK_IMPORTED_MODULE_3__.getISOWeekYear)(date);
 
     // Padding
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(isoWeekYear, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(isoWeekYear, token.length);
   },
 
   // Extended year. This is a single number designating the year of this calendar system.
@@ -11661,7 +11660,7 @@ const formatters = {
   // while `uu` pads single digit years to 2 characters and returns other years unchanged.
   u: function (date, token) {
     const year = date.getFullYear();
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(year, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(year, token.length);
   },
 
   // Quarter
@@ -11673,7 +11672,7 @@ const formatters = {
         return String(quarter);
       // 01, 02, 03, 04
       case "QQ":
-        return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(quarter, 2);
+        return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(quarter, 2);
       // 1st, 2nd, 3rd, 4th
       case "Qo":
         return localize.ordinalNumber(quarter, { unit: "quarter" });
@@ -11708,7 +11707,7 @@ const formatters = {
         return String(quarter);
       // 01, 02, 03, 04
       case "qq":
-        return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(quarter, 2);
+        return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(quarter, 2);
       // 1st, 2nd, 3rd, 4th
       case "qo":
         return localize.ordinalNumber(quarter, { unit: "quarter" });
@@ -11740,7 +11739,7 @@ const formatters = {
     switch (token) {
       case "M":
       case "MM":
-        return _lightFormatters_mjs__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.M(date, token);
+        return _lightFormatters_js__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.M(date, token);
       // 1st, 2nd, ..., 12th
       case "Mo":
         return localize.ordinalNumber(month + 1, { unit: "month" });
@@ -11772,7 +11771,7 @@ const formatters = {
         return String(month + 1);
       // 01, 02, ..., 12
       case "LL":
-        return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(month + 1, 2);
+        return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(month + 1, 2);
       // 1st, 2nd, ..., 12th
       case "Lo":
         return localize.ordinalNumber(month + 1, { unit: "month" });
@@ -11797,24 +11796,24 @@ const formatters = {
 
   // Local week of year
   w: function (date, token, localize, options) {
-    const week = (0,_getWeek_mjs__WEBPACK_IMPORTED_MODULE_4__.getWeek)(date, options);
+    const week = (0,_getWeek_js__WEBPACK_IMPORTED_MODULE_4__.getWeek)(date, options);
 
     if (token === "wo") {
       return localize.ordinalNumber(week, { unit: "week" });
     }
 
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(week, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(week, token.length);
   },
 
   // ISO week of year
   I: function (date, token, localize) {
-    const isoWeek = (0,_getISOWeek_mjs__WEBPACK_IMPORTED_MODULE_5__.getISOWeek)(date);
+    const isoWeek = (0,_getISOWeek_js__WEBPACK_IMPORTED_MODULE_5__.getISOWeek)(date);
 
     if (token === "Io") {
       return localize.ordinalNumber(isoWeek, { unit: "week" });
     }
 
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(isoWeek, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(isoWeek, token.length);
   },
 
   // Day of the month
@@ -11823,18 +11822,18 @@ const formatters = {
       return localize.ordinalNumber(date.getDate(), { unit: "date" });
     }
 
-    return _lightFormatters_mjs__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.d(date, token);
+    return _lightFormatters_js__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.d(date, token);
   },
 
   // Day of year
   D: function (date, token, localize) {
-    const dayOfYear = (0,_getDayOfYear_mjs__WEBPACK_IMPORTED_MODULE_6__.getDayOfYear)(date);
+    const dayOfYear = (0,_getDayOfYear_js__WEBPACK_IMPORTED_MODULE_6__.getDayOfYear)(date);
 
     if (token === "Do") {
       return localize.ordinalNumber(dayOfYear, { unit: "dayOfYear" });
     }
 
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(dayOfYear, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(dayOfYear, token.length);
   },
 
   // Day of week
@@ -11881,7 +11880,7 @@ const formatters = {
         return String(localDayOfWeek);
       // Padded numerical value
       case "ee":
-        return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(localDayOfWeek, 2);
+        return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(localDayOfWeek, 2);
       // 1st, 2nd, ..., 7th
       case "eo":
         return localize.ordinalNumber(localDayOfWeek, { unit: "day" });
@@ -11922,7 +11921,7 @@ const formatters = {
         return String(localDayOfWeek);
       // Padded numerical value
       case "cc":
-        return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(localDayOfWeek, token.length);
+        return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(localDayOfWeek, token.length);
       // 1st, 2nd, ..., 7th
       case "co":
         return localize.ordinalNumber(localDayOfWeek, { unit: "day" });
@@ -11963,7 +11962,7 @@ const formatters = {
         return String(isoDayOfWeek);
       // 02
       case "ii":
-        return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(isoDayOfWeek, token.length);
+        return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(isoDayOfWeek, token.length);
       // 2nd
       case "io":
         return localize.ordinalNumber(isoDayOfWeek, { unit: "day" });
@@ -12112,7 +12111,7 @@ const formatters = {
       return localize.ordinalNumber(hours, { unit: "hour" });
     }
 
-    return _lightFormatters_mjs__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.h(date, token);
+    return _lightFormatters_js__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.h(date, token);
   },
 
   // Hour [0-23]
@@ -12121,7 +12120,7 @@ const formatters = {
       return localize.ordinalNumber(date.getHours(), { unit: "hour" });
     }
 
-    return _lightFormatters_mjs__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.H(date, token);
+    return _lightFormatters_js__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.H(date, token);
   },
 
   // Hour [0-11]
@@ -12132,7 +12131,7 @@ const formatters = {
       return localize.ordinalNumber(hours, { unit: "hour" });
     }
 
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(hours, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(hours, token.length);
   },
 
   // Hour [1-24]
@@ -12144,7 +12143,7 @@ const formatters = {
       return localize.ordinalNumber(hours, { unit: "hour" });
     }
 
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(hours, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(hours, token.length);
   },
 
   // Minute
@@ -12153,7 +12152,7 @@ const formatters = {
       return localize.ordinalNumber(date.getMinutes(), { unit: "minute" });
     }
 
-    return _lightFormatters_mjs__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.m(date, token);
+    return _lightFormatters_js__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.m(date, token);
   },
 
   // Second
@@ -12162,12 +12161,12 @@ const formatters = {
       return localize.ordinalNumber(date.getSeconds(), { unit: "second" });
     }
 
-    return _lightFormatters_mjs__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.s(date, token);
+    return _lightFormatters_js__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.s(date, token);
   },
 
   // Fraction of second
   S: function (date, token) {
-    return _lightFormatters_mjs__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.S(date, token);
+    return _lightFormatters_js__WEBPACK_IMPORTED_MODULE_0__.lightFormatters.S(date, token);
   },
 
   // Timezone (ISO-8601. If offset is 0, output is always `'Z'`)
@@ -12262,14 +12261,13 @@ const formatters = {
 
   // Seconds timestamp
   t: function (date, token, _localize) {
-    const timestamp = Math.trunc(date.getTime() / 1000);
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(timestamp, token.length);
+    const timestamp = Math.trunc(+date / 1000);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(timestamp, token.length);
   },
 
   // Milliseconds timestamp
   T: function (date, token, _localize) {
-    const timestamp = date.getTime();
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(timestamp, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(+date, token.length);
   },
 };
 
@@ -12281,13 +12279,13 @@ function formatTimezoneShort(offset, delimiter = "") {
   if (minutes === 0) {
     return sign + String(hours);
   }
-  return sign + String(hours) + delimiter + (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(minutes, 2);
+  return sign + String(hours) + delimiter + (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(minutes, 2);
 }
 
 function formatTimezoneWithOptionalMinutes(offset, delimiter) {
   if (offset % 60 === 0) {
     const sign = offset > 0 ? "-" : "+";
-    return sign + (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(Math.abs(offset) / 60, 2);
+    return sign + (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(Math.abs(offset) / 60, 2);
   }
   return formatTimezone(offset, delimiter);
 }
@@ -12295,8 +12293,8 @@ function formatTimezoneWithOptionalMinutes(offset, delimiter) {
 function formatTimezone(offset, delimiter = "") {
   const sign = offset > 0 ? "-" : "+";
   const absOffset = Math.abs(offset);
-  const hours = (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(Math.trunc(absOffset / 60), 2);
-  const minutes = (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(absOffset % 60, 2);
+  const hours = (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(Math.trunc(absOffset / 60), 2);
+  const minutes = (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_2__.addLeadingZeros)(absOffset % 60, 2);
   return sign + hours + delimiter + minutes;
 }
 
@@ -12310,7 +12308,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "lightFormatters": () => (/* binding */ lightFormatters)
 /* harmony export */ });
-/* harmony import */ var _addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(183);
+/* harmony import */ var _addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(183);
 
 
 /*
@@ -12341,18 +12339,18 @@ const lightFormatters = {
     const signedYear = date.getFullYear();
     // Returns 1 for 1 BC (which is year 0 in JavaScript)
     const year = signedYear > 0 ? signedYear : 1 - signedYear;
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(token === "yy" ? year % 100 : year, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(token === "yy" ? year % 100 : year, token.length);
   },
 
   // Month
   M(date, token) {
     const month = date.getMonth();
-    return token === "M" ? String(month + 1) : (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(month + 1, 2);
+    return token === "M" ? String(month + 1) : (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(month + 1, 2);
   },
 
   // Day of the month
   d(date, token) {
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(date.getDate(), token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(date.getDate(), token.length);
   },
 
   // AM or PM
@@ -12375,22 +12373,22 @@ const lightFormatters = {
 
   // Hour [1-12]
   h(date, token) {
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(date.getHours() % 12 || 12, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(date.getHours() % 12 || 12, token.length);
   },
 
   // Hour [0-23]
   H(date, token) {
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(date.getHours(), token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(date.getHours(), token.length);
   },
 
   // Minute
   m(date, token) {
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(date.getMinutes(), token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(date.getMinutes(), token.length);
   },
 
   // Second
   s(date, token) {
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(date.getSeconds(), token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(date.getSeconds(), token.length);
   },
 
   // Fraction of second
@@ -12400,7 +12398,7 @@ const lightFormatters = {
     const fractionalSeconds = Math.trunc(
       milliseconds * Math.pow(10, numberOfDigits - 3),
     );
-    return (0,_addLeadingZeros_mjs__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(fractionalSeconds, token.length);
+    return (0,_addLeadingZeros_js__WEBPACK_IMPORTED_MODULE_0__.addLeadingZeros)(fractionalSeconds, token.length);
   },
 };
 
@@ -12431,10 +12429,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "getWeekYear": () => (/* binding */ getWeekYear)
 /* harmony export */ });
-/* harmony import */ var _constructFrom_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(187);
-/* harmony import */ var _startOfWeek_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(188);
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
-/* harmony import */ var _lib_defaultOptions_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(186);
+/* harmony import */ var _lib_defaultOptions_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(188);
+/* harmony import */ var _constructFrom_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(186);
+/* harmony import */ var _startOfWeek_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(189);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
 
 
 
@@ -12458,8 +12456,6 @@ __webpack_require__.r(__webpack_exports__);
  *
  * Week numbering: https://en.wikipedia.org/wiki/Week#The_ISO_week_date_system
  *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
  * @param date - The given date
  * @param options - An object with options.
  *
@@ -12481,10 +12477,10 @@ __webpack_require__.r(__webpack_exports__);
  * //=> 2004
  */
 function getWeekYear(date, options) {
-  const _date = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_0__.toDate)(date);
+  const _date = (0,_toDate_js__WEBPACK_IMPORTED_MODULE_0__.toDate)(date, options?.in);
   const year = _date.getFullYear();
 
-  const defaultOptions = (0,_lib_defaultOptions_mjs__WEBPACK_IMPORTED_MODULE_1__.getDefaultOptions)();
+  const defaultOptions = (0,_lib_defaultOptions_js__WEBPACK_IMPORTED_MODULE_1__.getDefaultOptions)();
   const firstWeekContainsDate =
     options?.firstWeekContainsDate ??
     options?.locale?.options?.firstWeekContainsDate ??
@@ -12492,19 +12488,19 @@ function getWeekYear(date, options) {
     defaultOptions.locale?.options?.firstWeekContainsDate ??
     1;
 
-  const firstWeekOfNextYear = (0,_constructFrom_mjs__WEBPACK_IMPORTED_MODULE_2__.constructFrom)(date, 0);
+  const firstWeekOfNextYear = (0,_constructFrom_js__WEBPACK_IMPORTED_MODULE_2__.constructFrom)(options?.in || date, 0);
   firstWeekOfNextYear.setFullYear(year + 1, 0, firstWeekContainsDate);
   firstWeekOfNextYear.setHours(0, 0, 0, 0);
-  const startOfNextYear = (0,_startOfWeek_mjs__WEBPACK_IMPORTED_MODULE_3__.startOfWeek)(firstWeekOfNextYear, options);
+  const startOfNextYear = (0,_startOfWeek_js__WEBPACK_IMPORTED_MODULE_3__.startOfWeek)(firstWeekOfNextYear, options);
 
-  const firstWeekOfThisYear = (0,_constructFrom_mjs__WEBPACK_IMPORTED_MODULE_2__.constructFrom)(date, 0);
+  const firstWeekOfThisYear = (0,_constructFrom_js__WEBPACK_IMPORTED_MODULE_2__.constructFrom)(options?.in || date, 0);
   firstWeekOfThisYear.setFullYear(year, 0, firstWeekContainsDate);
   firstWeekOfThisYear.setHours(0, 0, 0, 0);
-  const startOfThisYear = (0,_startOfWeek_mjs__WEBPACK_IMPORTED_MODULE_3__.startOfWeek)(firstWeekOfThisYear, options);
+  const startOfThisYear = (0,_startOfWeek_js__WEBPACK_IMPORTED_MODULE_3__.startOfWeek)(firstWeekOfThisYear, options);
 
-  if (_date.getTime() >= startOfNextYear.getTime()) {
+  if (+_date >= +startOfNextYear) {
     return year + 1;
-  } else if (_date.getTime() >= startOfThisYear.getTime()) {
+  } else if (+_date >= +startOfThisYear) {
     return year;
   } else {
     return year - 1;
@@ -12525,6 +12521,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "toDate": () => (/* binding */ toDate)
 /* harmony export */ });
+/* harmony import */ var _constructFrom_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(186);
+
+
 /**
  * @name toDate
  * @category Common Helpers
@@ -12539,9 +12538,15 @@ __webpack_require__.r(__webpack_exports__);
  *
  * If the argument is none of the above, the function returns Invalid Date.
  *
+ * Starting from v3.7.0, it clones a date using `[Symbol.for("constructDateFrom")]`
+ * enabling to transfer extra properties from the reference date to the new date.
+ * It's useful for extensions like [`TZDate`](https://github.com/date-fns/tz)
+ * that accept a time zone as a constructor argument.
+ *
  * **Note**: *all* Date arguments passed to any *date-fns* function is processed by `toDate`.
  *
  * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+ * @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
  *
  * @param argument - The value to convert
  *
@@ -12557,28 +12562,9 @@ __webpack_require__.r(__webpack_exports__);
  * const result = toDate(1392098430000)
  * //=> Tue Feb 11 2014 11:30:30
  */
-function toDate(argument) {
-  const argStr = Object.prototype.toString.call(argument);
-
-  // Clone the date
-  if (
-    argument instanceof Date ||
-    (typeof argument === "object" && argStr === "[object Date]")
-  ) {
-    // Prevent the date to lose the milliseconds when passed to new Date() in IE10
-    return new argument.constructor(+argument);
-  } else if (
-    typeof argument === "number" ||
-    argStr === "[object Number]" ||
-    typeof argument === "string" ||
-    argStr === "[object String]"
-  ) {
-    // TODO: Can we get rid of as?
-    return new Date(argument);
-  } else {
-    // TODO: Can we get rid of as?
-    return new Date(NaN);
-  }
+function toDate(argument, context) {
+  // [TODO] Get rid of `toDate` or `constructFrom`?
+  return (0,_constructFrom_js__WEBPACK_IMPORTED_MODULE_0__.constructFrom)(context || argument, argument);
 }
 
 // Fallback for modularized imports:
@@ -12592,30 +12578,12 @@ function toDate(argument) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "getDefaultOptions": () => (/* binding */ getDefaultOptions),
-/* harmony export */   "setDefaultOptions": () => (/* binding */ setDefaultOptions)
-/* harmony export */ });
-let defaultOptions = {};
-
-function getDefaultOptions() {
-  return defaultOptions;
-}
-
-function setDefaultOptions(newOptions) {
-  defaultOptions = newOptions;
-}
-
-
-/***/ }),
-/* 187 */
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "constructFrom": () => (/* binding */ constructFrom),
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(187);
+
+
 /**
  * @name constructFrom
  * @category Generic Helpers
@@ -12626,6 +12594,13 @@ __webpack_require__.r(__webpack_exports__);
  * date and the given value. It helps to build generic functions that accept
  * date extensions.
  *
+ * It defaults to `Date` if the passed reference date is a number or a string.
+ *
+ * Starting from v3.7.0, it allows to construct a date using `[Symbol.for("constructDateFrom")]`
+ * enabling to transfer extra properties from the reference date to the new date.
+ * It's useful for extensions like [`TZDate`](https://github.com/date-fns/tz)
+ * that accept a time zone as a constructor argument.
+ *
  * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
  *
  * @param date - The reference date to take constructor from
@@ -12634,22 +12609,25 @@ __webpack_require__.r(__webpack_exports__);
  * @returns Date initialized using the given date and value
  *
  * @example
- * import { constructFrom } from 'date-fns'
+ * import { constructFrom } from "./constructFrom/date-fns";
  *
  * // A function that clones a date preserving the original type
- * function cloneDate<DateType extends Date(date: DateType): DateType {
+ * function cloneDate<DateType extends Date>(date: DateType): DateType {
  *   return constructFrom(
- *     date, // Use contrustor from the given date
+ *     date, // Use constructor from the given date
  *     date.getTime() // Use the date value to create a new date
- *   )
+ *   );
  * }
  */
 function constructFrom(date, value) {
-  if (date instanceof Date) {
-    return new date.constructor(value);
-  } else {
-    return new Date(value);
-  }
+  if (typeof date === "function") return date(value);
+
+  if (date && typeof date === "object" && _constants_js__WEBPACK_IMPORTED_MODULE_0__.constructFromSymbol in date)
+    return date[_constants_js__WEBPACK_IMPORTED_MODULE_0__.constructFromSymbol](value);
+
+  if (date instanceof Date) return new date.constructor(value);
+
+  return new Date(value);
 }
 
 // Fallback for modularized imports:
@@ -12657,342 +12635,13 @@ function constructFrom(date, value) {
 
 
 /***/ }),
-/* 188 */
+/* 187 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
-/* harmony export */   "startOfWeek": () => (/* binding */ startOfWeek)
-/* harmony export */ });
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(185);
-/* harmony import */ var _lib_defaultOptions_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(186);
-
-
-
-/**
- * The {@link startOfWeek} function options.
- */
-
-/**
- * @name startOfWeek
- * @category Week Helpers
- * @summary Return the start of a week for the given date.
- *
- * @description
- * Return the start of a week for the given date.
- * The result will be in the local timezone.
- *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
- * @param date - The original date
- * @param options - An object with options
- *
- * @returns The start of a week
- *
- * @example
- * // The start of a week for 2 September 2014 11:55:00:
- * const result = startOfWeek(new Date(2014, 8, 2, 11, 55, 0))
- * //=> Sun Aug 31 2014 00:00:00
- *
- * @example
- * // If the week starts on Monday, the start of the week for 2 September 2014 11:55:00:
- * const result = startOfWeek(new Date(2014, 8, 2, 11, 55, 0), { weekStartsOn: 1 })
- * //=> Mon Sep 01 2014 00:00:00
- */
-function startOfWeek(date, options) {
-  const defaultOptions = (0,_lib_defaultOptions_mjs__WEBPACK_IMPORTED_MODULE_0__.getDefaultOptions)();
-  const weekStartsOn =
-    options?.weekStartsOn ??
-    options?.locale?.options?.weekStartsOn ??
-    defaultOptions.weekStartsOn ??
-    defaultOptions.locale?.options?.weekStartsOn ??
-    0;
-
-  const _date = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_1__.toDate)(date);
-  const day = _date.getDay();
-  const diff = (day < weekStartsOn ? 7 : 0) + day - weekStartsOn;
-
-  _date.setDate(_date.getDate() - diff);
-  _date.setHours(0, 0, 0, 0);
-  return _date;
-}
-
-// Fallback for modularized imports:
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (startOfWeek);
-
-
-/***/ }),
-/* 189 */
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
-/* harmony export */   "getISOWeekYear": () => (/* binding */ getISOWeekYear)
-/* harmony export */ });
-/* harmony import */ var _constructFrom_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(187);
-/* harmony import */ var _startOfISOWeek_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(190);
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
-
-
-
-
-/**
- * @name getISOWeekYear
- * @category ISO Week-Numbering Year Helpers
- * @summary Get the ISO week-numbering year of the given date.
- *
- * @description
- * Get the ISO week-numbering year of the given date,
- * which always starts 3 days before the year's first Thursday.
- *
- * ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
- *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
- * @param date - The given date
- *
- * @returns The ISO week-numbering year
- *
- * @example
- * // Which ISO-week numbering year is 2 January 2005?
- * const result = getISOWeekYear(new Date(2005, 0, 2))
- * //=> 2004
- */
-function getISOWeekYear(date) {
-  const _date = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_0__.toDate)(date);
-  const year = _date.getFullYear();
-
-  const fourthOfJanuaryOfNextYear = (0,_constructFrom_mjs__WEBPACK_IMPORTED_MODULE_1__.constructFrom)(date, 0);
-  fourthOfJanuaryOfNextYear.setFullYear(year + 1, 0, 4);
-  fourthOfJanuaryOfNextYear.setHours(0, 0, 0, 0);
-  const startOfNextYear = (0,_startOfISOWeek_mjs__WEBPACK_IMPORTED_MODULE_2__.startOfISOWeek)(fourthOfJanuaryOfNextYear);
-
-  const fourthOfJanuaryOfThisYear = (0,_constructFrom_mjs__WEBPACK_IMPORTED_MODULE_1__.constructFrom)(date, 0);
-  fourthOfJanuaryOfThisYear.setFullYear(year, 0, 4);
-  fourthOfJanuaryOfThisYear.setHours(0, 0, 0, 0);
-  const startOfThisYear = (0,_startOfISOWeek_mjs__WEBPACK_IMPORTED_MODULE_2__.startOfISOWeek)(fourthOfJanuaryOfThisYear);
-
-  if (_date.getTime() >= startOfNextYear.getTime()) {
-    return year + 1;
-  } else if (_date.getTime() >= startOfThisYear.getTime()) {
-    return year;
-  } else {
-    return year - 1;
-  }
-}
-
-// Fallback for modularized imports:
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (getISOWeekYear);
-
-
-/***/ }),
-/* 190 */
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
-/* harmony export */   "startOfISOWeek": () => (/* binding */ startOfISOWeek)
-/* harmony export */ });
-/* harmony import */ var _startOfWeek_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(188);
-
-
-/**
- * @name startOfISOWeek
- * @category ISO Week Helpers
- * @summary Return the start of an ISO week for the given date.
- *
- * @description
- * Return the start of an ISO week for the given date.
- * The result will be in the local timezone.
- *
- * ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
- *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
- * @param date - The original date
- *
- * @returns The start of an ISO week
- *
- * @example
- * // The start of an ISO week for 2 September 2014 11:55:00:
- * const result = startOfISOWeek(new Date(2014, 8, 2, 11, 55, 0))
- * //=> Mon Sep 01 2014 00:00:00
- */
-function startOfISOWeek(date) {
-  return (0,_startOfWeek_mjs__WEBPACK_IMPORTED_MODULE_0__.startOfWeek)(date, { weekStartsOn: 1 });
-}
-
-// Fallback for modularized imports:
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (startOfISOWeek);
-
-
-/***/ }),
-/* 191 */
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
-/* harmony export */   "getWeek": () => (/* binding */ getWeek)
-/* harmony export */ });
-/* harmony import */ var _constants_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(193);
-/* harmony import */ var _startOfWeek_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(188);
-/* harmony import */ var _startOfWeekYear_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(192);
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
-
-
-
-
-
-/**
- * The {@link getWeek} function options.
- */
-
-/**
- * @name getWeek
- * @category Week Helpers
- * @summary Get the local week index of the given date.
- *
- * @description
- * Get the local week index of the given date.
- * The exact calculation depends on the values of
- * `options.weekStartsOn` (which is the index of the first day of the week)
- * and `options.firstWeekContainsDate` (which is the day of January, which is always in
- * the first week of the week-numbering year)
- *
- * Week numbering: https://en.wikipedia.org/wiki/Week#The_ISO_week_date_system
- *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
- * @param date - The given date
- * @param options - An object with options
- *
- * @returns The week
- *
- * @example
- * // Which week of the local week numbering year is 2 January 2005 with default options?
- * const result = getWeek(new Date(2005, 0, 2))
- * //=> 2
- *
- * @example
- * // Which week of the local week numbering year is 2 January 2005,
- * // if Monday is the first day of the week,
- * // and the first week of the year always contains 4 January?
- * const result = getWeek(new Date(2005, 0, 2), {
- *   weekStartsOn: 1,
- *   firstWeekContainsDate: 4
- * })
- * //=> 53
- */
-
-function getWeek(date, options) {
-  const _date = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_0__.toDate)(date);
-  const diff = +(0,_startOfWeek_mjs__WEBPACK_IMPORTED_MODULE_1__.startOfWeek)(_date, options) - +(0,_startOfWeekYear_mjs__WEBPACK_IMPORTED_MODULE_2__.startOfWeekYear)(_date, options);
-
-  // Round the number of weeks to the nearest integer because the number of
-  // milliseconds in a week is not constant (e.g. it's different in the week of
-  // the daylight saving time clock shift).
-  return Math.round(diff / _constants_mjs__WEBPACK_IMPORTED_MODULE_3__.millisecondsInWeek) + 1;
-}
-
-// Fallback for modularized imports:
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (getWeek);
-
-
-/***/ }),
-/* 192 */
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
-/* harmony export */   "startOfWeekYear": () => (/* binding */ startOfWeekYear)
-/* harmony export */ });
-/* harmony import */ var _constructFrom_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(187);
-/* harmony import */ var _getWeekYear_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(184);
-/* harmony import */ var _startOfWeek_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(188);
-/* harmony import */ var _lib_defaultOptions_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(186);
-
-
-
-
-
-/**
- * The {@link startOfWeekYear} function options.
- */
-
-/**
- * @name startOfWeekYear
- * @category Week-Numbering Year Helpers
- * @summary Return the start of a local week-numbering year for the given date.
- *
- * @description
- * Return the start of a local week-numbering year.
- * The exact calculation depends on the values of
- * `options.weekStartsOn` (which is the index of the first day of the week)
- * and `options.firstWeekContainsDate` (which is the day of January, which is always in
- * the first week of the week-numbering year)
- *
- * Week numbering: https://en.wikipedia.org/wiki/Week#The_ISO_week_date_system
- *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
- * @param date - The original date
- * @param options - An object with options
- *
- * @returns The start of a week-numbering year
- *
- * @example
- * // The start of an a week-numbering year for 2 July 2005 with default settings:
- * const result = startOfWeekYear(new Date(2005, 6, 2))
- * //=> Sun Dec 26 2004 00:00:00
- *
- * @example
- * // The start of a week-numbering year for 2 July 2005
- * // if Monday is the first day of week
- * // and 4 January is always in the first week of the year:
- * const result = startOfWeekYear(new Date(2005, 6, 2), {
- *   weekStartsOn: 1,
- *   firstWeekContainsDate: 4
- * })
- * //=> Mon Jan 03 2005 00:00:00
- */
-function startOfWeekYear(date, options) {
-  const defaultOptions = (0,_lib_defaultOptions_mjs__WEBPACK_IMPORTED_MODULE_0__.getDefaultOptions)();
-  const firstWeekContainsDate =
-    options?.firstWeekContainsDate ??
-    options?.locale?.options?.firstWeekContainsDate ??
-    defaultOptions.firstWeekContainsDate ??
-    defaultOptions.locale?.options?.firstWeekContainsDate ??
-    1;
-
-  const year = (0,_getWeekYear_mjs__WEBPACK_IMPORTED_MODULE_1__.getWeekYear)(date, options);
-  const firstWeek = (0,_constructFrom_mjs__WEBPACK_IMPORTED_MODULE_2__.constructFrom)(date, 0);
-  firstWeek.setFullYear(year, 0, firstWeekContainsDate);
-  firstWeek.setHours(0, 0, 0, 0);
-  const _date = (0,_startOfWeek_mjs__WEBPACK_IMPORTED_MODULE_3__.startOfWeek)(firstWeek, options);
-  return _date;
-}
-
-// Fallback for modularized imports:
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (startOfWeekYear);
-
-
-/***/ }),
-/* 193 */
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "constructFromSymbol": () => (/* binding */ constructFromSymbol),
 /* harmony export */   "daysInWeek": () => (/* binding */ daysInWeek),
 /* harmony export */   "daysInYear": () => (/* binding */ daysInYear),
 /* harmony export */   "maxTime": () => (/* binding */ maxTime),
@@ -13051,7 +12700,7 @@ const daysInWeek = 7;
  *
  * One years equals 365.2425 days according to the formula:
  *
- * > Leap year occures every 4 years, except for years that are divisable by 100 and not divisable by 400.
+ * > Leap year occurs every 4 years, except for years that are divisible by 100 and not divisible by 400.
  * > 1 mean year = (365+1/4-1/100+1/400) days = 365.2425 days
  */
 const daysInYear = 365.2425;
@@ -13221,6 +12870,377 @@ const secondsInMonth = secondsInYear / 12;
  */
 const secondsInQuarter = secondsInMonth * 3;
 
+/**
+ * @constant
+ * @name constructFromSymbol
+ * @summary Symbol enabling Date extensions to inherit properties from the reference date.
+ *
+ * The symbol is used to enable the `constructFrom` function to construct a date
+ * using a reference date and a value. It allows to transfer extra properties
+ * from the reference date to the new date. It's useful for extensions like
+ * [`TZDate`](https://github.com/date-fns/tz) that accept a time zone as
+ * a constructor argument.
+ */
+const constructFromSymbol = Symbol.for("constructDateFrom");
+
+
+/***/ }),
+/* 188 */
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "getDefaultOptions": () => (/* binding */ getDefaultOptions),
+/* harmony export */   "setDefaultOptions": () => (/* binding */ setDefaultOptions)
+/* harmony export */ });
+let defaultOptions = {};
+
+function getDefaultOptions() {
+  return defaultOptions;
+}
+
+function setDefaultOptions(newOptions) {
+  defaultOptions = newOptions;
+}
+
+
+/***/ }),
+/* 189 */
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "startOfWeek": () => (/* binding */ startOfWeek)
+/* harmony export */ });
+/* harmony import */ var _lib_defaultOptions_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(188);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(185);
+
+
+
+/**
+ * The {@link startOfWeek} function options.
+ */
+
+/**
+ * @name startOfWeek
+ * @category Week Helpers
+ * @summary Return the start of a week for the given date.
+ *
+ * @description
+ * Return the start of a week for the given date.
+ * The result will be in the local timezone.
+ *
+ * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+ * @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
+ *
+ * @param date - The original date
+ * @param options - An object with options
+ *
+ * @returns The start of a week
+ *
+ * @example
+ * // The start of a week for 2 September 2014 11:55:00:
+ * const result = startOfWeek(new Date(2014, 8, 2, 11, 55, 0))
+ * //=> Sun Aug 31 2014 00:00:00
+ *
+ * @example
+ * // If the week starts on Monday, the start of the week for 2 September 2014 11:55:00:
+ * const result = startOfWeek(new Date(2014, 8, 2, 11, 55, 0), { weekStartsOn: 1 })
+ * //=> Mon Sep 01 2014 00:00:00
+ */
+function startOfWeek(date, options) {
+  const defaultOptions = (0,_lib_defaultOptions_js__WEBPACK_IMPORTED_MODULE_0__.getDefaultOptions)();
+  const weekStartsOn =
+    options?.weekStartsOn ??
+    options?.locale?.options?.weekStartsOn ??
+    defaultOptions.weekStartsOn ??
+    defaultOptions.locale?.options?.weekStartsOn ??
+    0;
+
+  const _date = (0,_toDate_js__WEBPACK_IMPORTED_MODULE_1__.toDate)(date, options?.in);
+  const day = _date.getDay();
+  const diff = (day < weekStartsOn ? 7 : 0) + day - weekStartsOn;
+
+  _date.setDate(_date.getDate() - diff);
+  _date.setHours(0, 0, 0, 0);
+  return _date;
+}
+
+// Fallback for modularized imports:
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (startOfWeek);
+
+
+/***/ }),
+/* 190 */
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "getISOWeekYear": () => (/* binding */ getISOWeekYear)
+/* harmony export */ });
+/* harmony import */ var _constructFrom_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(186);
+/* harmony import */ var _startOfISOWeek_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(191);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
+
+
+
+
+/**
+ * The {@link getISOWeekYear} function options.
+ */
+
+/**
+ * @name getISOWeekYear
+ * @category ISO Week-Numbering Year Helpers
+ * @summary Get the ISO week-numbering year of the given date.
+ *
+ * @description
+ * Get the ISO week-numbering year of the given date,
+ * which always starts 3 days before the year's first Thursday.
+ *
+ * ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
+ *
+ * @param date - The given date
+ *
+ * @returns The ISO week-numbering year
+ *
+ * @example
+ * // Which ISO-week numbering year is 2 January 2005?
+ * const result = getISOWeekYear(new Date(2005, 0, 2))
+ * //=> 2004
+ */
+function getISOWeekYear(date, options) {
+  const _date = (0,_toDate_js__WEBPACK_IMPORTED_MODULE_0__.toDate)(date, options?.in);
+  const year = _date.getFullYear();
+
+  const fourthOfJanuaryOfNextYear = (0,_constructFrom_js__WEBPACK_IMPORTED_MODULE_1__.constructFrom)(_date, 0);
+  fourthOfJanuaryOfNextYear.setFullYear(year + 1, 0, 4);
+  fourthOfJanuaryOfNextYear.setHours(0, 0, 0, 0);
+  const startOfNextYear = (0,_startOfISOWeek_js__WEBPACK_IMPORTED_MODULE_2__.startOfISOWeek)(fourthOfJanuaryOfNextYear);
+
+  const fourthOfJanuaryOfThisYear = (0,_constructFrom_js__WEBPACK_IMPORTED_MODULE_1__.constructFrom)(_date, 0);
+  fourthOfJanuaryOfThisYear.setFullYear(year, 0, 4);
+  fourthOfJanuaryOfThisYear.setHours(0, 0, 0, 0);
+  const startOfThisYear = (0,_startOfISOWeek_js__WEBPACK_IMPORTED_MODULE_2__.startOfISOWeek)(fourthOfJanuaryOfThisYear);
+
+  if (_date.getTime() >= startOfNextYear.getTime()) {
+    return year + 1;
+  } else if (_date.getTime() >= startOfThisYear.getTime()) {
+    return year;
+  } else {
+    return year - 1;
+  }
+}
+
+// Fallback for modularized imports:
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (getISOWeekYear);
+
+
+/***/ }),
+/* 191 */
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "startOfISOWeek": () => (/* binding */ startOfISOWeek)
+/* harmony export */ });
+/* harmony import */ var _startOfWeek_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(189);
+
+
+/**
+ * The {@link startOfISOWeek} function options.
+ */
+
+/**
+ * @name startOfISOWeek
+ * @category ISO Week Helpers
+ * @summary Return the start of an ISO week for the given date.
+ *
+ * @description
+ * Return the start of an ISO week for the given date.
+ * The result will be in the local timezone.
+ *
+ * ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
+ *
+ * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+ * @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
+ *
+ * @param date - The original date
+ * @param options - An object with options
+ *
+ * @returns The start of an ISO week
+ *
+ * @example
+ * // The start of an ISO week for 2 September 2014 11:55:00:
+ * const result = startOfISOWeek(new Date(2014, 8, 2, 11, 55, 0))
+ * //=> Mon Sep 01 2014 00:00:00
+ */
+function startOfISOWeek(date, options) {
+  return (0,_startOfWeek_js__WEBPACK_IMPORTED_MODULE_0__.startOfWeek)(date, { ...options, weekStartsOn: 1 });
+}
+
+// Fallback for modularized imports:
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (startOfISOWeek);
+
+
+/***/ }),
+/* 192 */
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "getWeek": () => (/* binding */ getWeek)
+/* harmony export */ });
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(187);
+/* harmony import */ var _startOfWeek_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(189);
+/* harmony import */ var _startOfWeekYear_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(193);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
+
+
+
+
+
+/**
+ * The {@link getWeek} function options.
+ */
+
+/**
+ * @name getWeek
+ * @category Week Helpers
+ * @summary Get the local week index of the given date.
+ *
+ * @description
+ * Get the local week index of the given date.
+ * The exact calculation depends on the values of
+ * `options.weekStartsOn` (which is the index of the first day of the week)
+ * and `options.firstWeekContainsDate` (which is the day of January, which is always in
+ * the first week of the week-numbering year)
+ *
+ * Week numbering: https://en.wikipedia.org/wiki/Week#The_ISO_week_date_system
+ *
+ * @param date - The given date
+ * @param options - An object with options
+ *
+ * @returns The week
+ *
+ * @example
+ * // Which week of the local week numbering year is 2 January 2005 with default options?
+ * const result = getWeek(new Date(2005, 0, 2))
+ * //=> 2
+ *
+ * @example
+ * // Which week of the local week numbering year is 2 January 2005,
+ * // if Monday is the first day of the week,
+ * // and the first week of the year always contains 4 January?
+ * const result = getWeek(new Date(2005, 0, 2), {
+ *   weekStartsOn: 1,
+ *   firstWeekContainsDate: 4
+ * })
+ * //=> 53
+ */
+function getWeek(date, options) {
+  const _date = (0,_toDate_js__WEBPACK_IMPORTED_MODULE_0__.toDate)(date, options?.in);
+  const diff = +(0,_startOfWeek_js__WEBPACK_IMPORTED_MODULE_1__.startOfWeek)(_date, options) - +(0,_startOfWeekYear_js__WEBPACK_IMPORTED_MODULE_2__.startOfWeekYear)(_date, options);
+
+  // Round the number of weeks to the nearest integer because the number of
+  // milliseconds in a week is not constant (e.g. it's different in the week of
+  // the daylight saving time clock shift).
+  return Math.round(diff / _constants_js__WEBPACK_IMPORTED_MODULE_3__.millisecondsInWeek) + 1;
+}
+
+// Fallback for modularized imports:
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (getWeek);
+
+
+/***/ }),
+/* 193 */
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "startOfWeekYear": () => (/* binding */ startOfWeekYear)
+/* harmony export */ });
+/* harmony import */ var _lib_defaultOptions_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(188);
+/* harmony import */ var _constructFrom_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(186);
+/* harmony import */ var _getWeekYear_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(184);
+/* harmony import */ var _startOfWeek_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(189);
+
+
+
+
+
+/**
+ * The {@link startOfWeekYear} function options.
+ */
+
+/**
+ * @name startOfWeekYear
+ * @category Week-Numbering Year Helpers
+ * @summary Return the start of a local week-numbering year for the given date.
+ *
+ * @description
+ * Return the start of a local week-numbering year.
+ * The exact calculation depends on the values of
+ * `options.weekStartsOn` (which is the index of the first day of the week)
+ * and `options.firstWeekContainsDate` (which is the day of January, which is always in
+ * the first week of the week-numbering year)
+ *
+ * Week numbering: https://en.wikipedia.org/wiki/Week#The_ISO_week_date_system
+ *
+ * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+ * @typeParam ResultDate - The result `Date` type.
+ *
+ * @param date - The original date
+ * @param options - An object with options
+ *
+ * @returns The start of a week-numbering year
+ *
+ * @example
+ * // The start of an a week-numbering year for 2 July 2005 with default settings:
+ * const result = startOfWeekYear(new Date(2005, 6, 2))
+ * //=> Sun Dec 26 2004 00:00:00
+ *
+ * @example
+ * // The start of a week-numbering year for 2 July 2005
+ * // if Monday is the first day of week
+ * // and 4 January is always in the first week of the year:
+ * const result = startOfWeekYear(new Date(2005, 6, 2), {
+ *   weekStartsOn: 1,
+ *   firstWeekContainsDate: 4
+ * })
+ * //=> Mon Jan 03 2005 00:00:00
+ */
+function startOfWeekYear(date, options) {
+  const defaultOptions = (0,_lib_defaultOptions_js__WEBPACK_IMPORTED_MODULE_0__.getDefaultOptions)();
+  const firstWeekContainsDate =
+    options?.firstWeekContainsDate ??
+    options?.locale?.options?.firstWeekContainsDate ??
+    defaultOptions.firstWeekContainsDate ??
+    defaultOptions.locale?.options?.firstWeekContainsDate ??
+    1;
+
+  const year = (0,_getWeekYear_js__WEBPACK_IMPORTED_MODULE_1__.getWeekYear)(date, options);
+  const firstWeek = (0,_constructFrom_js__WEBPACK_IMPORTED_MODULE_2__.constructFrom)(options?.in || date, 0);
+  firstWeek.setFullYear(year, 0, firstWeekContainsDate);
+  firstWeek.setHours(0, 0, 0, 0);
+  const _date = (0,_startOfWeek_js__WEBPACK_IMPORTED_MODULE_3__.startOfWeek)(firstWeek, options);
+  return _date;
+}
+
+// Fallback for modularized imports:
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (startOfWeekYear);
+
 
 /***/ }),
 /* 194 */
@@ -13232,14 +13252,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "getISOWeek": () => (/* binding */ getISOWeek)
 /* harmony export */ });
-/* harmony import */ var _constants_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(193);
-/* harmony import */ var _startOfISOWeek_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(190);
-/* harmony import */ var _startOfISOWeekYear_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(195);
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(187);
+/* harmony import */ var _startOfISOWeek_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(191);
+/* harmony import */ var _startOfISOWeekYear_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(195);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
 
 
 
 
+
+/**
+ * The {@link getISOWeek} function options.
+ */
 
 /**
  * @name getISOWeek
@@ -13251,9 +13275,8 @@ __webpack_require__.r(__webpack_exports__);
  *
  * ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
  *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
  * @param date - The given date
+ * @param options - The options
  *
  * @returns The ISO week
  *
@@ -13262,14 +13285,14 @@ __webpack_require__.r(__webpack_exports__);
  * const result = getISOWeek(new Date(2005, 0, 2))
  * //=> 53
  */
-function getISOWeek(date) {
-  const _date = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_0__.toDate)(date);
-  const diff = +(0,_startOfISOWeek_mjs__WEBPACK_IMPORTED_MODULE_1__.startOfISOWeek)(_date) - +(0,_startOfISOWeekYear_mjs__WEBPACK_IMPORTED_MODULE_2__.startOfISOWeekYear)(_date);
+function getISOWeek(date, options) {
+  const _date = (0,_toDate_js__WEBPACK_IMPORTED_MODULE_0__.toDate)(date, options?.in);
+  const diff = +(0,_startOfISOWeek_js__WEBPACK_IMPORTED_MODULE_1__.startOfISOWeek)(_date) - +(0,_startOfISOWeekYear_js__WEBPACK_IMPORTED_MODULE_2__.startOfISOWeekYear)(_date);
 
   // Round the number of weeks to the nearest integer because the number of
   // milliseconds in a week is not constant (e.g. it's different in the week of
   // the daylight saving time clock shift).
-  return Math.round(diff / _constants_mjs__WEBPACK_IMPORTED_MODULE_3__.millisecondsInWeek) + 1;
+  return Math.round(diff / _constants_js__WEBPACK_IMPORTED_MODULE_3__.millisecondsInWeek) + 1;
 }
 
 // Fallback for modularized imports:
@@ -13286,12 +13309,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "startOfISOWeekYear": () => (/* binding */ startOfISOWeekYear)
 /* harmony export */ });
-/* harmony import */ var _getISOWeekYear_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(189);
-/* harmony import */ var _startOfISOWeek_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(190);
-/* harmony import */ var _constructFrom_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(187);
+/* harmony import */ var _constructFrom_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(186);
+/* harmony import */ var _getISOWeekYear_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(190);
+/* harmony import */ var _startOfISOWeek_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(191);
 
 
 
+
+/**
+ * The {@link startOfISOWeekYear} function options.
+ */
 
 /**
  * @name startOfISOWeekYear
@@ -13306,8 +13333,10 @@ __webpack_require__.r(__webpack_exports__);
  * ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
  *
  * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+ * @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
  *
  * @param date - The original date
+ * @param options - An object with options
  *
  * @returns The start of an ISO week-numbering year
  *
@@ -13316,12 +13345,12 @@ __webpack_require__.r(__webpack_exports__);
  * const result = startOfISOWeekYear(new Date(2005, 6, 2))
  * //=> Mon Jan 03 2005 00:00:00
  */
-function startOfISOWeekYear(date) {
-  const year = (0,_getISOWeekYear_mjs__WEBPACK_IMPORTED_MODULE_0__.getISOWeekYear)(date);
-  const fourthOfJanuary = (0,_constructFrom_mjs__WEBPACK_IMPORTED_MODULE_1__.constructFrom)(date, 0);
+function startOfISOWeekYear(date, options) {
+  const year = (0,_getISOWeekYear_js__WEBPACK_IMPORTED_MODULE_0__.getISOWeekYear)(date, options);
+  const fourthOfJanuary = (0,_constructFrom_js__WEBPACK_IMPORTED_MODULE_1__.constructFrom)(options?.in || date, 0);
   fourthOfJanuary.setFullYear(year, 0, 4);
   fourthOfJanuary.setHours(0, 0, 0, 0);
-  return (0,_startOfISOWeek_mjs__WEBPACK_IMPORTED_MODULE_2__.startOfISOWeek)(fourthOfJanuary);
+  return (0,_startOfISOWeek_js__WEBPACK_IMPORTED_MODULE_2__.startOfISOWeek)(fourthOfJanuary);
 }
 
 // Fallback for modularized imports:
@@ -13338,12 +13367,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "getDayOfYear": () => (/* binding */ getDayOfYear)
 /* harmony export */ });
-/* harmony import */ var _differenceInCalendarDays_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(197);
-/* harmony import */ var _startOfYear_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(200);
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
+/* harmony import */ var _differenceInCalendarDays_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(197);
+/* harmony import */ var _startOfYear_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(201);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
 
 
 
+
+/**
+ * The {@link getDayOfYear} function options.
+ */
 
 /**
  * @name getDayOfYear
@@ -13353,9 +13386,8 @@ __webpack_require__.r(__webpack_exports__);
  * @description
  * Get the day of the year of the given date.
  *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
  * @param date - The given date
+ * @param options - The options
  *
  * @returns The day of year
  *
@@ -13364,9 +13396,9 @@ __webpack_require__.r(__webpack_exports__);
  * const result = getDayOfYear(new Date(2014, 6, 2))
  * //=> 183
  */
-function getDayOfYear(date) {
-  const _date = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_0__.toDate)(date);
-  const diff = (0,_differenceInCalendarDays_mjs__WEBPACK_IMPORTED_MODULE_1__.differenceInCalendarDays)(_date, (0,_startOfYear_mjs__WEBPACK_IMPORTED_MODULE_2__.startOfYear)(_date));
+function getDayOfYear(date, options) {
+  const _date = (0,_toDate_js__WEBPACK_IMPORTED_MODULE_0__.toDate)(date, options?.in);
+  const diff = (0,_differenceInCalendarDays_js__WEBPACK_IMPORTED_MODULE_1__.differenceInCalendarDays)(_date, (0,_startOfYear_js__WEBPACK_IMPORTED_MODULE_2__.startOfYear)(_date));
   const dayOfYear = diff + 1;
   return dayOfYear;
 }
@@ -13385,12 +13417,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "differenceInCalendarDays": () => (/* binding */ differenceInCalendarDays)
 /* harmony export */ });
-/* harmony import */ var _constants_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(193);
-/* harmony import */ var _startOfDay_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(198);
-/* harmony import */ var _lib_getTimezoneOffsetInMilliseconds_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(199);
+/* harmony import */ var _lib_getTimezoneOffsetInMilliseconds_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(200);
+/* harmony import */ var _lib_normalizeDates_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(198);
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(187);
+/* harmony import */ var _startOfDay_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(199);
 
 
 
+
+
+/**
+ * The {@link differenceInCalendarDays} function options.
+ */
 
 /**
  * @name differenceInCalendarDays
@@ -13401,10 +13439,9 @@ __webpack_require__.r(__webpack_exports__);
  * Get the number of calendar days between the given dates. This means that the times are removed
  * from the dates and then the difference in days is calculated.
  *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
- * @param dateLeft - The later date
- * @param dateRight - The earlier date
+ * @param laterDate - The later date
+ * @param earlierDate - The earlier date
+ * @param options - The options object
  *
  * @returns The number of calendar days
  *
@@ -13424,19 +13461,25 @@ __webpack_require__.r(__webpack_exports__);
  * )
  * //=> 1
  */
-function differenceInCalendarDays(dateLeft, dateRight) {
-  const startOfDayLeft = (0,_startOfDay_mjs__WEBPACK_IMPORTED_MODULE_0__.startOfDay)(dateLeft);
-  const startOfDayRight = (0,_startOfDay_mjs__WEBPACK_IMPORTED_MODULE_0__.startOfDay)(dateRight);
+function differenceInCalendarDays(laterDate, earlierDate, options) {
+  const [laterDate_, earlierDate_] = (0,_lib_normalizeDates_js__WEBPACK_IMPORTED_MODULE_0__.normalizeDates)(
+    options?.in,
+    laterDate,
+    earlierDate,
+  );
 
-  const timestampLeft =
-    +startOfDayLeft - (0,_lib_getTimezoneOffsetInMilliseconds_mjs__WEBPACK_IMPORTED_MODULE_1__.getTimezoneOffsetInMilliseconds)(startOfDayLeft);
-  const timestampRight =
-    +startOfDayRight - (0,_lib_getTimezoneOffsetInMilliseconds_mjs__WEBPACK_IMPORTED_MODULE_1__.getTimezoneOffsetInMilliseconds)(startOfDayRight);
+  const laterStartOfDay = (0,_startOfDay_js__WEBPACK_IMPORTED_MODULE_1__.startOfDay)(laterDate_);
+  const earlierStartOfDay = (0,_startOfDay_js__WEBPACK_IMPORTED_MODULE_1__.startOfDay)(earlierDate_);
+
+  const laterTimestamp =
+    +laterStartOfDay - (0,_lib_getTimezoneOffsetInMilliseconds_js__WEBPACK_IMPORTED_MODULE_2__.getTimezoneOffsetInMilliseconds)(laterStartOfDay);
+  const earlierTimestamp =
+    +earlierStartOfDay - (0,_lib_getTimezoneOffsetInMilliseconds_js__WEBPACK_IMPORTED_MODULE_2__.getTimezoneOffsetInMilliseconds)(earlierStartOfDay);
 
   // Round the number of days to the nearest integer because the number of
   // milliseconds in a day is not constant (e.g. it's different in the week of
   // the daylight saving time clock shift).
-  return Math.round((timestampLeft - timestampRight) / _constants_mjs__WEBPACK_IMPORTED_MODULE_2__.millisecondsInDay);
+  return Math.round((laterTimestamp - earlierTimestamp) / _constants_js__WEBPACK_IMPORTED_MODULE_3__.millisecondsInDay);
 }
 
 // Fallback for modularized imports:
@@ -13450,11 +13493,36 @@ function differenceInCalendarDays(dateLeft, dateRight) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "normalizeDates": () => (/* binding */ normalizeDates)
+/* harmony export */ });
+/* harmony import */ var _constructFrom_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(186);
+
+
+function normalizeDates(context, ...dates) {
+  const normalize = _constructFrom_js__WEBPACK_IMPORTED_MODULE_0__.constructFrom.bind(
+    null,
+    context || dates.find((date) => typeof date === "object"),
+  );
+  return dates.map(normalize);
+}
+
+
+/***/ }),
+/* 199 */
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "startOfDay": () => (/* binding */ startOfDay)
 /* harmony export */ });
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
 
+
+/**
+ * The {@link startOfDay} function options.
+ */
 
 /**
  * @name startOfDay
@@ -13466,8 +13534,10 @@ __webpack_require__.r(__webpack_exports__);
  * The result will be in the local timezone.
  *
  * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+ * @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
  *
  * @param date - The original date
+ * @param options - The options
  *
  * @returns The start of a day
  *
@@ -13476,8 +13546,8 @@ __webpack_require__.r(__webpack_exports__);
  * const result = startOfDay(new Date(2014, 8, 2, 11, 55, 0))
  * //=> Tue Sep 02 2014 00:00:00
  */
-function startOfDay(date) {
-  const _date = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_0__.toDate)(date);
+function startOfDay(date, options) {
+  const _date = (0,_toDate_js__WEBPACK_IMPORTED_MODULE_0__.toDate)(date, options?.in);
   _date.setHours(0, 0, 0, 0);
   return _date;
 }
@@ -13487,7 +13557,7 @@ function startOfDay(date) {
 
 
 /***/ }),
-/* 199 */
+/* 200 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -13495,7 +13565,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "getTimezoneOffsetInMilliseconds": () => (/* binding */ getTimezoneOffsetInMilliseconds)
 /* harmony export */ });
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
 
 
 /**
@@ -13510,7 +13580,7 @@ __webpack_require__.r(__webpack_exports__);
  * This function returns the timezone offset in milliseconds that takes seconds in account.
  */
 function getTimezoneOffsetInMilliseconds(date) {
-  const _date = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_0__.toDate)(date);
+  const _date = (0,_toDate_js__WEBPACK_IMPORTED_MODULE_0__.toDate)(date);
   const utcDate = new Date(
     Date.UTC(
       _date.getFullYear(),
@@ -13528,7 +13598,7 @@ function getTimezoneOffsetInMilliseconds(date) {
 
 
 /***/ }),
-/* 200 */
+/* 201 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -13537,10 +13607,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "startOfYear": () => (/* binding */ startOfYear)
 /* harmony export */ });
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
-/* harmony import */ var _constructFrom_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(187);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(185);
 
 
+/**
+ * The {@link startOfYear} function options.
+ */
 
 /**
  * @name startOfYear
@@ -13552,8 +13624,10 @@ __webpack_require__.r(__webpack_exports__);
  * The result will be in the local timezone.
  *
  * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+ * @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
  *
  * @param date - The original date
+ * @param options - The options
  *
  * @returns The start of a year
  *
@@ -13562,12 +13636,11 @@ __webpack_require__.r(__webpack_exports__);
  * const result = startOfYear(new Date(2014, 8, 2, 11, 55, 00))
  * //=> Wed Jan 01 2014 00:00:00
  */
-function startOfYear(date) {
-  const cleanDate = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_0__.toDate)(date);
-  const _date = (0,_constructFrom_mjs__WEBPACK_IMPORTED_MODULE_1__.constructFrom)(date, 0);
-  _date.setFullYear(cleanDate.getFullYear(), 0, 1);
-  _date.setHours(0, 0, 0, 0);
-  return _date;
+function startOfYear(date, options) {
+  const date_ = (0,_toDate_js__WEBPACK_IMPORTED_MODULE_0__.toDate)(date, options?.in);
+  date_.setFullYear(date_.getFullYear(), 0, 1);
+  date_.setHours(0, 0, 0, 0);
+  return date_;
 }
 
 // Fallback for modularized imports:
@@ -13575,7 +13648,7 @@ function startOfYear(date) {
 
 
 /***/ }),
-/* 201 */
+/* 202 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -13650,7 +13723,7 @@ const longFormatters = {
 
 
 /***/ }),
-/* 202 */
+/* 203 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -13659,11 +13732,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "enUS": () => (/* binding */ enUS)
 /* harmony export */ });
-/* harmony import */ var _en_US_lib_formatDistance_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(203);
-/* harmony import */ var _en_US_lib_formatLong_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(204);
-/* harmony import */ var _en_US_lib_formatRelative_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(206);
-/* harmony import */ var _en_US_lib_localize_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(207);
-/* harmony import */ var _en_US_lib_match_mjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(209);
+/* harmony import */ var _en_US_lib_formatDistance_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(204);
+/* harmony import */ var _en_US_lib_formatLong_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(205);
+/* harmony import */ var _en_US_lib_formatRelative_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(207);
+/* harmony import */ var _en_US_lib_localize_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(208);
+/* harmony import */ var _en_US_lib_match_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(210);
 
 
 
@@ -13680,11 +13753,11 @@ __webpack_require__.r(__webpack_exports__);
  */
 const enUS = {
   code: "en-US",
-  formatDistance: _en_US_lib_formatDistance_mjs__WEBPACK_IMPORTED_MODULE_0__.formatDistance,
-  formatLong: _en_US_lib_formatLong_mjs__WEBPACK_IMPORTED_MODULE_1__.formatLong,
-  formatRelative: _en_US_lib_formatRelative_mjs__WEBPACK_IMPORTED_MODULE_2__.formatRelative,
-  localize: _en_US_lib_localize_mjs__WEBPACK_IMPORTED_MODULE_3__.localize,
-  match: _en_US_lib_match_mjs__WEBPACK_IMPORTED_MODULE_4__.match,
+  formatDistance: _en_US_lib_formatDistance_js__WEBPACK_IMPORTED_MODULE_0__.formatDistance,
+  formatLong: _en_US_lib_formatLong_js__WEBPACK_IMPORTED_MODULE_1__.formatLong,
+  formatRelative: _en_US_lib_formatRelative_js__WEBPACK_IMPORTED_MODULE_2__.formatRelative,
+  localize: _en_US_lib_localize_js__WEBPACK_IMPORTED_MODULE_3__.localize,
+  match: _en_US_lib_match_js__WEBPACK_IMPORTED_MODULE_4__.match,
   options: {
     weekStartsOn: 0 /* Sunday */,
     firstWeekContainsDate: 1,
@@ -13696,7 +13769,7 @@ const enUS = {
 
 
 /***/ }),
-/* 203 */
+/* 204 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -13808,7 +13881,7 @@ const formatDistance = (token, count, options) => {
 
 
 /***/ }),
-/* 204 */
+/* 205 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -13816,7 +13889,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "formatLong": () => (/* binding */ formatLong)
 /* harmony export */ });
-/* harmony import */ var _lib_buildFormatLongFn_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(205);
+/* harmony import */ var _lib_buildFormatLongFn_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(206);
 
 
 const dateFormats = {
@@ -13841,17 +13914,17 @@ const dateTimeFormats = {
 };
 
 const formatLong = {
-  date: (0,_lib_buildFormatLongFn_mjs__WEBPACK_IMPORTED_MODULE_0__.buildFormatLongFn)({
+  date: (0,_lib_buildFormatLongFn_js__WEBPACK_IMPORTED_MODULE_0__.buildFormatLongFn)({
     formats: dateFormats,
     defaultWidth: "full",
   }),
 
-  time: (0,_lib_buildFormatLongFn_mjs__WEBPACK_IMPORTED_MODULE_0__.buildFormatLongFn)({
+  time: (0,_lib_buildFormatLongFn_js__WEBPACK_IMPORTED_MODULE_0__.buildFormatLongFn)({
     formats: timeFormats,
     defaultWidth: "full",
   }),
 
-  dateTime: (0,_lib_buildFormatLongFn_mjs__WEBPACK_IMPORTED_MODULE_0__.buildFormatLongFn)({
+  dateTime: (0,_lib_buildFormatLongFn_js__WEBPACK_IMPORTED_MODULE_0__.buildFormatLongFn)({
     formats: dateTimeFormats,
     defaultWidth: "full",
   }),
@@ -13859,7 +13932,7 @@ const formatLong = {
 
 
 /***/ }),
-/* 205 */
+/* 206 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -13878,7 +13951,7 @@ function buildFormatLongFn(args) {
 
 
 /***/ }),
-/* 206 */
+/* 207 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -13900,7 +13973,7 @@ const formatRelative = (token, _date, _baseDate, _options) =>
 
 
 /***/ }),
-/* 207 */
+/* 208 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -13908,7 +13981,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "localize": () => (/* binding */ localize)
 /* harmony export */ });
-/* harmony import */ var _lib_buildLocalizeFn_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(208);
+/* harmony import */ var _lib_buildLocalizeFn_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(209);
 
 
 const eraValues = {
@@ -14068,28 +14141,28 @@ const ordinalNumber = (dirtyNumber, _options) => {
 const localize = {
   ordinalNumber,
 
-  era: (0,_lib_buildLocalizeFn_mjs__WEBPACK_IMPORTED_MODULE_0__.buildLocalizeFn)({
+  era: (0,_lib_buildLocalizeFn_js__WEBPACK_IMPORTED_MODULE_0__.buildLocalizeFn)({
     values: eraValues,
     defaultWidth: "wide",
   }),
 
-  quarter: (0,_lib_buildLocalizeFn_mjs__WEBPACK_IMPORTED_MODULE_0__.buildLocalizeFn)({
+  quarter: (0,_lib_buildLocalizeFn_js__WEBPACK_IMPORTED_MODULE_0__.buildLocalizeFn)({
     values: quarterValues,
     defaultWidth: "wide",
     argumentCallback: (quarter) => quarter - 1,
   }),
 
-  month: (0,_lib_buildLocalizeFn_mjs__WEBPACK_IMPORTED_MODULE_0__.buildLocalizeFn)({
+  month: (0,_lib_buildLocalizeFn_js__WEBPACK_IMPORTED_MODULE_0__.buildLocalizeFn)({
     values: monthValues,
     defaultWidth: "wide",
   }),
 
-  day: (0,_lib_buildLocalizeFn_mjs__WEBPACK_IMPORTED_MODULE_0__.buildLocalizeFn)({
+  day: (0,_lib_buildLocalizeFn_js__WEBPACK_IMPORTED_MODULE_0__.buildLocalizeFn)({
     values: dayValues,
     defaultWidth: "wide",
   }),
 
-  dayPeriod: (0,_lib_buildLocalizeFn_mjs__WEBPACK_IMPORTED_MODULE_0__.buildLocalizeFn)({
+  dayPeriod: (0,_lib_buildLocalizeFn_js__WEBPACK_IMPORTED_MODULE_0__.buildLocalizeFn)({
     values: dayPeriodValues,
     defaultWidth: "wide",
     formattingValues: formattingDayPeriodValues,
@@ -14099,7 +14172,7 @@ const localize = {
 
 
 /***/ }),
-/* 208 */
+/* 209 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -14107,8 +14180,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "buildLocalizeFn": () => (/* binding */ buildLocalizeFn)
 /* harmony export */ });
-/* eslint-disable no-unused-vars */
-
 /**
  * The localize function argument callback which allows to convert raw value to
  * the actual type.
@@ -14174,7 +14245,7 @@ function buildLocalizeFn(args) {
 
 
 /***/ }),
-/* 209 */
+/* 210 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -14182,8 +14253,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "match": () => (/* binding */ match)
 /* harmony export */ });
-/* harmony import */ var _lib_buildMatchFn_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(211);
-/* harmony import */ var _lib_buildMatchPatternFn_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(210);
+/* harmony import */ var _lib_buildMatchFn_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(212);
+/* harmony import */ var _lib_buildMatchPatternFn_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(211);
 
 
 
@@ -14274,20 +14345,20 @@ const parseDayPeriodPatterns = {
 };
 
 const match = {
-  ordinalNumber: (0,_lib_buildMatchPatternFn_mjs__WEBPACK_IMPORTED_MODULE_0__.buildMatchPatternFn)({
+  ordinalNumber: (0,_lib_buildMatchPatternFn_js__WEBPACK_IMPORTED_MODULE_0__.buildMatchPatternFn)({
     matchPattern: matchOrdinalNumberPattern,
     parsePattern: parseOrdinalNumberPattern,
     valueCallback: (value) => parseInt(value, 10),
   }),
 
-  era: (0,_lib_buildMatchFn_mjs__WEBPACK_IMPORTED_MODULE_1__.buildMatchFn)({
+  era: (0,_lib_buildMatchFn_js__WEBPACK_IMPORTED_MODULE_1__.buildMatchFn)({
     matchPatterns: matchEraPatterns,
     defaultMatchWidth: "wide",
     parsePatterns: parseEraPatterns,
     defaultParseWidth: "any",
   }),
 
-  quarter: (0,_lib_buildMatchFn_mjs__WEBPACK_IMPORTED_MODULE_1__.buildMatchFn)({
+  quarter: (0,_lib_buildMatchFn_js__WEBPACK_IMPORTED_MODULE_1__.buildMatchFn)({
     matchPatterns: matchQuarterPatterns,
     defaultMatchWidth: "wide",
     parsePatterns: parseQuarterPatterns,
@@ -14295,21 +14366,21 @@ const match = {
     valueCallback: (index) => index + 1,
   }),
 
-  month: (0,_lib_buildMatchFn_mjs__WEBPACK_IMPORTED_MODULE_1__.buildMatchFn)({
+  month: (0,_lib_buildMatchFn_js__WEBPACK_IMPORTED_MODULE_1__.buildMatchFn)({
     matchPatterns: matchMonthPatterns,
     defaultMatchWidth: "wide",
     parsePatterns: parseMonthPatterns,
     defaultParseWidth: "any",
   }),
 
-  day: (0,_lib_buildMatchFn_mjs__WEBPACK_IMPORTED_MODULE_1__.buildMatchFn)({
+  day: (0,_lib_buildMatchFn_js__WEBPACK_IMPORTED_MODULE_1__.buildMatchFn)({
     matchPatterns: matchDayPatterns,
     defaultMatchWidth: "wide",
     parsePatterns: parseDayPatterns,
     defaultParseWidth: "any",
   }),
 
-  dayPeriod: (0,_lib_buildMatchFn_mjs__WEBPACK_IMPORTED_MODULE_1__.buildMatchFn)({
+  dayPeriod: (0,_lib_buildMatchFn_js__WEBPACK_IMPORTED_MODULE_1__.buildMatchFn)({
     matchPatterns: matchDayPeriodPatterns,
     defaultMatchWidth: "any",
     parsePatterns: parseDayPeriodPatterns,
@@ -14319,7 +14390,7 @@ const match = {
 
 
 /***/ }),
-/* 210 */
+/* 211 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -14339,7 +14410,7 @@ function buildMatchPatternFn(args) {
       ? args.valueCallback(parseResult[0])
       : parseResult[0];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- I challange you to fix the type
+    // [TODO] I challenge you to fix the type
     value = options.valueCallback ? options.valueCallback(value) : value;
 
     const rest = string.slice(matchedString.length);
@@ -14350,7 +14421,7 @@ function buildMatchPatternFn(args) {
 
 
 /***/ }),
-/* 211 */
+/* 212 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -14378,14 +14449,14 @@ function buildMatchFn(args) {
 
     const key = Array.isArray(parsePatterns)
       ? findIndex(parsePatterns, (pattern) => pattern.test(matchedString))
-      : // eslint-disable-next-line @typescript-eslint/no-explicit-any -- I challange you to fix the type
+      : // [TODO] -- I challenge you to fix the type
         findKey(parsePatterns, (pattern) => pattern.test(matchedString));
 
     let value;
 
     value = args.valueCallback ? args.valueCallback(key) : key;
     value = options.valueCallback
-      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any -- I challange you to fix the type
+      ? // [TODO] -- I challenge you to fix the type
         options.valueCallback(value)
       : value;
 
@@ -14418,7 +14489,7 @@ function findIndex(array, predicate) {
 
 
 /***/ }),
-/* 212 */
+/* 213 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -14427,8 +14498,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "isValid": () => (/* binding */ isValid)
 /* harmony export */ });
-/* harmony import */ var _isDate_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(213);
-/* harmony import */ var _toDate_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(185);
+/* harmony import */ var _isDate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(214);
+/* harmony import */ var _toDate_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(185);
 
 
 
@@ -14444,8 +14515,6 @@ __webpack_require__.r(__webpack_exports__);
  *
  * Time value of Date: http://es5.github.io/#x15.9.1.1
  *
- * @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
- *
  * @param date - The date to check
  *
  * @returns The date is valid
@@ -14456,7 +14525,7 @@ __webpack_require__.r(__webpack_exports__);
  * //=> true
  *
  * @example
- * // For the value, convertable into a date:
+ * // For the value, convertible into a date:
  * const result = isValid(1393804800000)
  * //=> true
  *
@@ -14466,11 +14535,7 @@ __webpack_require__.r(__webpack_exports__);
  * //=> false
  */
 function isValid(date) {
-  if (!(0,_isDate_mjs__WEBPACK_IMPORTED_MODULE_0__.isDate)(date) && typeof date !== "number") {
-    return false;
-  }
-  const _date = (0,_toDate_mjs__WEBPACK_IMPORTED_MODULE_1__.toDate)(date);
-  return !isNaN(Number(_date));
+  return !((!(0,_isDate_js__WEBPACK_IMPORTED_MODULE_0__.isDate)(date) && typeof date !== "number") || isNaN(+(0,_toDate_js__WEBPACK_IMPORTED_MODULE_1__.toDate)(date)));
 }
 
 // Fallback for modularized imports:
@@ -14478,7 +14543,7 @@ function isValid(date) {
 
 
 /***/ }),
-/* 213 */
+/* 214 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -14532,7 +14597,7 @@ function isDate(value) {
 
 
 /***/ }),
-/* 214 */
+/* 215 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -14568,7 +14633,7 @@ function message(token, format, input) {
 
 
 /***/ }),
-/* 215 */
+/* 216 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -14578,11 +14643,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "TimeoutError": () => (/* reexport safe */ _errors_TimeoutError_js__WEBPACK_IMPORTED_MODULE_4__.TimeoutError),
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _core_Ky_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(216);
-/* harmony import */ var _core_constants_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(217);
-/* harmony import */ var _utils_merge_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(219);
-/* harmony import */ var _errors_HTTPError_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(218);
-/* harmony import */ var _errors_TimeoutError_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(222);
+/* harmony import */ var _core_Ky_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(217);
+/* harmony import */ var _core_constants_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(218);
+/* harmony import */ var _utils_merge_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(220);
+/* harmony import */ var _errors_HTTPError_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(219);
+/* harmony import */ var _errors_TimeoutError_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(223);
 /*! MIT License © Sindre Sorhus */
 
 
@@ -14606,7 +14671,7 @@ const ky = createInstance();
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 216 */
+/* 217 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -14614,13 +14679,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "Ky": () => (/* binding */ Ky)
 /* harmony export */ });
-/* harmony import */ var _errors_HTTPError_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(218);
-/* harmony import */ var _errors_TimeoutError_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(222);
-/* harmony import */ var _utils_merge_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(219);
-/* harmony import */ var _utils_normalize_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(221);
-/* harmony import */ var _utils_timeout_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(225);
-/* harmony import */ var _utils_delay_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(223);
-/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(217);
+/* harmony import */ var _errors_HTTPError_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(219);
+/* harmony import */ var _errors_TimeoutError_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(223);
+/* harmony import */ var _utils_merge_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(220);
+/* harmony import */ var _utils_normalize_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(222);
+/* harmony import */ var _utils_timeout_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(226);
+/* harmony import */ var _utils_delay_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(224);
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(218);
 
 
 
@@ -14921,7 +14986,7 @@ class Ky {
 //# sourceMappingURL=Ky.js.map
 
 /***/ }),
-/* 217 */
+/* 218 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -14973,7 +15038,7 @@ const stop = Symbol('stop');
 //# sourceMappingURL=constants.js.map
 
 /***/ }),
-/* 218 */
+/* 219 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -15016,7 +15081,7 @@ class HTTPError extends Error {
 //# sourceMappingURL=HTTPError.js.map
 
 /***/ }),
-/* 219 */
+/* 220 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -15026,7 +15091,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "mergeHeaders": () => (/* binding */ mergeHeaders),
 /* harmony export */   "validateAndMerge": () => (/* binding */ validateAndMerge)
 /* harmony export */ });
-/* harmony import */ var _is_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(220);
+/* harmony import */ var _is_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(221);
 
 const validateAndMerge = (...sources) => {
     for (const source of sources) {
@@ -15079,7 +15144,7 @@ const deepMerge = (...sources) => {
 //# sourceMappingURL=merge.js.map
 
 /***/ }),
-/* 220 */
+/* 221 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -15092,7 +15157,7 @@ const isObject = (value) => value !== null && typeof value === 'object';
 //# sourceMappingURL=is.js.map
 
 /***/ }),
-/* 221 */
+/* 222 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -15101,7 +15166,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "normalizeRequestMethod": () => (/* binding */ normalizeRequestMethod),
 /* harmony export */   "normalizeRetryOptions": () => (/* binding */ normalizeRetryOptions)
 /* harmony export */ });
-/* harmony import */ var _core_constants_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(217);
+/* harmony import */ var _core_constants_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(218);
 
 const normalizeRequestMethod = (input) => _core_constants_js__WEBPACK_IMPORTED_MODULE_0__.requestMethods.includes(input) ? input.toUpperCase() : input;
 const retryMethods = ['get', 'put', 'head', 'delete', 'options', 'trace'];
@@ -15137,7 +15202,7 @@ const normalizeRetryOptions = (retry = {}) => {
 //# sourceMappingURL=normalize.js.map
 
 /***/ }),
-/* 222 */
+/* 223 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -15161,7 +15226,7 @@ class TimeoutError extends Error {
 //# sourceMappingURL=TimeoutError.js.map
 
 /***/ }),
-/* 223 */
+/* 224 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -15169,7 +15234,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ delay)
 /* harmony export */ });
-/* harmony import */ var _errors_DOMException_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(224);
+/* harmony import */ var _errors_DOMException_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(225);
 // https://github.com/sindresorhus/delay/tree/ab98ae8dfcb38e1593286c94d934e70d14a4e111
 
 async function delay(ms, { signal }) {
@@ -15194,7 +15259,7 @@ async function delay(ms, { signal }) {
 //# sourceMappingURL=delay.js.map
 
 /***/ }),
-/* 224 */
+/* 225 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -15222,7 +15287,7 @@ function composeAbortError(signal) {
 //# sourceMappingURL=DOMException.js.map
 
 /***/ }),
-/* 225 */
+/* 226 */
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -15230,7 +15295,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ timeout)
 /* harmony export */ });
-/* harmony import */ var _errors_TimeoutError_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(222);
+/* harmony import */ var _errors_TimeoutError_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(223);
 
 // `Promise.race()` workaround (#91)
 async function timeout(request, abortController, options) {
@@ -15352,7 +15417,7 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var cozy_clisk_dist_contentscript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
 /* harmony import */ var cozy_clisk_dist_contentscript_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(33);
-/* harmony import */ var ky__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(215);
+/* harmony import */ var ky__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(216);
 /* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(18);
 /* harmony import */ var _cozy_minilog__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_cozy_minilog__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(180);
