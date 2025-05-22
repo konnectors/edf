@@ -2298,10 +2298,10 @@ cozy-app-publish@0.33.0:
     tar "^6.1.11"
     verror "^1.10.1"
 
-cozy-client@58.1.0:
-  version "58.1.0"
-  resolved "https://registry.yarnpkg.com/cozy-client/-/cozy-client-58.1.0.tgz#f29a69b8facea3492cfad772e020de6cbf8a8d67"
-  integrity sha512-g1xAo5SPJOMalnLc76z26A0UtAPIKS9sZOWOpqW3aZY3lZtw6H6Ln+qpPSNd+99G590l6AQ9RYbOnQgTw5wTVA==
+cozy-client@58.3.0:
+  version "58.3.0"
+  resolved "https://registry.yarnpkg.com/cozy-client/-/cozy-client-58.3.0.tgz#abccb6ab49712a2fe9c86b1f452ab65613fe9ad3"
+  integrity sha512-YwI3urghhmr/lrfTPvNYhK7+FGjz16uJmwxla1CaxhAMRWG+bQpFU17qpaex2yo3Ri+37IxYeD7OfZ6B+eXqMQ==
   dependencies:
     "@cozy/minilog" "1.0.0"
     "@fastify/deepmerge" "^2.0.2"
